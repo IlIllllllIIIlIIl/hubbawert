@@ -1,41 +1,118 @@
 <?php
-ini_set('display_errors', 1);
-if(isset($_GET['i'])){
-	header('Cache-Control: public, max-age=5, stale-if-error=28800');
-	$response = ['info' => [
-			'views' => '?',
-			'longdesc' => 'Ladefehler, Item nicht gefunden'
-		]
-	];
-	// get details
-	$select = $core->m->prepare('SELECT f.id,r.id AS rare_id,price,r.views,r.longdesc,timestamp_release FROM furniture_rare_details r LEFT JOIN furniture f ON(r.item_name = f.item_name) WHERE r.item_name=?');
-	$select->execute([$_GET['i']]);
-	$details = $select->fetchAll(PDO::FETCH_ASSOC);
-	if(!empty($details)){
-		$response['info'] = $details[0];
-		// update view count if logged in user
-		if(isset($u_details['id'])){
-			$viewCache = $core->path.'/_inc/.cache/wert/view.'.$u_details['id'].'.'.strtolower($_GET['i']).'.cache';
-			if(!file_exists($viewCache) || time() - filemtime($viewCache) > 86400){
-				$update = $core->m->prepare('UPDATE furniture_rare_details SET views=views+1 WHERE item_name=?');
-				if($update->execute([$_GET['i']])){
-					file_put_contents($viewCache, '');
-				}
-			}
-		}
-		// get owners
-		$select = $core->m->prepare('SELECT p.username,p.figure,COUNT(i.id) AS c FROM items i LEFT JOIN players p ON(p.id=i.user_id) WHERE (i.base_item=? OR (i.gift_base_item=? AND i.base_item != i.gift_base_item)) AND p.rank < 7 GROUP BY p.id ORDER BY p.last_online DESC');
-		$select->execute([$response['info']['id'],$response['info']['id']]);
-		$response['owners'] = $select->fetchAll(PDO::FETCH_ASSOC);
-		// get price history
-		$select = $core->m->prepare('SELECT old_price, `timestamp` FROM furniture_rare_changes WHERE furni_id=?');
-		$select->execute([$response['info']['rare_id']]);
-		$response['changes'] = $select->fetchAll(PDO::FETCH_ASSOC);
-	}else{
-		http_response_code(404);
-	}
-	exit(json_encode($response));
+// Start Internal Mock - Remove on live servers
+
+include_once 'mock.php';
+$core = new Core();
+// End Mock
+
+
+// Admin permissions
+$allowedPeople = [4, 1100852, 6292, 895535, 662198, 273757, 22457];
+$hasPermissions = isset($u_details['id']) && in_array($u_details['id'], $allowedPeople) ? 1 : 0;
+
+// General Attributes
+$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
+function pageNotFound(): void {
+    exit(http_response_code(404));
 }
+
+//API Endpoints
+if(isset($_GET['i'])) {
+    if (!$isAjax)
+        pageNotFound();
+
+    $response = [
+        'info' =>
+            [
+                'views' => '0',
+                'longdesc' => 'Es gab ein Fehler beim Laden dieses Rares. Versuche es erneut.',
+            ],
+        'changes' => [],
+        'owners' => []
+    ];
+
+    // get details
+    $sql = 'SELECT f.id, r.id AS rare_id, r.price, r.views, r.longdesc, r.timestamp_release, c.name AS category, c.image AS category_image
+    FROM 
+        furniture_rare_details r 
+    LEFT JOIN 
+        furniture f ON r.item_name = f.item_name 
+    LEFT JOIN 
+        furniture_rare_categories c ON r.category = c.id
+    WHERE r.item_name = ?';
+
+    $select = $core->m->prepare($sql);
+    $select->execute([$_GET['i']]);
+    $details = $select->fetchAll(PDO::FETCH_ASSOC);
+
+    header('Cache-Control: public, max-age=5, stale-if-error=28800');
+
+    if (!empty($details)) {
+        $response['info'] = $details[0];
+
+        if(isset($u_details['id'])) {
+            $viewCache = $core->path.'/_inc/.cache/wert/view.'.$u_details['id'].'.'.strtolower($_GET['i']).'.cache';
+            if(!file_exists($viewCache) || time() - filemtime($viewCache) > 86400) {
+                $update = $core->m->prepare('UPDATE furniture_rare_details SET views=views+1 WHERE item_name=?');
+                if($update->execute([$_GET['i']]))
+                    file_put_contents($viewCache, '');
+            }
+        }
+
+        // get owners
+        $select = $core->m->prepare('SELECT p.username,p.figure,COUNT(i.id) AS c FROM items i LEFT JOIN players p ON(p.id=i.user_id) WHERE (i.base_item=? OR (i.gift_base_item=? AND i.base_item != i.gift_base_item)) AND p.rank < 7 GROUP BY p.id ORDER BY p.last_online DESC');
+        $select->execute([$response['info']['id'],$response['info']['id']]);
+        $response['owners'] = $select->fetchAll(PDO::FETCH_ASSOC);
+
+        // get price history
+        $select = $core->m->prepare('SELECT old_price, `timestamp` FROM furniture_rare_changes WHERE furni_id=?');
+        $select->execute([$response['info']['rare_id']]);
+        $response['changes'] = $select->fetchAll(PDO::FETCH_ASSOC);
+    }
+    exit(json_encode($response));
+}
+
+//Search
+if(isset($_GET['s'])) {
+    if (!$isAjax)
+        pageNotFound();
+
+    $search = filter_input(INPUT_GET, 's', FILTER_SANITIZE_STRING);
+
+    $select = $core->m->prepare('SELECT id, name, image FROM furniture_rare_categories WHERE name LIKE ? ORDER BY name ASC');
+    $select->execute(['%' . $search . '%']);
+
+    $categories = [];
+    while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
+        $categories[] = [
+            'url' => $core->url.$_SERVER['REQUEST_URI']. '?c=' . $cat['id'],
+            'name' => htmlspecialchars($cat['name']),
+            'image' => !empty($cat['image']) ? $core->url . '_dat/serve/img/wert/furni/' . filter_var($cat['image'], FILTER_SANITIZE_URL) : ''
+        ];
+    }
+    header('Content-Type: application/json');
+    exit(json_encode($categories));
+}
+
+
+if(isset($_GET['itemName']) && $hasPermissions) {
+    if (!$isAjax)
+        pageNotFound();
+
+    $search = filter_input(INPUT_GET, 'itemName', FILTER_SANITIZE_STRING);
+
+    $select = $core->m->prepare('SELECT f.item_name FROM furniture f LEFT JOIN furniture_rare_details d ON f.item_name = d.item_name WHERE d.item_name IS NULL AND f.item_name LIKE ? ORDER BY f.item_name ASC LIMIT 15');
+    $select->execute(['%' . $search . '%']);
+
+    $options = $select->fetchAll(PDO::FETCH_COLUMN, 0);
+    header('Content-Type: application/json');
+    exit(json_encode($options));
+}
+
+$rarity = isset($_GET['r']) ? intval($_GET['r']) : 0;
+$category = isset($_GET['c']) ? intval($_GET['c']) : 0;
+
 $pagetitle = 'Wert';
 $cachePath = $core->path.'/_inc/.cache/wert/index.cache';
 $cssappendix .= '<style>
@@ -199,18 +276,12 @@ img.rarity.l0 {
 #details .modal-body .edit:active{
 	opacity:0.6
 }
+
 </style>';
-/*
-seltenheit grade
-bis 5 rot
-bis 15 orange
-bis 30 gelb
-bis 50 hellgrün
-ab 50 grün
-*/
-$rarity = isset($_GET['r']) ? intval($_GET['r']) : 0;
-$category = isset($_GET['c']) ? intval($_GET['c']) : 0;
-$pagecontent .= '<div class="container">
+
+
+// Menu Template
+$categoryTemplate = '<div class="container">
 <div class="row box sticky-top" style="border-bottom-left-radius:0;border-bottom-right-radius:0">
 	<div class="col-md-3">
 		<select class="custom-select form-control" name="sort" autocomplete="off">
@@ -220,17 +291,19 @@ $pagecontent .= '<div class="container">
 			<option value="4">↓ Seltenheit absteigend</option>
 			<option value="5">➚ Preis aufsteigend</option>
 			<option value="6">➘ Preis absteigend</option>
-			<option value="7">🔀 Zufällig</option>
+			<option value="7">🔀 Aufrufe aufsteigend</option>
+			<option value="8">🔀 Aufrufe absteigend</option>
+			<option value="9">🔀 Zufällig</option>
 		</select>
 	</div>
 	<div class="col-md-6">
 		<input class="form-control" id="search" name="search" type="text" placeholder="🔍 Möbel Suche ..." autocomplete="off">
 	</div>
 	<div class="col-md-3 btn-group">
-		<button type="button" class="form-control btn btn-dark" data-bs-toggle="modal" data-bs-target="#categories"'.($category?'style="padding-left:34px"':'').'>
+		<button type="button" class="form-control btn btn-dark" data-bs-toggle="modal" data-bs-target="#categories" {$buttonStyle}>
 			📚 Kategorie
 		</button>
-		'.($category?'<a href="'.$core->url.'wert" class="btn btn-dark" style="padding-top:6px">❌</a>':'').'
+		{categoryButton}
 	</div>
 </div>
 <div class="row box">
@@ -243,92 +316,98 @@ $pagecontent .= '<div class="container">
 		<a role="button" class="btn btn-dark" data-r="5">Sehr selten</a>
 	</div>
 </div>';
-// admin section
-$allowedPeople = [4, 1100852, 6292, 895535, 662198, 273757];
-$isEditor = isset($u_details['id']) && in_array($u_details['id'], $allowedPeople) ? 1 : 0;
-if($isEditor){
-	$filedir = $core->path.'/_dat/serve/img/wert/furni';
-	$maxSizeBytes = 5242880;
-	$error = '';
-	if($_SERVER['REQUEST_METHOD'] == 'POST'){
-		$isEdit = isset($_POST['oldName']);
-		$allowedExts = array('png', 'jpg', 'jpeg', 'gif');
-		$allowedMime = array('image/png', 'image/jpeg', 'image/pjpeg', 'image/gif');
-		if(!isset($_POST['itemName'])){
-			$error .= 'item_name Feld war leer<br>';
-		}
-		if(!isset($_POST['itemDesc'])){
-			$error .= 'Keine Beschreibung eingegeben<br>';
-		}
-		if(!isset($_FILES['file'])){
-			$error .= 'Kein Bild ausgewählt<br>';
-		}
-		if(empty($error)){
-			$imageHash = '';
-			$ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
-			if ((in_array($_FILES['file']['type'], $allowedMime))
-			&& (in_array($ext, $allowedExts))
-			&& (@getimagesize($_FILES['file']['tmp_name']) !== false)
-			&& ($_FILES['file']['size'] <= $maxSizeBytes)){
-				$hash = hash_file('sha256', $_FILES['file']['tmp_name']);
-				$imageHash = $hash.'.'.$ext;
-				$destination = $filedir.'/'.$imageHash;
-				// don't allow overwriting on hash collision
-				if(!file_exists($destination)){
-					move_uploaded_file($_FILES['file']['tmp_name'], $destination);
-				}
-				if(!$isEdit){
-					try {
-						$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image) VALUES (?,?,?)');
-						$insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash]);
-					}catch(PDOException $err){
-						$error .= 'Konnte nicht eingefügt werden: ';
-						if($err->getCode() == 23000){
-							$error .= 'item_name existiert nicht in der Möbel Datenbank. Es können nur existierende Möbel in die Preisliste eingetragen werden.';
-						}else{
-							$error .= 'err#'.$err->getCode().'::'.$err->getMessage();
-						}
-						$error .= '<br>';
-					}
-				}
-			} elseif(!$isEdit) {
-				$error .= 'Bild ist vermütlich nicht gültig.<br>';
-			}
-			if($isEdit){
-				$select = $core->m->prepare('SELECT id,price,image FROM furniture_rare_details WHERE item_name=?');
-				$select->execute([$_POST['oldName']]);
-				$itemData = $select->fetchAll(PDO::FETCH_ASSOC)[0];
-				$_POST['price'] = str_replace([',','.'], '', $_POST['price']);
-				$price = ((!isset($_POST['price']) || !is_numeric($_POST['price'])) ? -1 : intval($_POST['price']));
-				if(empty($imageHash)){
-					$update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=? WHERE item_name=?');
-					$update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $_POST['oldName']]);
-				}else{
-					$update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=?, image=? WHERE item_name=?');
-					$update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $imageHash, $_POST['oldName']]);
-					@unlink($filedir.'/'.$itemData['image']);
-				}
-				if($price != $itemData['price']){
-					$insert = $core->m->prepare('INSERT INTO furniture_rare_changes (player_id, furni_id, old_price, `timestamp`) VALUES (?,?,?,?)');
-					$insert->execute([$u_details['id'], $itemData['id'], $itemData['price'], time()]);
-				}
-			}
-		}
-		if(empty($error)){
-			@unlink($cachePath);
-			header('Location: '.$core->url.'wert');
-			exit;
-		}else{
-			$pagecontent .= '<div class="row box"><div class="col" style="color:#e37373">'.$error.'</div></div>';
-		}
-	}
-	$pagecontent .= '<form enctype="multipart/form-data" method="POST" class="row box" style="border:1px solid #376d9d">
+
+$buttonStyle = $category ? 'style="padding-left:34px"' : '';
+$categoryButton = $category ? '<a href="' .$core->url.$_SERVER['REQUEST_URI']. '" class="btn btn-dark" style="padding-top:6px">❌</a>' : '';
+
+$pagecontent = str_replace(['{buttonStyle}', '{categoryButton}'], [$buttonStyle, $categoryButton], $categoryTemplate);
+
+
+//Admin
+if($hasPermissions){
+    $filedir = $core->path.'/_dat/serve/img/wert/furni';
+    $maxSizeBytes = 5242880;
+    $error = '';
+    if($_SERVER['REQUEST_METHOD'] == 'POST'){
+        $isEdit = isset($_POST['oldName']);
+        $allowedExts = array('png', 'jpg', 'jpeg', 'gif');
+        $allowedMime = array('image/png', 'image/jpeg', 'image/pjpeg', 'image/gif');
+        if(!isset($_POST['itemName'])){
+            $error .= 'item_name Feld war leer<br>';
+        }
+        if(!isset($_POST['itemDesc'])){
+            $error .= 'Keine Beschreibung eingegeben<br>';
+        }
+        if(!isset($_FILES['file'])){
+            $error .= 'Kein Bild ausgewählt<br>';
+        }
+        if(empty($error)){
+            $imageHash = '';
+            $ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
+            if ((in_array($_FILES['file']['type'], $allowedMime))
+                && (in_array($ext, $allowedExts))
+                && (@getimagesize($_FILES['file']['tmp_name']) !== false)
+                && ($_FILES['file']['size'] <= $maxSizeBytes)){
+                $hash = hash_file('sha256', $_FILES['file']['tmp_name']);
+                $imageHash = $hash.'.'.$ext;
+                $destination = $filedir.'/'.$imageHash;
+                // don't allow overwriting on hash collision
+                if(!file_exists($destination)){
+                    move_uploaded_file($_FILES['file']['tmp_name'], $destination);
+                }
+                if(!$isEdit){
+                    try {
+                        $insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image) VALUES (?,?,?)');
+                        $insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash]);
+                    }catch(PDOException $err){
+                        $error .= 'Konnte nicht eingefügt werden: ';
+                        if($err->getCode() == 23000){
+                            $error .= 'item_name existiert nicht in der Möbel Datenbank. Es können nur existierende Möbel in die Preisliste eingetragen werden.';
+                        }else{
+                            $error .= 'err#'.$err->getCode().'::'.$err->getMessage();
+                        }
+                        $error .= '<br>';
+                    }
+                }
+            } elseif(!$isEdit) {
+                $error .= 'Bild ist vermütlich nicht gültig.<br>';
+            }
+            if($isEdit){
+                $select = $core->m->prepare('SELECT id,price,image FROM furniture_rare_details WHERE item_name=?');
+                $select->execute([$_POST['oldName']]);
+                $itemData = $select->fetchAll(PDO::FETCH_ASSOC)[0];
+                $_POST['price'] = str_replace([',','.'], '', $_POST['price']);
+                $price = ((!isset($_POST['price']) || !is_numeric($_POST['price'])) ? -1 : intval($_POST['price']));
+                if(empty($imageHash)){
+                    $update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=? WHERE item_name=?');
+                    $update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $_POST['oldName']]);
+                }else{
+                    $update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=?, image=? WHERE item_name=?');
+                    $update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $imageHash, $_POST['oldName']]);
+                    @unlink($filedir.'/'.$itemData['image']);
+                }
+                if($price != $itemData['price']){
+                    $insert = $core->m->prepare('INSERT INTO furniture_rare_changes (player_id, furni_id, old_price, `timestamp`) VALUES (?,?,?,?)');
+                    $insert->execute([$u_details['id'], $itemData['id'], $itemData['price'], time()]);
+                }
+            }
+        }
+        if(empty($error)){
+            @unlink($cachePath);
+            header('Location: ' .$core->url.$_SERVER['REQUEST_URI']);
+            exit;
+        }else{
+            $pagecontent .= '<div class="row box"><div class="col" style="color:#e37373">'.$error.'</div></div>';
+        }
+    }
+    $pagecontent .= '<form enctype="multipart/form-data" method="POST" class="row box" style="border:1px solid #376d9d">
 		<div class="col-md-3">
 			<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
 			<input class="form-control" type="file" name="file" accept="image/*" required>
 		</div>
 		<div class="col-md-3">
-			<input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
+			<input list="internalItemName" id="itemName" class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
+			<datalist id="internalItemName"></datalist>
 		</div>
 		<div class="col-md-4">
 			<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
@@ -338,91 +417,92 @@ if($isEditor){
 		</div>
 	</form>';
 }
+
+//Items
+
 $pagecontent .= '<div class="row rare justify-content-between">';
 // cache for 30 minutes
-if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
-	$rankPeople = $core->m->prepare('SELECT id FROM players WHERE rank > 6');
-	$rankPeople->execute();
-	$result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
-	$rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
-	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.category,r.image,r.views,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
-	$select->execute();
-	$items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
-	file_put_contents($cachePath, json_encode($items));
-}else{
-	$items = json_decode(file_get_contents($cachePath), true);
+// Doesn't work locally - Have to check this -- Joey (if is missing the time part for testing purposes)
+if(file_exists($cachePath))
+    $items = json_decode(file_get_contents($cachePath), true);
+else {
+    $rankPeople = $core->m->prepare('SELECT id FROM players WHERE rank > 6');
+    $rankPeople->execute();
+    $result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
+    $rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
+    $sql = 'SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.category,r.image,r.views,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC';
+    $select = $core->m->prepare($sql);
+    $select->execute();
+    $items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
+    file_put_contents($cachePath, json_encode($items));
 }
+
 $i = 0;
 $itemArray = [];
-$maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chrome
+$maxItemsToShow = 6; // (will show this +1) limit for shitty browsers like chrome
 
-$itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
 $itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
 $itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}'];
+
 foreach ($items as $itemId => $item) {
-	if(!isset($item['public_name'])){
-		echo "error not found: {$itemId}\n";
-		continue;
-	}
+    echo $item;
 
-	$amount = $item['umlauf'];
+    if(!isset($item['public_name'])){
+        echo "Error not found: {$itemId}\n";
+        continue;
+    }
 
-	$level = match(true) {
-		$amount > 50 => 1,
-		$amount > 30 => 2,
-		$amount > 15 => 3,
-		$amount > 5 => 4,
-		$amount > 0 => 5,
-		default => 0
-	};
+    $amount = $item['umlauf'];
 
-	if(!isset($item['old_price']) || $item['old_price'] < 1){
-		$item['old_price'] = 0;
-	}
+    $level = match(true) {
+        $amount > 50 => 1,
+        $amount > 30 => 2,
+        $amount > 15 => 3,
+        $amount > 5 => 4,
+        $amount > 0 => 5,
+        default => 0
+    };
 
-	$itemData = [
-		$item['item_name'],
-		$level,
-		$amount,
-		$item['old_price'] < 1 ? '' : ' class="'.($item['price'] >= $item['old_price'] ? 'up' : 'down').'" title="vorher '.number_format($item['old_price']).'"', // priceTag
-		($item['price'] > 0 ? number_format($item['price']) : 'Unbekannt'),
-		filter_var($item['image'], FILTER_SANITIZE_URL),
-		htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name']))
-	];
+    $itemData = [
+        $item['item_name'],
+        $level,
+        $amount,
+        $item['old_price'] < 1 ? '' : ' class="'.($item['price'] >= $item['old_price'] ? 'up' : 'down').'" title="vorher '.number_format($item['old_price']).'"',
+        $item['price'] > 0 ? number_format($item['price']) : 'Unbekannt',
+        filter_var($item['image'], FILTER_SANITIZE_URL),
+        htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name']))
+    ];
 
-	if($i < $maxItemsToShow && ($category == 0 || $category == $item['category'])){
-		$pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
-		$i++;
-	}
+    if(count($itemArray) < $maxItemsToShow && ($category == 0 || $category == $item['category'])) {
+        $pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
+        $i++;
+    }
 
-	array_push($itemData, $item['category'], $item['price'], $item['timestamp'], $itemId);
-	array_push($itemArray, $itemData);
+    $itemArray[] = array_merge($itemData, [$item['category'] , $item['price'], $item['timestamp'], $itemId, $item['views']]);
+
+    /*
+     * itemArray[]
+     * (shown values)
+     * 0: item_name
+     * 1: level
+     * 2: amount
+     * 3: pricetag
+     * 4: price
+     * 5: image
+     * 6: public_name
+     * (raw values)
+     * 7: category
+     * 8: price
+     * 9: time
+     * 10: itemid
+     * 11: views
+     */
 }
 $pagecontent .= '</div></div>';
-// category modal
-$pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
-	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Kategorien</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-			</div>
-			<div class="modal-body">
-				<!--<input type="text" name="catSearch" id="catSearch" placeholder="🔍 Kategorie suchen ..." class="form-control w-100 mb-2">-->
-				<div class="cats">
-					<div class="row">';
-					$select = $core->m->prepare('SELECT id,name,image FROM furniture_rare_categories ORDER BY name ASC');
-					$select->execute();
-					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-						$pagecontent .= '<div class="col-md-6"><a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm w-100 mb-2" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a></div>';
-					}
-$pagecontent .= '</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>';
-// item modal
+
+//Item Modal
+$itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
+
 $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 	<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 		<div class="modal-content box">
@@ -437,8 +517,40 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 		</div>
 	</div>
 </div>';
+
+// Category Modal
+$categoryModalTemplate = '<div class="modal fade" id="categories" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Kategorien</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+			</div>
+			<div class="modal-body">
+				<input class="form-control w-100 mb-2" name="catSearch" id="catSearch" type="text" placeholder="🔍 Kategorie suchen ..." autocomplete="off">
+				
+				<div class="cats">
+					<div class="row" id="categoryList">{categoryList}</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>';
+
+$select = $core->m->prepare('SELECT id,name,image FROM furniture_rare_categories ORDER BY name ASC');
+$select->execute();
+
+$listcontent = '';
+while ($cat = $select->fetch(PDO::FETCH_ASSOC))
+    $listcontent .= '<div class="col-md-6"><a href="' .$core->url.$_SERVER['REQUEST_URI']. '?c='.$cat['id'].'" class="btn btn-dark btn-sm w-100 mb-2" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a></div>';
+
+$pagecontent .= str_replace('{categoryList}', $listcontent, $categoryModalTemplate);
+
+
+//For whatever reason boostrap js was missing in the core code
 $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
 <script src="_dat/serve/js/chart.umd.js"></script>
+<script src="_dat/serve/js/bootstrap.min.js"></script>
 <script>
 const items = '.json_encode($itemArray).';
 const maxItemsToShow = '.$maxItemsToShow.';
@@ -446,9 +558,9 @@ const itemTemplate = \''.$itemTemplate.'\';
 const itemModalTemplate = \''.$itemModalTemplate.'\';
 const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
-const isEditor = '.$isEditor.';
+const isEditor = '.$hasPermissions.';
 let rarity = '.$rarity.';
 let category = '.$category.';
 let search = document.getElementById("search").value;
-'.file_get_contents(__DIR__.'/wert.js').'
+'.file_get_contents('wert.js').'
 </script>';
