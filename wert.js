@@ -198,6 +198,7 @@ async function itemModal(e){
 
 	iModal.innerHTML = itemModalTemplate;
 	iModal.children[0].innerHTML = this.innerHTML;
+
 	if(isEditor){
 		iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten">');
 		document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
@@ -216,105 +217,116 @@ async function itemModal(e){
 		});
 	}
 
-	const response = await fetch("?i="+this.id, {
+	await fetch('/?i=' + this.id, {
 		headers: {
 			'X-Requested-With': 'XMLHttpRequest'
-		}
-	});
+		}})
+		.then(response => response.json())
+		.then(data => {
+			//Box 1
+			var replace = `<div class="col">Umlauf</div>
+			<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
+			<div class="w-100"></div>
+			<div class="col">Aufrufe</div>
+			<div class="col">${data.info.views}</div>
+			<div class="w-100"></div>`;
 
-	if(!response.ok){
-		console.error('item detail request failed');
-	}
-
-	const json = await response.json();
-
-	var replace = `
-	<div class="col">Umlauf</div>
-	<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
-	<div class="w-100"></div>
-	<div class="col">Aufrufe</div>
-	<div class="col">${json.info.views}</div>
-	<div class="w-100"></div>`;
-
-	if(json.info.timestamp_release !== 0) {
-		replace += `<div class="col">Release</div>
-		<div class="col">${dateFormat(json.info.timestamp_release, {day: 'numeric', month: 'long', year: 'numeric'})}</div>
-		<div class="w-100"></div>`;
-	}
-
-	replace += `<div class="col">Item Name</div>
-	<div class="col">${this.id}</div>`;
-
-	iModal.children[1].innerHTML = replace;
-
-	iModal.children[2].innerText = json.info.longdesc != null ? json.info.longdesc: " ";
-
-	if(json.owners.length >= 1) {
-		iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
-		json.owners.forEach(owner => {
-			let img = document.createElement('img');
-			img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
-			img.title = owner.username + ' ' + owner.c + 'x';
-			img.loading = "lazy";
-			iModal.children[4].appendChild(img);
-			new bootstrap.Tooltip(img);
-		});
-	} else {
-		iModal.children[4].remove();
-	}
-
-	if(json.changes.length >= 1) {
-		iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
-		let labels = [json.info.timestamp_release === 0 ? 'Release' : dateFormat(json.info.timestamp_release)], points = [];
-		let previousTimestamp = -1;
-		json.changes.forEach(change => {
-			points.push(change.old_price);
-			if(previousTimestamp > -1){
-				labels.push(dateFormat(change.timestamp));
+			if(data.info.timestamp_release !== 0) {
+				replace += `<div class="col">Release</div>
+				<div class="col">${dateFormat(data.info.timestamp_release, {day: 'numeric', month: 'long', year: 'numeric'})}</div>
+				<div class="w-100"></div>`;
 			}
-			previousTimestamp = change.timestamp;
-		});
-		points.push(json.info.price < 0 ? 0: json.info.price);
-		labels.push(dateFormat(previousTimestamp));
-		new Chart("chart", {
-			type: "line",
-			data: {
-				labels: labels,
-				datasets: [{
-					data: points,
-					borderColor: "#db9f21",
-					fill: false
-				}]
-			},
-			options: {
-				plugins: {
-					legend: {
-						display: false
-					},
-					tooltip: {
-						callbacks: {
-							label: function(context) {
-								if(context.parsed.y === 0) {
-									return 'Unbekannt';
-								} else {
-									const fullnumber = Intl.NumberFormat('de-DE').format(context.parsed.y);
-									const shortnumber = Intl.NumberFormat('de-DE', {
-										notation: "compact",
-										maximumFractionDigits: 1
-									}).format(context.parsed.y);
 
-									return shortnumber + " (" + fullnumber + ")";
+			replace += `<div class="col">Item Name</div><div class="col">${this.id}</div>`;
+
+			iModal.children[1].innerHTML = replace;
+
+			// Box 2
+			iModal.children[2].innerText = data.info.longdesc != null ? data.info.longdesc: " ";
+
+			// Box 3
+			if(data.owners.length >= 1) {
+				iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+data.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
+				data.owners.forEach(owner => {
+					let img = document.createElement('img');
+					img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
+					img.title = owner.username + ' ' + owner.c + 'x';
+					img.loading = "lazy";
+					iModal.children[4].appendChild(img);
+					new bootstrap.Tooltip(img);
+				});
+			} else {
+				iModal.children[4].remove();
+			}
+
+			// Box 4
+			if(data.changes.length >= 1) {
+				iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
+				let labels = [data.info.timestamp_release === 0 ? 'Release' : dateFormat(data.info.timestamp_release)], points = [];
+				let previousTimestamp = -1;
+
+				data.changes.forEach(change => {
+					points.push(change.old_price);
+					if(previousTimestamp > -1){
+						labels.push(dateFormat(change.timestamp));
+					}
+					previousTimestamp = change.timestamp;
+				});
+
+				points.push(data.info.price < 0 ? 0: data.info.price);
+				labels.push(dateFormat(previousTimestamp));
+
+				//Chart.js
+				new Chart("chart", {
+					type: "line",
+					data: {
+						labels: labels,
+						datasets: [{
+							data: points,
+							borderColor: "#db9f21",
+							fill: false
+						}]
+					},
+					options: {
+						plugins: {
+							legend: {
+								display: false
+							},
+							tooltip: {
+								callbacks: {
+									label: function(context) {
+										if(context.parsed.y === 0) {
+											return 'Unbekannt';
+										} else {
+											const fullnumber = Intl.NumberFormat('de-DE').format(context.parsed.y);
+											const shortnumber = Intl.NumberFormat('de-DE', {
+												notation: "compact",
+												maximumFractionDigits: 1
+											}).format(context.parsed.y);
+
+											return shortnumber + " (" + fullnumber + ")";
+										}
+									}
 								}
 							}
-						}
+						},
+						locale: 'de-DE'
 					}
-				},
-				locale: 'de-DE'
+				});
+			} else {
+				iModal.children[3].remove();
 			}
+		}).catch((error) => {
+			iModal.children[1].innerHTML = `
+			<div class="col">Item Name</div>
+			<div class="col">${this.id}</div>`;
+
+			iModal.children[2].innerText = 'Fehler: Möbel konnte nicht gefunden werden.'
+			console.error('Item: '+this.id+' - Error: '+error);
+
+			iModal.children[4].remove()
+			iModal.children[3].remove();
 		});
-	} else {
-		iModal.children[3].remove();
-	}
 }
 function dateFormat(timestamp, options){
 	return new Date(timestamp*1000).toLocaleDateString('de-DE', options);
