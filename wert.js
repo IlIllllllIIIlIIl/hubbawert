@@ -237,16 +237,8 @@ async function itemModal(e){
 	<div class="w-100"></div>`;
 
 	if(json.info.timestamp_release !== 0) {
-		const date = new Date(json.info.timestamp_release * 1000);
-		const options = {
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric'
-		};
-		const germanDate = date.toLocaleDateString('de-DE', options);
-
 		replace += `<div class="col">Release</div>
-		<div class="col">${germanDate}</div>
+		<div class="col">${dateFormat(json.info.timestamp_release, {day: 'numeric', month: 'long', year: 'numeric'})}</div>
 		<div class="w-100"></div>`;
 	}
 
@@ -324,8 +316,8 @@ async function itemModal(e){
 		iModal.children[3].remove();
 	}
 }
-function dateFormat(timestamp){
-	return new Date(timestamp*1000).toLocaleDateString();
+function dateFormat(timestamp, options){
+	return new Date(timestamp*1000).toLocaleDateString('de-DE', options);
 }
 function setTooltips(){
 	document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
