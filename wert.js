@@ -221,23 +221,39 @@ async function itemModal(e){
 			'X-Requested-With': 'XMLHttpRequest'
 		}
 	});
+
 	if(!response.ok){
 		console.error('item detail request failed');
 	}
+
 	const json = await response.json();
-	iModal.children[1].innerHTML = `
+
+	var replace = `
 	<div class="col">Umlauf</div>
 	<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
 	<div class="w-100"></div>
 	<div class="col">Aufrufe</div>
 	<div class="col">${json.info.views}</div>
-	<div class="w-100"></div>
-	<div class="col">Kategorie</div>
-	<div class="col">${json.info.category} <img src="/_dat/serve/img/wert/furni/${json.info.category_image}" width="16" height="16"></div>
-	<div class="w-100"></div>
-	<div class="col"></div>
+	<div class="w-100"></div>`;
+
+	if(json.info.timestamp_release !== 0) {
+		const date = new Date(json.info.timestamp_release * 1000);
+		const options = {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		};
+		const germanDate = date.toLocaleDateString('de-DE', options);
+
+		replace += `<div class="col">Release</div>
+		<div class="col">${germanDate}</div>
+		<div class="w-100"></div>`;
+	}
+
+	replace += `<div class="col">Item Name</div>
 	<div class="col">${this.id}</div>`;
-	console.log(json);
+
+	iModal.children[1].innerHTML = replace;
 
 	iModal.children[2].innerText = json.info.longdesc != null ? json.info.longdesc: " ";
 
@@ -266,7 +282,7 @@ async function itemModal(e){
 			}
 			previousTimestamp = change.timestamp;
 		});
-		points.push(json.info.price);
+		points.push(json.info.price < 0 ? 0: json.info.price);
 		labels.push(dateFormat(previousTimestamp));
 		new Chart("chart", {
 			type: "line",
