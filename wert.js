@@ -295,7 +295,29 @@ async function itemModal(e){
 				}]
 			},
 			options: {
-				plugins: { legend: { display: false } }
+				plugins: {
+					legend: {
+						display: false
+					},
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								if(context.parsed.y === 0) {
+									return 'Unbekannt';
+								} else {
+									const fullnumber = Intl.NumberFormat('de-DE').format(context.parsed.y);
+									const shortnumber = Intl.NumberFormat('de-DE', {
+										notation: "compact",
+										maximumFractionDigits: 1
+									}).format(context.parsed.y);
+
+									return shortnumber + " (" + fullnumber + ")";
+								}
+							}
+						}
+					}
+				},
+				locale: 'de-DE'
 			}
 		});
 	} else {
