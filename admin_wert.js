@@ -18,7 +18,7 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
 
                     data.forEach(function (option) {
                         const optionElement = document.createElement("option");
-                        optionElement.value = option;
+                        optionElement.value = option['item_name'];
                         dataList.appendChild(optionElement);
                     });
 

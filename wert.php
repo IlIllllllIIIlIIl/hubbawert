@@ -107,12 +107,11 @@ if(isset($_GET['c'])) {
 }
 
 if(isset($_GET['itemName']) && $isAllowed) {
-    if (!$isAjaxClient)
-        pageNotFound();
+    //Requested to be used for furnidata
 
     $search = filter_input(INPUT_GET, 'itemName', FILTER_SANITIZE_STRING);
 
-    $sql = 'SELECT f.item_name
+    $sql = 'SELECT f.public_name, f.item_name
     FROM 
         furniture f
     LEFT JOIN 
@@ -126,10 +125,11 @@ if(isset($_GET['itemName']) && $isAllowed) {
     $select->execute(['%' . $search . '%']);
 
     $options = [];
-    $options = $select->fetchAll(PDO::FETCH_COLUMN, 0);
+    $options = $select->fetchAll(PDO::FETCH_ASSOC);
     header('Content-Type: application/json');
     exit(json_encode($options));
 }
+
 
 $rarity = isset($_GET['r']) ? intval($_GET['r']) : 0;
 
@@ -460,7 +460,7 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
             <div class="admin justify-content-between">
                 <div class="row left box col-md-8">
                     <h3 style="text-align:center">Informationen</h3>
-                    <div class="row box col-md-5 align-self-center"><span>Item Name<br>(z.b. <a href="https://client.hubba.cc/furnidata.txt" target="_blank">hier</a>)</span></div>
+                    <div class="row box col-md-5 align-self-center"><span>Item Name<br>(z.b. <a href="?itemName" target="_blank">hier</a>)</span></div>
                     <div class="row box col-md-7">
                         <input list="internalItemName" value="'.$itemName.'" id="itemName" class="form-control" name="itemName" type="text" placeholder="Item Name (z.B. dragonpillar*4)" autocomplete="off" required>
                         <datalist id="internalItemName"></datalist>
