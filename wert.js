@@ -1,3 +1,14 @@
+let searchNameWait, searchName = "",
+	searchCatWait, searchCat = "",
+	appliedSorting = 0,
+	category = 0;
+
+let xmlheader = {
+	headers: {
+		'X-Requested-With': 'XMLHttpRequest'
+	}
+}
+
 window.onscroll = () => {
 	const small = window.innerWidth < 768;
 	if(!small){
@@ -12,24 +23,21 @@ window.onscroll = () => {
 };
 
 
-let searchNameWait, searchName = "", searchCatWait, searchCat = "", itemNameWait, itemName = "";
 document.getElementById("search").addEventListener("keyup", function(event){
+	appliedSorting = 0;
 	if (searchName !== this.value && this.value.length > 0) {
 		searchName = this.value;
 		clearTimeout(searchNameWait);
 		searchNameWait = setTimeout(filterResults, 500);
 	}
 });
+
 document.getElementById("catSearch").addEventListener("keyup", function(event){
 	if (searchCat !== this.value && this.value.length > 0) {
 		searchCat = this.value;
 		clearTimeout(searchCatWait);
 		searchCatWait = setTimeout(function () {
-			fetch('?s=' + encodeURIComponent(searchCat), {
-				headers: {
-					'X-Requested-With': 'XMLHttpRequest'
-				}
-			})
+			fetch('?c=' + encodeURIComponent(searchCat), xmlheader)
 				.then(response => response.json())
 				.then(data => {
 					const categoryList = document.getElementById('categoryList');
@@ -38,11 +46,14 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 					data.forEach(cat => {
 						const catElement = document.createElement('div');
 						catElement.className = 'col-md-6';
-						catElement.innerHTML = `
-                        <a href="${cat.url}" class="btn btn-dark btn-sm w-100 mb-2" role="button">
-                            ${cat.image ? `<img src="${cat.image}" width="16" height="16" loading="lazy">&nbsp;` : ''}
-                            ${cat.name}
-                        </a>`;
+
+						catElement.innerHTML = `<a href="javascript:void(0);" 
+							id="categoryButton_${cat.id}" 
+						   	class="btn btn-dark btn-sm w-100 mb-2 ${category !== 0 && category === cat.id ? 'selected' : ''}" 
+						   	onclick="sortByCategory(${cat.id})" role="button">
+						   	${cat.image ? `<img src="${cat.image}" width="16" height="16" loading="lazy">&nbsp;` : ''}
+						   	${cat.name}
+						</a>`
 						categoryList.appendChild(catElement);
 					});
 				})
@@ -50,33 +61,49 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 	}
 });
 
-document.getElementById("itemName").addEventListener("keyup", function() {
-	if (itemName !== this.value && this.value.length > 0) {
-		itemName = this.value;
-		clearTimeout(itemNameWait);
-		itemNameWait = setTimeout(function () {
-			fetch('?itemName=' + encodeURIComponent(itemName), {
-				headers: {
-					'X-Requested-With': 'XMLHttpRequest'
-				}
-			})
-				.then(response => response.json())
-				.then(data => {
-					const dataList = document.getElementById("internalItemName");
-					dataList.innerHTML = '';
+function sortByCategory(value) {
+	const modal = bootstrap.Modal.getInstance(document.getElementById('categories'));
+	const id = value === 'reset' ? 0 : parseInt(value);
 
-					data.forEach(function(option) {
-						const optionElement = document.createElement("option");
-						optionElement.value = option;
-						dataList.appendChild(optionElement);
-					});
-				})
-		}, 500);
+	if (isNaN(id) || modal === null) return;
+
+	const toggle = document.getElementById('toggleCategory');
+	const button = document.getElementById('selectCategory');
+
+	if (id !== 0) {
+		toggle.style.display = 'block';
+		button.style.paddingLeft = '34px';
+
+		const newCategoryButton = document.getElementById('categoryButton_' + id);
+
+		if (newCategoryButton)
+			newCategoryButton.classList.toggle('selected');
+
+		if (typeof category !== 'undefined' && category !== 0) {
+			const oldCategoryButton = document.getElementById('categoryButton_' + category);
+
+			if (oldCategoryButton)
+				oldCategoryButton.classList.toggle('selected');
+		}
+	} else {
+		toggle.style.display = 'none';
+		button.style.paddingLeft = '0';
+
+		if (typeof category !== 'undefined' && category !== 0) {
+			const oldCategoryButton = document.getElementById('categoryButton_' + category);
+			if (oldCategoryButton)
+				oldCategoryButton.classList.toggle('selected');
+		}
 	}
-});
 
+	category = id;
 
+	toggle.style.display = category !== 0 ? 'block' : 'none';
+	button.style.paddingLeft = category !== 0 ? '34px' : '0';
 
+	filterResults();
+	modal.hide();
+}
 
 document.getElementById("raritynav").addEventListener("click", event => {
 	event.preventDefault();
@@ -86,8 +113,6 @@ document.getElementById("raritynav").addEventListener("click", event => {
 	filterResults();
 });
 
-
-let appliedSorting = 0;
 document.querySelector(".custom-select").addEventListener("change", event => {
 	let itemArray = null;
 	appliedSorting = parseInt(event.target.value);
@@ -123,7 +148,7 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 	filterResults(itemArray);
 });
 function filterResults(sortedItems = null) {
-	if(appliedSorting > 9 || appliedSorting < 1) return;
+	if(appliedSorting > 10 || appliedSorting < 0) return;
 
 	let i = 0;
 	const container = document.querySelector(".rare");
@@ -155,7 +180,7 @@ function filterResults(sortedItems = null) {
 
 	setTooltips();
 }
-function makeEditable(selector, name, useFirstChild = false){
+async function makeEditable(selector, name, useFirstChild = false, type = 1){
 	let element = document.querySelector(selector);
 
 	if (!element) {
@@ -163,11 +188,48 @@ function makeEditable(selector, name, useFirstChild = false){
 		return;
 	}
 
-	let input = document.createElement('input');
+	let input;
 
-	input.type = 'text';
-	input.value = element.innerText.trim();
-	input.required = true;
+	if (type === 1) {
+		input = document.createElement('input');
+		input.type = 'text';
+		input.value = element.innerText.trim();
+	} else if(type === 2){
+		input = document.createElement('textarea');
+		input.value = element.innerText.trim();
+		input.style.width = '100%';
+		input.style.height = '100%';
+		input.style.resize = 'none';
+	} else if(type === 3){
+		input = document.createElement('select');
+		let selected = element.innerText.trim();
+		let options = [];
+
+		await fetch('?s', {
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		})
+			.then(response => response.json())
+			.then(data => {
+				data.forEach(option => {
+					options.push({value: option.id, text: option.name})
+				})
+			});
+
+		options.forEach(option => {
+			let optionElement = document.createElement('option');
+			optionElement.value = option.value;
+			optionElement.text = option.text;
+
+			if(optionElement.text === selected) {
+				console.log(true)
+				optionElement.selected = true;
+			}
+			input.add(optionElement);
+		});
+	}
+
 
 	if (name) {
 		input.name = name;
@@ -192,7 +254,6 @@ async function itemModal(e){
 
 	if (lastModalId === itemId) return false;
 
-
 	lastModalId = itemId;
 	lastModal = iModal;
 
@@ -211,33 +272,36 @@ async function itemModal(e){
 				<input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
 				</form>`;
 				makeEditable('#details .item > :nth-child(2)', 'price');
-				makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
-				makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
+				makeEditable('#details .modal-body > div:nth-child(2) > :nth-child(2)', 'category', false, 3);
+				makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName', true);
+				makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true, 2);
 			}
 		});
 	}
 
-	await fetch('/?i=' + this.id, {
-		headers: {
-			'X-Requested-With': 'XMLHttpRequest'
-		}})
+	await fetch('?i=' + this.id, xmlheader)
 		.then(response => response.json())
 		.then(data => {
 			//Box 1
-			var replace = `<div class="col">Umlauf</div>
-			<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
+			let replace = `
+			<div class="col">Kategorie</div>
+			<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy"><a href="?c=${data.info.category_name}">${data.info.category_name}</a></div>
 			<div class="w-100"></div>
-			<div class="col">Aufrufe</div>
-			<div class="col">${data.info.views}</div>
+			<div class="col">Umlauf</div>
+			<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
 			<div class="w-100"></div>`;
 
-			if(data.info.timestamp_release !== 0) {
-				replace += `<div class="col">Release</div>
+			if(data.info.timestamp_release !== 0 && data.info.timestamp_release !== null) {
+				replace += `<div class="col">Veröffentlichung</div>
 				<div class="col">${dateFormat(data.info.timestamp_release, {day: 'numeric', month: 'long', year: 'numeric'})}</div>
 				<div class="w-100"></div>`;
 			}
 
-			replace += `<div class="col">Item Name</div><div class="col">${this.id}</div>`;
+			replace += `<div class="col">Aufrufe</div>
+			<div class="col">${data.info.views}</div>
+			<div class="w-100"></div>
+			<div class="col">Item Name</div>
+			<div class="col">${this.id}</div>`;
 
 			iModal.children[1].innerHTML = replace;
 
@@ -256,13 +320,13 @@ async function itemModal(e){
 					new bootstrap.Tooltip(img);
 				});
 			} else {
-				iModal.children[4].remove();
+				iModal.removeChild(iModal.lastElementChild);
 			}
 
 			// Box 4
 			if(data.changes.length >= 1) {
 				iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
-				let labels = [data.info.timestamp_release === 0 ? 'Release' : dateFormat(data.info.timestamp_release)], points = [];
+				let labels = [(data.info.timestamp_release === 0 && data.info.timestamp_release !== null) ? dateFormat(data.info.timestamp_release) : 'Veröffentlicht'], points = [];
 				let previousTimestamp = -1;
 
 				data.changes.forEach(change => {
@@ -317,15 +381,14 @@ async function itemModal(e){
 				iModal.children[3].remove();
 			}
 		}).catch((error) => {
-			iModal.children[1].innerHTML = `
-			<div class="col">Item Name</div>
-			<div class="col">${this.id}</div>`;
+			iModal.children[1].innerHTML = `<div class="col">Item Name</div><div class="col">${this.id}</div>`;
 
-			iModal.children[2].innerText = 'Fehler: Möbel konnte nicht gefunden werden.'
+			iModal.children[2].innerText = 'Fehler'
 			console.error('Item: '+this.id+' - Error: '+error);
 
-			iModal.children[4].remove()
-			iModal.children[3].remove();
+			for (let i = 0; i < 2; i++) {
+				if (iModal.lastElementChild) iModal.removeChild(iModal.lastElementChild);
+			}
 		});
 }
 function dateFormat(timestamp, options){
