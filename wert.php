@@ -325,13 +325,16 @@ $cssappendix .= '</style>';
 
 //Admin View
 if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
+    $defaultImage = 'default.png';
+    $uploadDir = $core->path.'/_dat/serve/img/wert/furni/';
+    $errors = array();
+
     //Inputs
     $itemName = '';
     $itemPrice = '';
     $itemCategory = -1;
     $itemDesc = '';
-    $uploadDir = $core->path.'/_dat/serve/img/wert/furni/';
-    $errors = array();
+    $itemImage = $defaultImage;
 
     // Notice @ Tobi - While this is not really necessary, I made this option, so you can disable upload as fast as possible if an exploit is being found or the server is overwhelmed.
     $uploadEnabled = true;
@@ -412,7 +415,7 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
             isset($itemPrice) && is_numeric($itemPrice) &&
             isset($itemCategory) && is_numeric($itemCategory) &&
             !empty($itemDesc) &&
-            !empty($itemImage) &&
+            !empty($itemImage) && $itemImage != $defaultImage &&
             $isAllowed) {
 
             $insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,price,buyprice,timestamp_release,category,image) VALUES (?,?,?,?,CURRENT_TIMESTAMP,?,?)');
@@ -497,10 +500,10 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
                 <div class="row box col-md-4">
                     <h3 style="text-align:center">Bild</h3>
                     <div class="box item">
-                        <img style="bottom:0;position: relative;" id="test" loading="lazy" src="_dat/serve/img/wert/furni/'.($itemImage ? $itemImage : '').'">
+                        <img style="bottom:0;position: relative;" id="test" loading="lazy" src="_dat/serve/img/wert/furni/'.($itemImage != $defaultImage ? $itemImage : '').'">
                     </div>
                     <input type="hidden" name="imagePath" value="'.$itemImage.'">
-                    <input style="text-align:center; height: 39px;" class="form-control" type="file" name="file" accept="image/*" '.($uploadEnabled && !$itemImage ? 'required' : '').'>
+                    <input style="text-align:center; height: 39px;" class="form-control" type="file" name="file" accept="image/*" '.($uploadEnabled && $itemImage == $defaultImage ? 'required' : '').'>
                 </div>
             </div>
             <div class="col-md-12">
