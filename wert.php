@@ -418,7 +418,7 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
             !empty($itemImage) &&
             $isAllowed) {
 
-            $insert = $core->m->prepare('INSERT INTO furnaiture_rare_details (item_name,longdesc,price,buyprice,timestamp_release,category,image) VALUES (?,?,?,?,CURRENT_TIMESTAMP,?,?)');
+            $insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,price,buyprice,timestamp_release,category,image) VALUES (?,?,?,?,CURRENT_TIMESTAMP,?,?)');
             $data = [
                 $itemName,
                 $itemDesc,
@@ -435,11 +435,10 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
                 exit;
             } catch(PDOException $e) {
                 $string = 'Datenbank Fehler: Fehler <b>Code #'.$e->getCode().'</b>';
-                if(!$isDev) {
+                if(!$isDev)
                     $string .= '<br>'.$e->getMessage().'<br>'.$e->getTraceAsString();
-                } else {
+                else
                     $string .= '<br>Melde dich bei einem Bluesurfer (Discord ipandey) mit einem <b><u>Screenshot</u></b> der Seite.';
-                }
 
                 $errors[] = $string;
             }
