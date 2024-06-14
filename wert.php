@@ -1,10 +1,7 @@
 <?php
 // Start Internal Mock - Remove on live servers
-
 include_once 'mock.php';
 $core = new Core();
-$udetails = ['îd' => 22457];
-
 // End Mock
 
 
@@ -17,7 +14,7 @@ $isAdmin = isset($u_details['id']) && in_array($u_details['id'], $adminPeople) ?
 $isDev = isset($u_details['id']) && in_array($u_details['id'], $devPeople) ? 1 : 0;
 
 // General Attributes
-$maxItemsToShow = 6;
+$maxItemsToShow = 50;
 $isAjaxClient = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
 function pageNotFound(): void {
@@ -523,13 +520,13 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
         <div class="col-md-3">
             <select class="custom-select form-control" name="sort" autocomplete="off">
                 <option value="1" selected>🟢 Neu hinzugefügt</option>
-                <option value="2">📌 Preisänderungen</option>
+                <option value="2">📈 Preisänderungen</option>
                 <option value="3">↑ Seltenheit aufsteigend</option>
                 <option value="4">↓ Seltenheit absteigend</option>
                 <option value="5">➚ Preis aufsteigend</option>
                 <option value="6">➘ Preis absteigend</option>
-                <option value="7">🔀 Aufrufe aufsteigend</option>
-                <option value="8">🔀 Aufrufe absteigend</option>
+                <option value="7">🔼 Aufrufe aufsteigend</option>
+                <option value="8">🔽 Aufrufe absteigend</option>
                 <option value="9">🔀 Zufällig</option>
             </select>
         </div>
