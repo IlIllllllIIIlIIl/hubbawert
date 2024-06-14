@@ -15,7 +15,7 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
                 .then(data => {
                     const dataList = document.getElementById("internalItemName");
                     dataList.innerHTML = '';
-                    console.log(data)
+
                     data.forEach(function (option) {
                         const optionElement = document.createElement("option");
                         optionElement.value = option;
