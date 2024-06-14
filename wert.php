@@ -111,7 +111,7 @@ if(isset($_GET['itemName']) && $isAllowed) {
 
     $search = filter_input(INPUT_GET, 'itemName', FILTER_SANITIZE_STRING);
 
-    $sql = 'SELECT f.public_name, f.item_name
+    $sql = 'SELECT f.item_name, f.public_name, f.public_desc
     FROM 
         furniture f
     LEFT JOIN 
