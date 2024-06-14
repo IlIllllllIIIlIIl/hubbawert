@@ -119,7 +119,7 @@ if(isset($_GET['itemName']) && $isAllowed) {
     WHERE 
         d.item_name IS NULL AND f.item_name LIKE ?
     ORDER BY 
-        f.item_name ASC LIMIT 15';
+        f.item_name ASC '.($_GET['itemName'] == '' ? '':'LIMIT 15');
 
     $select = $core->m->prepare( $sql);
     $select->execute(['%' . $search . '%']);
