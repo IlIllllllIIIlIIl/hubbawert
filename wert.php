@@ -453,6 +453,11 @@ $cssappendix .= '<style>
 .custom-select{
 	text-align:center
 }
+.container > div.row:nth-child(2) {
+	margin-top: -11px !important;
+	border-top-left-radius: 0 !important;
+	border-top-right-radius: 0 !important;
+}
 
 img.rarity{
 	position:absolute;

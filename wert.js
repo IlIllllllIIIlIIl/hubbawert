@@ -285,6 +285,7 @@ async function itemModal(){
 		.then(data => {
 			/*Box 1*/
 			let replace = '';
+			const isLegalTime = (data.info.timestamp_release !== null && parseInt(data.info.timestamp_release) !== 0);
 
 			if(data.info.category_name !== null) {
 				replace += `<div class="col">Kategorie</div>
@@ -295,7 +296,7 @@ async function itemModal(){
 			<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
 			<div class="w-100"></div>`;
 
-			if(data.info.timestamp_release !== 0 && data.info.timestamp_release !== null) {
+			if(isLegalTime) {
 				replace += `<div class="col">Veröffentlichung</div>
 				<div class="col">${dateFormat(data.info.timestamp_release)}</div>
 				<div class="w-100"></div>`;
@@ -330,7 +331,7 @@ async function itemModal(){
 			/*Box 4*/
 			if(data.changes.length >= 1) {
 				iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
-				let labels = [(data.info.timestamp_release === 0 || data.info.timestamp_release !== null) ? dateFormat(data.info.timestamp_release) : 'Veröffentlicht'], points = [];
+				let labels = [(isLegalTime) ? dateFormat(data.info.timestamp_release) : 'Veröffentlicht'], points = [];
 				let previousTimestamp = -1;
 
 				data.changes.forEach(change => {
