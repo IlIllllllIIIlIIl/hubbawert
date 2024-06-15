@@ -210,12 +210,12 @@ if(isset($_GET['test'])) {
     foreach($result as $r) {
         echo $r['id'] . '<br>';
     }
-    $data = $core->m->prepare('SELECT * FROM items');
+    /*$data = $core->m->prepare('SELECT * FROM items');
     $data->execute();
     $result2 = $data->fetchAll(PDO::FETCH_ASSOC);
     foreach($result2 as $r2) {
         print($r2);
-    }
+    }*/
 
 }
 
