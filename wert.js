@@ -43,8 +43,6 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 					const categoryList = document.getElementById('categoryList');
 					categoryList.innerHTML = '';
 
-					console.log(data);
-
 					data.forEach(cat => {
 						const catElement = document.createElement('div');
 						catElement.className = 'col-md-6';
@@ -152,6 +150,7 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 });
 function filterResults(sortedItems = null) {
 	if(appliedSorting > 10 || appliedSorting < 0) return;
+	console.log(category);
 
 	let i = 0;
 	const container = document.querySelector(".rare");
@@ -162,6 +161,7 @@ function filterResults(sortedItems = null) {
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
 		const matchCategory = category > 0 && item[7] !== category;
+		console.log(matchCategory);
 		const matchRarity = rarity > 0 && item[1] !== rarity;
 		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
 		const sortingHelper = [2,5,6].includes(appliedSorting) && item[4] === 'Unbekannt';
@@ -285,10 +285,13 @@ async function itemModal(){
 		.then(response => response.json())
 		.then(data => {
 			/*Box 1*/
-			let replace = `
-			<div class="col">Kategorie</div>
-			<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy"><a href="?c=${data.info.category_name}">${data.info.category_name}</a></div>
-			<div class="w-100"></div>
+			let replace = '';
+
+			if(data.info.category_name !== null) {
+				replace += `<div class="col">Kategorie</div>
+				<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy">${data.info.category_name}</div>`;
+			}
+			replace += `<div class="w-100"></div>
 			<div class="col">Umlauf</div>
 			<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
 			<div class="w-100"></div>`;
