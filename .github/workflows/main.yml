@@ -11,9 +11,15 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        server: seye.lima-ftp.de
-        username: seye
+        server: hosting205231.a2e76.netcup.net
+        username: hubba-dev-pages
         password: ${{ secrets.ftp_password }}
         protocol: ftps
-        server-dir: /seye.lima-city.de/hubba-dev/_inc/_th/sa/
-        dry-run: true
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/.github*
+          **/.github*/**
+          .gitignore
+          LICENSE
+          README.md
