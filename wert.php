@@ -208,13 +208,13 @@ if(isset($_GET['test'])) {
     $rankPeople->execute();
     $result = $rankPeople->fetchAll(PDO::FETCH_ASSOC);
     foreach($result as $r) {
-        echo $r.'<br>';
+        echo $r['id'] . '<br>';
     }
     $data = $core->m->prepare('SELECT * FROM items');
     $data->execute();
     $result2 = $data->fetchAll(PDO::FETCH_ASSOC);
-    foreach($result2 as $r) {
-        echo $r.'<br>';
+    foreach($result2 as $r2) {
+        echo $r2['userid'];
     }
 
 }
