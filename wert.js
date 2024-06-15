@@ -149,15 +149,12 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 });
 function filterResults(sortedItems = null) {
 	if(appliedSorting > 10 || appliedSorting < 0) return;
-	console.log(category);
 
 	let i = 0;
 	const container = document.querySelector(".rare");
 	container.replaceChildren();
 
 	const itemsToDisplay = sortedItems || items;
-
-	console.log(itemsToDisplay);
 
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
@@ -167,8 +164,6 @@ function filterResults(sortedItems = null) {
 		const matchRarity = rarity > 0 && item[1] !== rarity;
 		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
 		const sortingHelper = [2,5,6].includes(appliedSorting) && item[4] === 'Unbekannt';
-
-		console.log('---');
 
 		if (!(matchRarity || matchCategory || matchSearchName || sortingHelper)) {
 			let itemToAdd = itemTemplate;

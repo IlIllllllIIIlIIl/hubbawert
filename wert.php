@@ -94,8 +94,8 @@ function readCacheFile($c, $items): array {
 
 //Item API
 if(isset($_GET['i'])) {
-    if (!$isAjaxClient)
-        pageNotFound();
+    /*if (!$isAjaxClient)
+        pageNotFound();*/
 
     $response = [
         'info' =>
@@ -589,7 +589,7 @@ $pagecontent .= '<div class="container">
         <a href="javascript:void(0);" onclick="sortByCategory(\'reset\')" class="btn btn-dark" style="padding-top:6px; display:none;" id="toggleCategory">❌</a>
     </div>
 </div>
-<div class="row box rarity">
+<div class="row box">
     <div class="col-md-12 btn-group" role="group" id="raritynav">
         <a role="button" class="btn btn-dark active" data-r="0">Alle</a>
         <a role="button" class="btn btn-dark" data-r="1">Sehr häufig</a>
