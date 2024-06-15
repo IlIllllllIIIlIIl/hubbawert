@@ -153,7 +153,7 @@ if(isset($_GET['c'])) {
     /*if (!$isAjaxClient)
         pageNotFound();*/
 
-    $search = filter_input(INPUT_GET, 'c', FILTER_SANITIZE_STRING);
+    $search = filter_input(INPUT_GET, 'c', FILTER_SANITIZE_STRIPPED);
 
     $sql = 'SELECT id, name, image
     FROM
@@ -179,7 +179,7 @@ if(isset($_GET['c'])) {
 
 //Furni API
 if(isset($_GET['itemName']) && $isAllowed) {
-    $search = filter_input(INPUT_GET, 'itemName', FILTER_SANITIZE_STRING);
+    $search = filter_input(INPUT_GET, 'itemName', FILTER_SANITIZE_STRIPPED);
 
     $sql = 'SELECT f.item_name, f.public_name, f.public_desc
     FROM 
@@ -546,7 +546,7 @@ img.rarity.l0 {
 .row.box.alert span {
     text-align:center;
 }
-#add .modal-body > div:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(6)) {
+#addItem .modal-body > div:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(6)) {
     border: 1px solid #2c2e3c;
     padding: 12px;
 }
