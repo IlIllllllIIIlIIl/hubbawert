@@ -207,7 +207,6 @@ if(isset($_GET['itemName']) && $isAllowed) {
 }
 
 //Admin Tools
-
 if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
     header('Content-Type: application/json');
     // Notice @ Tobi - While this is not really necessary, I made this option, so you can disable upload as fast as possible if an exploit is being found or the server is overwhelmed.
@@ -568,8 +567,7 @@ $cssappendix .= '</style>';
 
 // Main page
 $items = (file_exists($cachePath) && time() - filemtime($cachePath) <= 86400) ?
-    json_decode(file_get_contents($cachePath), true):createNewCacheFile($core, $cachePath);
-
+    json_decode(file_get_contents($cachePath), true) : createNewCacheFile($core, $cachePath);
 
 $itemArray = readCacheFile($core, $items);
 
@@ -608,8 +606,8 @@ $pagecontent .= '<div class="container">
     </div>
 </div>';
 
-//Admin Tools
-if($isAllowed) $pagecontent .= '<div class="col-md-12 btn-group alert-danger"><button type="button" id="addItem" class="form-control btn btn-danger"> Rare hinzufügen </button></div>';
+if($isAllowed)
+    $pagecontent .= '<div class="col-md-12 btn-group alert-danger"><button type="button" id="addItem" class="form-control btn btn-danger"> Rare hinzufügen </button></div>';
 
 
 $pagecontent .= '<div class="row rare justify-content-between">';
@@ -668,6 +666,7 @@ $categoryModalTemplate = '<div class="modal fade" id="categories" tabindex="-1">
     </div>
 </div>';
 
+//Populate Categories
 $select = $core->m->prepare('SELECT id,name,image FROM furniture_rare_categories ORDER BY name ASC');
 $select->execute();
 
@@ -680,7 +679,7 @@ $pagecontent .= str_replace('{categoryList}', $listcontent, $categoryModalTempla
 
 // Add item Modal
 if($isAllowed) {
-    $pagecontent .= '<div class="modal fade" id="add" tabindex="-1">
+    $pagecontent .= '<div class="modal fade" id="addItem" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content box">
             <div class="modal-header">
@@ -714,7 +713,7 @@ if($isAllowed) {
                         <div class="col-md-8">
                             <select name="itemCategory" class="form-control">
                                 <option value="0">Keine Kategorie</option>';
-                                //Populate Options
+                                //Populate Categories
                                 $sql = 'SELECT c.id, c.name, COUNT(d.id) AS count
                                                         FROM furniture_rare_categories c
                                                         LEFT JOIN furniture_rare_details d ON c.id = d.category
@@ -758,7 +757,6 @@ const avatarImager = \'' . $core->avatarImager . '\';
 const isEditor = ' . $isAllowed . ';
 let rarity = ' . $rarity . ';
 ' .file_get_contents(__DIR__.'/wert.js');
-if($isAllowed) {
+if($isAllowed)
     $jsappendix .= file_get_contents(__DIR__.'/wert_admin.js');
-}
 $jsappendix .= '</script>';

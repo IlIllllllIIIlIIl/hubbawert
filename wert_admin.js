@@ -8,7 +8,7 @@ const fileInput = document.querySelector('input[type="file"]'),
     imagePathElement = document.getElementById("imagePath");
 
 document.getElementById("itemName").addEventListener("keyup", function (e) {
-    if (itemName !== this.value && this.value.length > 0) {
+    if(itemName !== this.value && this.value.length > 0) {
         itemName = this.value;
         clearTimeout(itemNameWait);
         itemNameWait = setTimeout(function () {
@@ -36,6 +36,7 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
                     }
 
                 })
+                .catch((error) => console.error('Error: ', error))
         }, 500);
     }
 });
@@ -52,9 +53,7 @@ document.getElementById("itemPrice").addEventListener("keyup", function (e) {
 });
 
 fileInput.addEventListener('change', function (event) {
-
-    if (fileInput.files && fileInput.files[0]) {
-
+    if(fileInput.files && fileInput.files[0]) {
         const reader = new FileReader();
 
         reader.onload = function(e) {
@@ -77,16 +76,15 @@ fileInput.addEventListener('change', function (event) {
             };
         };
 
-
         reader.readAsDataURL(fileInput.files[0]);
     }
 });
 
-document.getElementById("addItem").addEventListener("click", () => new bootstrap.Modal(document.getElementById('add')).show());
+document.getElementById("addItem").addEventListener("click", () => new bootstrap.Modal(document.getElementById('addItem')).show());
 
 document.getElementById('addItemForm').addEventListener('submit', function(event) {
     event.preventDefault();
-    const modal = bootstrap.Modal.getInstance(document.getElementById('add'));
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addItem'));
     const form = event.target;
     const formData = new FormData(form);
 
@@ -100,11 +98,11 @@ document.getElementById('addItemForm').addEventListener('submit', function(event
         .then(data => {
             if(data['server_success'] === true) {
                 filterResults(data['items']);
-                if(modal !== null) modal.hide();
+                if(modal !== null)
+                    modal.hide();
                 //Note -- We have to wait out the fading animation
                 let endTime = Date.now();
                 let remainingTime = Math.max(Date.now() - endTime - startTime, 500);
-
                 setTimeout(() => modal.hide(), remainingTime);
             } else {
                 writeAlerts(data['errors'])
@@ -115,20 +113,20 @@ document.getElementById('addItemForm').addEventListener('submit', function(event
                 }
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error: ', error));
 });
 
 
 function responsive_feedback(err, type) {
-    if (type === 1)
-        if (!feedbacks.includes(err))
+    if(type === 1)
+        if(!feedbacks.includes(err))
             feedbacks.push(err);
-    else if (type === 2)
-        if (feedbacks.includes(err))
+    else if(type === 2)
+        if(feedbacks.includes(err))
             feedbacks = feedbacks.filter(item => item !== err);
 
 
-    if (feedbacks.length > 0) {
+    if(feedbacks.length > 0) {
         button.setAttribute('disabled', '');
         writeAlerts(feedbacks)
     } else {
