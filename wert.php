@@ -332,7 +332,7 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
 
             $items = [];
 
-            $insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,price,buyprice,category,image) VALUES (?,?,?,?,?,?)');
+            $insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,price,buyprice,timestamp_release,category,image) VALUES (?,?,?,?,time(),?,?)');
             $data = [
                 $itemName,
                 $itemDesc,
