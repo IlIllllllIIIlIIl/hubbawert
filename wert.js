@@ -38,13 +38,12 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 		clearTimeout(searchCatWait);
 		searchCatWait = setTimeout(function () {
 			fetch('?c=' + encodeURIComponent(searchCat), xmlheader)
-				.then(response => () => {
-					console.log(response.text());
-					return response.json();
-					})
+				.then(response => () => response.json())
 				.then(data => {
 					const categoryList = document.getElementById('categoryList');
 					categoryList.innerHTML = '';
+
+					console.log(data);
 
 					data.forEach(cat => {
 						const catElement = document.createElement('div');
