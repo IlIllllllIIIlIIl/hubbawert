@@ -161,15 +161,14 @@ function filterResults(sortedItems = null) {
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
 		console.log(item[0]);
+		console.log(category)
 		const matchCategory = category > 0 && item[7] !== category;
+		console.log(category > 0);
+		console.log(item[7] !== category);
 		console.log('MatchCategory:'+matchCategory);
 		const matchRarity = rarity > 0 && item[1] !== rarity;
-		console.log('matchRarity:'+matchRarity);
 		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
-		console.log('matchSearchName:'+matchSearchName);
 		const sortingHelper = [2,5,6].includes(appliedSorting) && item[4] === 'Unbekannt';
-		console.log('sortingHelper:'+sortingHelper);
-		console.log('response:'+(matchRarity || matchCategory || matchSearchName || sortingHelper));
 
 		console.log('---');
 
