@@ -36,7 +36,7 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
                     }
 
                 })
-                .catch((error) => console.error('Error: ', error))
+                .catch((error) => console.error('Error: ', error));
         }, 500);
     }
 });
@@ -49,10 +49,10 @@ document.getElementById("itemPrice").addEventListener("keyup", function (e) {
     const dottedNumberRegex = /^(\d{1,3})(\.\d{3})*$/;
 
     responsive_feedback('Der angegebener Wert Format ist nicht erlaubt. Erlaubte Formate: 1M, 1.000.000 oder 1000000.',
-        !(rawNumberRegex.test(inputValue) || usAbbreviationRegex.test(inputValue) || dottedNumberRegex.test(inputValue)) ? 1:2)
+        !(rawNumberRegex.test(inputValue) || usAbbreviationRegex.test(inputValue) || dottedNumberRegex.test(inputValue)) ? 1:2);
 });
 
-fileInput.addEventListener('change', function (event) {
+fileInput.addEventListener('change', function (e) {
     if(fileInput.files && fileInput.files[0]) {
         const reader = new FileReader();
 
@@ -82,10 +82,10 @@ fileInput.addEventListener('change', function (event) {
 
 document.getElementById("addItem").addEventListener("click", () => new bootstrap.Modal(document.getElementById('addItem')).show());
 
-document.getElementById('addItemForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+document.getElementById('addItemForm').addEventListener('submit', function(e) {
+    e.preventDefault();
     const modal = bootstrap.Modal.getInstance(document.getElementById('addItem'));
-    const form = event.target;
+    const form = e.target;
     const formData = new FormData(form);
 
     const startTime = Date.now();

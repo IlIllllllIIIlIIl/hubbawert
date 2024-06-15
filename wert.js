@@ -383,7 +383,7 @@ async function itemModal(){
 		}).catch((error) => {
 			iModal.children[1].innerHTML = `<div class="col">Item Name</div><div class="col">${this.id}</div>`;
 
-			iModal.children[2].innerText = 'Fehler'
+			iModal.children[2].innerText = 'Fehler';
 			console.error('Item: '+this.id+' - Error: '+error);
 
 			for (let i = 0; i < 2; i++) {
