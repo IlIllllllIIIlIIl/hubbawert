@@ -204,7 +204,7 @@ if(isset($_GET['itemName']) && $isAllowed) {
  * This is only for debugging purposes. Trying to figure out what is missing with rarity
  */
 if(isset($_GET['test'])) {
-    $rankPeople = $core->m->prepare('SELECT id FROM players WHERE rank > 6');
+    $rankPeople = $core->m->prepare('SELECT id FROM players');
     $rankPeople->execute();
     $result = $rankPeople->fetchAll(PDO::FETCH_ASSOC);
     foreach($result as $r) {
@@ -214,7 +214,7 @@ if(isset($_GET['test'])) {
     $data->execute();
     $result2 = $data->fetchAll(PDO::FETCH_ASSOC);
     foreach($result2 as $r2) {
-        echo $r2['userid'];
+        echo $r2['user_id'];
     }
 
 }
