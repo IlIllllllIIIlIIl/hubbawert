@@ -200,25 +200,6 @@ if(isset($_GET['itemName']) && $isAllowed) {
     exit(json_encode($options));
 }
 
-/*
- * This is only for debugging purposes. Trying to figure out what is missing with rarity
- */
-if(isset($_GET['test'])) {
-    $rankPeople = $core->m->prepare('SELECT id FROM players');
-    $rankPeople->execute();
-    $result = $rankPeople->fetchAll(PDO::FETCH_ASSOC);
-    foreach($result as $r) {
-        echo $r['id'] . '<br>';
-    }
-    /*$data = $core->m->prepare('SELECT * FROM items');
-    $data->execute();
-    $result2 = $data->fetchAll(PDO::FETCH_ASSOC);
-    foreach($result2 as $r2) {
-        print($r2);
-    }*/
-
-}
-
 //Admin Tools
 if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
     header('Content-Type: application/json');
