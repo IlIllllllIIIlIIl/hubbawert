@@ -28,12 +28,12 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
                         dataList.appendChild(optionElement);
                     });
 
-                    responsive_feedback("Item Name wurde nicht gefunden.", data.length === 0 ? 1:2)
+                    responsive_feedback("Item Name wurde nicht gefunden.", data.length === 0 ? 1:2);
 
 
-                    if (data.length === 1) {
-                        /*Future work needs to be done here*/
-                    }
+                    /*if (data.length === 1) {
+                        Future work needs to be done here
+                    }*/
 
                 })
                 .catch((error) => console.error('Error: ', error));
