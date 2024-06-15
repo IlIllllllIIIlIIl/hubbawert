@@ -214,7 +214,7 @@ if(isset($_GET['test'])) {
     $data->execute();
     $result2 = $data->fetchAll(PDO::FETCH_ASSOC);
     foreach($result2 as $r2) {
-        echo $r2['user_id'];
+        print($r2);
     }
 
 }
