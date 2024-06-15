@@ -7,7 +7,7 @@ let xmlheader = {
 	headers: {
 		'X-Requested-With': 'XMLHttpRequest'
 	}
-}
+};
 
 window.onscroll = () => {
 	const small = window.innerWidth < 768;
