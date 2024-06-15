@@ -53,7 +53,7 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 						   	onclick="sortByCategory(${cat.id})" role="button">
 						   	${cat.image ? `<img src="${cat.image}" width="16" height="16" loading="lazy">&nbsp;` : ''}
 						   	${cat.name}
-						</a>`
+						</a>`;
 						categoryList.appendChild(catElement);
 					});
 				})

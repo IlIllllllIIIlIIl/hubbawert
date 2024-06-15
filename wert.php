@@ -1,10 +1,4 @@
 <?php
-// Start Internal Mock - Remove on live servers
-include_once 'mock.php';
-$core = new Core();
-// End Mock
-
-
 // Permissions
 $allowedPeople = [4, 1100852, 6292, 895535, 662198, 273757, 22457];
 $adminPeople = [4, 6292, 13757, 22457]; //BIFI2000, Wassereis, Wassereis, Bluesurfer
