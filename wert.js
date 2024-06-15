@@ -25,7 +25,7 @@ window.onscroll = () => {
 
 document.getElementById("search").addEventListener("keyup", function(event){
 	appliedSorting = 0;
-	if (searchName !== this.value && this.value.length > 0) {
+	if (searchName !== this.value) {
 		searchName = this.value;
 		clearTimeout(searchNameWait);
 		searchNameWait = setTimeout(filterResults, 500);
@@ -161,10 +161,13 @@ function filterResults(sortedItems = null) {
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
 		const matchCategory = category > 0 && item[7] !== category;
-		console.log(matchCategory);
+		console.log('MatchCategory:'+matchCategory);
 		const matchRarity = rarity > 0 && item[1] !== rarity;
+		console.log('MatchCategory:'+matchRarity);
 		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
+		console.log('MatchCategory:'+matchSearchName);
 		const sortingHelper = [2,5,6].includes(appliedSorting) && item[4] === 'Unbekannt';
+		console.log('MatchCategory:'+sortingHelper);
 
 		if (!(matchRarity || matchCategory || matchSearchName || sortingHelper)) {
 			let itemToAdd = itemTemplate;
@@ -289,16 +292,16 @@ async function itemModal(){
 
 			if(data.info.category_name !== null) {
 				replace += `<div class="col">Kategorie</div>
-				<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy">${data.info.category_name}</div>`;
+				<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy">${data.info.category_name}</div>
+				<div class="w-100"></div>`;
 			}
-			replace += `<div class="w-100"></div>
-			<div class="col">Umlauf</div>
+			replace += `<div class="col">Umlauf</div>
 			<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
 			<div class="w-100"></div>`;
 
 			if(data.info.timestamp_release !== 0 && data.info.timestamp_release !== null) {
 				replace += `<div class="col">Veröffentlichung</div>
-				<div class="col">${dateFormat(data.info.timestamp_release, {day: 'numeric', month: 'long', year: 'numeric'})}</div>
+				<div class="col">${dateFormat(data.info.timestamp_release)}</div>
 				<div class="w-100"></div>`;
 			}
 
