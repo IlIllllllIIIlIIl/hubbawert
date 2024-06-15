@@ -140,8 +140,6 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 						return a[11] < b[11] ? 1 : -1;
 					case 9:
 						return Math.random() - 0.5;
-					default:
-						return -1;
 				}
 			}
 		);
@@ -158,16 +156,19 @@ function filterResults(sortedItems = null) {
 
 	const itemsToDisplay = sortedItems || items;
 
+	console.log(itemsToDisplay);
+
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
-		console.log(item[0]);
-		console.log(item[7]);
+
 		const matchCategory = item[7] !== null?
 			category > 0 && parseInt(item[7]) !== category: true;
-		console.log(category > 0);
-		console.log(item[7] !== category);
-		console.log('MatchCategory:'+matchCategory);
 		const matchRarity = rarity > 0 && item[1] !== rarity;
+		console.log(rarity);
+		console.log(item[1]);
+		console.log(rarity > 0);
+		console.log(item[1] !== rarity);
+		console.log(matchRarity);
 		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
 		const sortingHelper = [2,5,6].includes(appliedSorting) && item[4] === 'Unbekannt';
 
