@@ -80,7 +80,7 @@ fileInput.addEventListener('change', function (e) {
     }
 });
 
-document.getElementById("addItem").addEventListener("click", ()=>new bootstrap.Modal(document.getElementById('addItemButtom')).show());
+document.getElementById("addItem").addEventListener("click", ()=>new bootstrap.Modal(document.getElementById('addItemButton')).show());
 
 document.getElementById('addItemForm').addEventListener('submit', function(e) {
     e.preventDefault();
