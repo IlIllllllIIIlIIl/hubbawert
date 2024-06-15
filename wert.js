@@ -171,7 +171,7 @@ function filterResults(sortedItems = null) {
 		console.log('sortingHelper:'+sortingHelper);
 		console.log('response:'+(matchRarity || matchCategory || matchSearchName || sortingHelper));
 
-		console.log('---')
+		console.log('---');
 
 		if (!(matchRarity || matchCategory || matchSearchName || sortingHelper)) {
 			let itemToAdd = itemTemplate;
