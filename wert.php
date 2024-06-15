@@ -210,7 +210,7 @@ if(isset($_GET['test'])) {
     echo $result.'<br>';
     $data = $core->m->prepare('SELECT * FROM items');
     $data->execute();
-    $result2 = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
+    $result2 = $rankPeople->fetchAll(PDO::FETCH_ASSOC);
     print_r($result2);
 }
 
