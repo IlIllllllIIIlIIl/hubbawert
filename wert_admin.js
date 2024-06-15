@@ -81,7 +81,8 @@ fileInput.addEventListener('change', function (e) {
 });
 
 document.getElementById("addItem").addEventListener("click", function() {
-    new bootstrap.Modal(document.getElementById('addItem')).show();
+    const modal  = new bootstrap.Modal(document.getElementById('addItem'));
+    modal.show();
 });
 
 document.getElementById('addItemForm').addEventListener('submit', function(e) {

@@ -39,7 +39,7 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 		searchCatWait = setTimeout(function () {
 			fetch('?c=' + encodeURIComponent(searchCat), xmlheader)
 				.then(response => () => {
-					console.log();
+					console.log(response.text());
 					return response.json();
 					})
 				.then(data => {
