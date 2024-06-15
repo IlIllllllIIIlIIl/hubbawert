@@ -66,11 +66,11 @@ fileInput.addEventListener('change', function (e) {
                 const text = 'Bild kann nicht größer als '+maxWidth+'x'+maxHeight+' sein.';
 
                 if (img.width > maxWidth || img.height > maxHeight) {
-                    responsive_feedback(text, 1)
+                    responsive_feedback(text, 1);
                     fileInput.value = '';
                     imgElement.src = '';
                 } else {
-                    responsive_feedback(text, 2)
+                    responsive_feedback(text, 2);
                     imgElement.src = e.target.result;
                 }
             };
@@ -105,7 +105,7 @@ document.getElementById('addItemForm').addEventListener('submit', function(e) {
                 let remainingTime = Math.max(Date.now() - endTime - startTime, 500);
                 setTimeout(() => modal.hide(), remainingTime);
             } else {
-                writeAlerts(data['errors'])
+                writeAlerts(data['errors']);
                 if(data['image'] != null) {
                     imgElement.src='_dat/serve/img/wert/furni/'+data['image'];
                     imagePathElement.value=data['image'];
@@ -128,7 +128,7 @@ function responsive_feedback(err, type) {
 
     if(feedbacks.length > 0) {
         button.setAttribute('disabled', '');
-        writeAlerts(feedbacks)
+        writeAlerts(feedbacks);
     } else {
         button.removeAttribute('disabled');
         alert.style.display = 'none';
