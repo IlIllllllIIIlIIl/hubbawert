@@ -323,7 +323,7 @@ async function itemModal(){
 				iModal.removeChild(iModal.lastElementChild);
 			}
 
-			// Box 4
+			/*Box 4*/
 			if(data.changes.length >= 1) {
 				iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
 				let labels = [(data.info.timestamp_release === 0 && data.info.timestamp_release !== null) ? dateFormat(data.info.timestamp_release) : 'Veröffentlicht'], points = [];
