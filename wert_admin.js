@@ -30,9 +30,9 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
 
                     responsive_feedback("Item Name wurde nicht gefunden.", data.length === 0 ? 1:2)
 
-                    //Attempt Preview Image via API
+
                     if (data.length === 1) {
-                        //Future work needs to be done here
+                        /*Future work needs to be done here*/
                     }
 
                 })
@@ -100,7 +100,7 @@ document.getElementById('addItemForm').addEventListener('submit', function(event
                 filterResults(data['items']);
                 if(modal !== null)
                     modal.hide();
-                //Note -- We have to wait out the fading animation
+                /*Note -- We have to wait out the fading animation*/
                 let endTime = Date.now();
                 let remainingTime = Math.max(Date.now() - endTime - startTime, 500);
                 setTimeout(() => modal.hide(), remainingTime);

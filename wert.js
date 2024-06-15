@@ -158,7 +158,7 @@ function filterResults(sortedItems = null) {
 	const itemsToDisplay = sortedItems || items;
 
 	itemsToDisplay.forEach(item => {
-		if (i >= maxItemsToShow) return; // Immediately leaving when maxItems is reached - much more efficient than OG
+		if (i >= maxItemsToShow) return;
 		const matchCategory = category > 0 && item[7] !== category;
 		const matchRarity = rarity > 0 && item[1] !== rarity;
 		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
@@ -282,7 +282,7 @@ async function itemModal(){
 	await fetch('?i=' + this.id, xmlheader)
 		.then(response => response.json())
 		.then(data => {
-			//Box 1
+			/*Box 1*/
 			let replace = `
 			<div class="col">Kategorie</div>
 			<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy"><a href="?c=${data.info.category_name}">${data.info.category_name}</a></div>
@@ -305,10 +305,10 @@ async function itemModal(){
 
 			iModal.children[1].innerHTML = replace;
 
-			// Box 2
+			/*Box 2*/
 			iModal.children[2].innerText = data.info.longdesc != null ? data.info.longdesc: " ";
 
-			// Box 3
+			/*Box 3*/
 			if(data.owners.length >= 1) {
 				iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+data.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
 				data.owners.forEach(owner => {
@@ -340,7 +340,7 @@ async function itemModal(){
 				points.push(data.info.price < 0 ? 0: data.info.price);
 				labels.push(dateFormat(previousTimestamp));
 
-				//Chart.js
+				/*Chart.js*/
 				new Chart("chart", {
 					type: "line",
 					data: {
