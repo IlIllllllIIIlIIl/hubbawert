@@ -153,7 +153,7 @@ if(isset($_GET['c'])) {
     /*if (!$isAjaxClient)
         pageNotFound();*/
 
-    $search = filter_input(INPUT_GET, 'c', FILTER_SANITIZE_STRIPPED);
+    $search = filter_input(INPUT_GET, 'c', FILTER_UNSAFE_RAW);
 
     $sql = 'SELECT id, name, image
     FROM
@@ -179,7 +179,7 @@ if(isset($_GET['c'])) {
 
 //Furni API
 if(isset($_GET['itemName']) && $isAllowed) {
-    $search = filter_input(INPUT_GET, 'itemName', FILTER_SANITIZE_STRIPPED);
+    $search = filter_input(INPUT_GET, 'itemName', FILTER_UNSAFE_RAW);
 
     $sql = 'SELECT f.item_name, f.public_name, f.public_desc
     FROM 
