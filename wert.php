@@ -150,8 +150,8 @@ if(isset($_GET['i'])) {
 
 //Catsearch API
 if(isset($_GET['c'])) {
-    /*if (!$isAjaxClient)
-        pageNotFound();*/
+    if (!$isAjaxClient)
+        pageNotFound();
 
     $search = filter_input(INPUT_GET, 'c', FILTER_UNSAFE_RAW);
 
@@ -198,6 +198,20 @@ if(isset($_GET['itemName']) && $isAllowed) {
     $options = $select->fetchAll(PDO::FETCH_ASSOC);
     header('Content-Type: application/json');
     exit(json_encode($options));
+}
+
+/*
+ * This is only for debugging purposes. Trying to figure out what is missing with rarity
+ */
+if(isset($_GET['test'])) {
+    $rankPeople = $core->m->prepare('SELECT id FROM players WHERE rank > 6');
+    $rankPeople->execute();
+    $result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
+    echo $result.'<br>';
+    $data = $core->m->prepare('SELECT * FROM items');
+    $data->execute();
+    $result2 = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
+    print_r($result2);
 }
 
 //Admin Tools
