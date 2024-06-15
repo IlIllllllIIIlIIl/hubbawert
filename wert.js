@@ -38,7 +38,7 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 		clearTimeout(searchCatWait);
 		searchCatWait = setTimeout(function () {
 			fetch('?c=' + encodeURIComponent(searchCat), xmlheader)
-				.then(response => () => response.json())
+				.then(response => response.json())
 				.then(data => {
 					const categoryList = document.getElementById('categoryList');
 					categoryList.innerHTML = '';
