@@ -61,6 +61,7 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 	}
 });
 
+
 function sortByCategory(value) {
 	const modal = bootstrap.Modal.getInstance(document.getElementById('categories'));
 	const id = value === 'reset' ? 0 : parseInt(value);
@@ -223,7 +224,6 @@ async function makeEditable(selector, name, useFirstChild = false, type = 1){
 			optionElement.text = option.text;
 
 			if(optionElement.text === selected) {
-				console.log(true)
 				optionElement.selected = true;
 			}
 			input.add(optionElement);
@@ -246,7 +246,7 @@ async function makeEditable(selector, name, useFirstChild = false, type = 1){
 
 
 let lastModalId, lastModal;
-async function itemModal(e){
+async function itemModal(){
 	new bootstrap.Modal('#details').show();
 
 	const itemId = this.id;
@@ -395,12 +395,18 @@ function dateFormat(timestamp, options){
 	return new Date(timestamp*1000).toLocaleDateString('de-DE', options);
 }
 function setTooltips(){
-	document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+	document.querySelectorAll(".rarity").forEach(el =>
+		new bootstrap.Tooltip(el)
+	);
 	document.querySelectorAll(".rare .item").forEach(item => {
 		item.addEventListener("click", itemModal);
 	});
 }
+
 setTooltips();
+
+
+
 /*
 function catHandler(event){
 	event.preventDefault();
