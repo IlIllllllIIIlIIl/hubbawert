@@ -332,12 +332,13 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
 
             $items = [];
 
-            $insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,price,buyprice,timestamp_release,category,image) VALUES (?,?,?,?,time(),?,?)');
+            $insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,price,buyprice,timestamp_release,category,image) VALUES (?,?,?,?,?,?,?)');
             $data = [
                 $itemName,
                 $itemDesc,
                 $itemPrice,
                 1,
+                time(),
                 $itemCategory,
                 ($itemImage == 'disabled') ? '' : $itemImage //Don't know yet if null is possible
             ];
