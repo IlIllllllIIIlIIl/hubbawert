@@ -148,10 +148,10 @@ if(isset($_GET['i'])) {
     exit(json_encode($response));
 }
 
-//Search API
+//Catsearch API
 if(isset($_GET['c'])) {
-    if (!$isAjaxClient)
-        pageNotFound();
+    /*if (!$isAjaxClient)
+        pageNotFound();*/
 
     $search = filter_input(INPUT_GET, 'c', FILTER_SANITIZE_STRING);
 
@@ -550,7 +550,7 @@ img.rarity.l0 {
     border: 1px solid #2c2e3c;
     padding: 12px;
 }
-#addItem {
+#addItemButtom {
     margin-left: -10px;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -601,7 +601,7 @@ $pagecontent .= '<div class="container">
 </div>';
 
 if($isAllowed)
-    $pagecontent .= '<div class="col-md-12 btn-group alert-danger"><button type="button" id="addItem" class="form-control btn btn-danger"> Rare hinzufügen </button></div>';
+    $pagecontent .= '<div class="col-md-12 btn-group alert-danger"><button type="button" id="addItemButtom" class="form-control btn btn-danger" data-bs-toggle="modal" data-bs-target="#addItem"> Rare hinzufügen </button></div>';
 
 
 $pagecontent .= '<div class="row rare justify-content-between">';
