@@ -206,12 +206,17 @@ if(isset($_GET['itemName']) && $isAllowed) {
 if(isset($_GET['test'])) {
     $rankPeople = $core->m->prepare('SELECT id FROM players WHERE rank > 6');
     $rankPeople->execute();
-    $result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
-    echo $result.'<br>';
+    $result = $rankPeople->fetchAll(PDO::FETCH_ASSOC);
+    foreach($result as $r) {
+        echo $r.'<br>';
+    }
     $data = $core->m->prepare('SELECT * FROM items');
     $data->execute();
-    $result2 = $rankPeople->fetchAll(PDO::FETCH_ASSOC);
-    print_r($result2);
+    $result2 = $data->fetchAll(PDO::FETCH_ASSOC);
+    foreach($result2 as $r) {
+        echo $r.'<br>';
+    }
+
 }
 
 //Admin Tools
