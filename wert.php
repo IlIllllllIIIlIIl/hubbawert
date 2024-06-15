@@ -108,7 +108,7 @@ if(isset($_GET['i'])) {
     ];
 
     // get details
-    $sql = 'SELECT f.id, r.id AS rare_id, r.price, r.buyprice_credits, r.buyprice_activity_points, r.buyprice_vip_points r.views, r.longdesc, r.timestamp_release, c.id AS category_id, c.name AS category_name, c.image AS category_image
+    $sql = 'SELECT f.id, r.id AS rare_id, r.price, r.buyprice_credits, r.buyprice_activity_points, r.buyprice_vip_points, r.views, r.longdesc, r.timestamp_release, c.id AS category_id, c.name AS category_name, c.image AS category_image
     FROM 
         furniture_rare_details r 
     LEFT JOIN 
