@@ -25,7 +25,7 @@ function createNewCacheFile($c, $path): array {
     $rankPeople->execute();
     $result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
     $rankPeople = 'AND user_id !=' . implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
-    $sql = 'SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice_credits, r.buyprice_activity_points, r.buyprice_vip_points,r.category,r.image,r.views,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id ' . $rankPeople . ') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item ' . $rankPeople . ') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC';
+    $sql = 'SELECT r.id,f.public_name,r.longdesc,r.price,r.category,r.image,r.views,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id ' . $rankPeople . ') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item ' . $rankPeople . ') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC';
     $select = $c->m->prepare($sql);
     $select->execute();
     $items = $select->fetchAll(PDO::FETCH_ASSOC);
@@ -108,7 +108,7 @@ if(isset($_GET['i'])) {
     ];
 
     // get details
-    $sql = 'SELECT f.id, r.id AS rare_id, r.price, r.views, r.longdesc, r.timestamp_release, c.id AS category_id, c.name AS category_name, c.image AS category_image
+    $sql = 'SELECT f.id, r.id AS rare_id, r.price, r.buyprice_credits, r.buyprice_activity_points, r.buyprice_vip_points r.views, r.longdesc, r.timestamp_release, c.id AS category_id, c.name AS category_name, c.image AS category_image
     FROM 
         furniture_rare_details r 
     LEFT JOIN 
