@@ -162,7 +162,8 @@ function filterResults(sortedItems = null) {
 		if (i >= maxItemsToShow) return;
 		console.log(item[0]);
 		console.log(item[7]);
-		const matchCategory = category > 0 && item[7] !== category;
+		const matchCategory = item[7] !== null?
+			category > 0 && parseInt(item[7]) !== category: true;
 		console.log(category > 0);
 		console.log(item[7] !== category);
 		console.log('MatchCategory:'+matchCategory);
