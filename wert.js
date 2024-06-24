@@ -1,6 +1,4 @@
-let searchNameWait, searchName = "",
-	searchCatWait, searchCat = "",
-	category = 0;
+let searchNameWait, searchName = "";
 
 let xmlheader = {
 	headers: {
@@ -31,35 +29,29 @@ document.getElementById("search").addEventListener("keyup", function(event){
 });
 
 document.getElementById("catSearch").addEventListener("keyup", function(event){
-	/* Will change that soon */
-	if (searchCat !== this.value && this.value.length > 0) {
-		searchCat = this.value;
-		clearTimeout(searchCatWait);
-		searchCatWait = setTimeout(function () {
-			fetch('?c=' + encodeURIComponent(searchCat), xmlheader)
-				.then(response => response.json())
-				.then(data => {
-					const categoryList = document.getElementById('categoryList');
-					categoryList.innerHTML = '';
+	if (this.value.length > 0) {
+		const searchValue = this.value.toLowerCase();
+		const categoryList = document.getElementById('categoryList');
+		categoryList.innerHTML = '';
 
-					data.forEach(cat => {
-						const catElement = document.createElement('div');
-						catElement.className = 'col-md-6';
+		categories.forEach((cat) => {
+			if (cat[1].toLowerCase().includes(searchValue)) {
+				const catElement = document.createElement('div');
+				catElement.className = 'col-md-6';
 
-						catElement.innerHTML = `<a href="javascript:void(0);" 
-							id="categoryButton_${cat.id}" 
-						   	class="btn btn-dark btn-sm w-100 mb-2 ${category !== 0 && category === cat.id ? 'selected' : ''}" 
-						   	onclick="sortByCategory(${cat.id})" role="button">
-						   	${cat.image ? `<img src="${cat.image}" width="16" height="16" loading="lazy">&nbsp;` : ''}
-						   	${cat.name}
-						</a>`;
-						categoryList.appendChild(catElement);
-					});
-				})
-		}, 500);
+				catElement.innerHTML = `<a href="javascript:void(0);"
+							id="categoryButton_${cat[0]}"
+						   	class="btn btn-dark btn-sm w-100 mb-2 ${selectedCategory !== 0 && selectedCategory === cat[0] ? 'selected' : ''}"
+						   	onclick="sortByCategory(${cat[0]})" role="button">
+						   	${cat[2] ? `<img src="_dat/serve/img/wert/furni/${cat[2]}" width="16" height="16" loading="lazy">&nbsp;` : ''}
+						   	${cat[1]}
+							</a>`;
+				categoryList.appendChild(catElement);
+			}
+		});
 	}
-});
 
+});
 
 function sortByCategory(value) {
 	const modal = bootstrap.Modal.getInstance(document.getElementById('categories'));
@@ -70,17 +62,24 @@ function sortByCategory(value) {
 	const toggle = document.getElementById('toggleCategory');
 	const button = document.getElementById('selectCategory');
 
-	if (id !== 0) {
+	const newCategory = id !== 0 ? id : 0;
+	const oldCategory = selectedCategory;
+
+	selectedCategory = newCategory;
+
+	if (selectedCategory !== 0) {
 		toggle.style.display = 'block';
 		button.style.paddingLeft = '34px';
+		foundCategory = categories.find(e => e[1] === selectedCategory);
+		button.innerHTML = '<img src="_dat/serve/img/wert/furni/'+foundCategory[3]+'" width="16" height="16" loading="lazy">&nbsp;'+foundCategory[2];
 
-		const newCategoryButton = document.getElementById('categoryButton_' + id);
+		const newCategoryButton = document.getElementById('categoryButton_' + selectedCategory);
 
 		if (newCategoryButton)
 			newCategoryButton.classList.toggle('selected');
 
-		if (typeof category !== 'undefined' && category !== 0) {
-			const oldCategoryButton = document.getElementById('categoryButton_' + category);
+		if (oldCategory !== 0 && oldCategory !== selectedCategory) {
+			const oldCategoryButton = document.getElementById('categoryButton_' + oldCategory);
 
 			if (oldCategoryButton)
 				oldCategoryButton.classList.toggle('selected');
@@ -88,18 +87,14 @@ function sortByCategory(value) {
 	} else {
 		toggle.style.display = 'none';
 		button.style.paddingLeft = '0';
+		button.innerHTML = '📚 Kategorie';
 
-		if (typeof category !== 'undefined' && category !== 0) {
-			const oldCategoryButton = document.getElementById('categoryButton_' + category);
+		if (oldCategory !== 0) {
+			const oldCategoryButton = document.getElementById('categoryButton_' + oldCategory);
 			if (oldCategoryButton)
 				oldCategoryButton.classList.toggle('selected');
 		}
 	}
-
-	category = id;
-
-	toggle.style.display = category !== 0 ? 'block' : 'none';
-	button.style.paddingLeft = category !== 0 ? '34px' : '0';
 
 	filterResults();
 	modal.hide();
@@ -165,7 +160,7 @@ function filterResults(sortedItems = null) {
 
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
-		if (category > 0 && parseInt(item[7]) !== category) return;
+		if (selectedCategory > 0 && parseInt(item[7]) !== selectedCategory) return;
 		if (rarity > 0 && parseInt(item[1]) !== rarity) return;
 		if (searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase())) return;
 
@@ -408,6 +403,8 @@ function setTooltips(){
 	document.querySelectorAll(".rare .item").forEach(item => {
 		item.addEventListener("click", itemModal);
 	});
+
+
 }
 
 setTooltips();

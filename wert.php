@@ -12,15 +12,16 @@ $pagetitle = 'Wert';
 $cachePath = $core->path.'/_inc/.cache/wert/index.cache';
 $uploadDir = $core->path . '/_dat/serve/img/wert/furni/';
 $defaultImage = '_dat/serve/img/wert/not_found.png';
+$shortname = $core->shortname;
 $maxItemsToShow = 501;
 $isAjaxClient = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-
 
 // Functions
 function pageNotFound(): void {
     exit(http_response_code(404));
 }
 function createNewCacheFile($c, $path): array {
+    //Furnitures
     $rankPeople = $c->m->prepare('SELECT id FROM players WHERE rank > 6');
     $rankPeople->execute();
     $result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
@@ -29,24 +30,30 @@ function createNewCacheFile($c, $path): array {
     $select = $c->m->prepare($sql);
     $select->execute();
     $items = $select->fetchAll(PDO::FETCH_ASSOC);
-    file_put_contents($path, json_encode($items));
+
+    //Categories
+    $select = $c->m->prepare('SELECT id, name, image FROM furniture_rare_categories ORDER BY name');
+    $select->execute();
+    $categories = $select->fetchAll(PDO::FETCH_ASSOC);
+
+
+    file_put_contents($path, json_encode([
+        'items' => $items,
+        'categories' => $categories
+    ]));
     return $items;
 }
 
-function readCacheFile($c, $items): array {
+function readItemsFromCache($items): array {
+    global $shortname;
     $array = [];
 
     foreach ($items as $itemId => $item) {
-        if(!isset($item['public_name'])) {
+        if (!isset($item['public_name'])) {
             echo "Error not found: {$itemId}\n";
             continue;
         }
 
-        if($item['category'] == null) {
-            echo 'yes';
-        }
-
-        //print_r($item['category']);
         /*
          * itemArray[]
          * (shown values)
@@ -82,7 +89,7 @@ function readCacheFile($c, $items): array {
             $item['old_price'] < 1 ? '' : ' class="' . ($item['price'] >= $item['old_price'] ? 'up' : 'down') . '" title="vorher ' . number_format($item['old_price'], 0, ',', '.') . '"',
             $item['price'] > 0 ? number_format($item['price'], 0, ',', '.') : 'Unbekannt',
             filter_var($item['image'], FILTER_SANITIZE_URL),
-            htmlspecialchars(str_replace('Habbo', $c->shortname, $item['public_name'])),
+            htmlspecialchars(str_replace('Habbo', $shortname, $item['public_name'])),
             $item['category'],
             $item['price'],
             $item['timestamp'],
@@ -94,6 +101,18 @@ function readCacheFile($c, $items): array {
     return $array;
 }
 
+function readCategoriesFromCache($categories): array {
+    $array = [];
+    foreach ($categories as $catId => $cat) {
+        $array[] = [
+            $catId,
+            $cat['id'],
+            $cat['name'],
+            $cat['image'],
+        ];
+    }
+    return $array;
+}
 
 
 //Item API
@@ -350,10 +369,10 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
                 $insert->execute($data);
 
                 @unlink($cachePath);
-                $items = createNewCacheFile($core, $cachePath);
+                $data = createNewCacheFile($core, $cachePath);
                 exit(json_encode([
                     'server_success' => true,
-                    'items' => readCacheFile($core, $items),
+                    'items' => readItemsFromCache($data['items']),
                 ]));
             } catch (PDOException $e) {
                 $string = 'Datenbank Fehler: Fehler <b>Code #' . $e->getCode() . '</b>';
@@ -570,10 +589,11 @@ $cssappendix .= '</style>';
 
 
 // Main page
-$items = (file_exists($cachePath) && time() - filemtime($cachePath) <= 86400) ?
+$data = (file_exists($cachePath) && time() - filemtime($cachePath) <= 86400) ?
     json_decode(file_get_contents($cachePath), true) : createNewCacheFile($core, $cachePath);
 
-$itemArray = readCacheFile($core, $items);
+$itemArray = readItemsFromCache($data['items']);
+$categories = readCategoriesFromCache($data['categories']);
 
 // Menu
 $pagecontent .= '<div class="container">
@@ -596,7 +616,7 @@ $pagecontent .= '<div class="container">
     </div>
     <div class="col-md-3 btn-group">
         <button type="button" id="selectCategory" class="form-control btn btn-dark" data-bs-toggle="modal" data-bs-target="#categories">📚 Kategorie</button>
-        <a href="javascript:void(0);" onclick="sortByCategory(\'reset\')" class="btn btn-dark" style="padding-top:6px; display:none;" id="toggleCategory">❌</a>
+            <a href="javascript:void(0);" onclick="sortByCategory(\'reset\')" class="btn btn-dark" style="padding-top:6px; display:none;" id="toggleCategory">❌</a>
     </div>
 </div>
 <div class="row box">
@@ -753,13 +773,15 @@ $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
 <script src="_dat/serve/js/chart.umd.js"></script>
 <script>
 let items = '.json_encode($itemArray).';
+let categories = '.json_encode($categories).';
+let selectedCategory = 0;
+let rarity = ' . $rarity . ';
 const maxItemsToShow = ' . $maxItemsToShow . ';
 const itemTemplate = \'' . $itemTemplate . '\';
 const itemModalTemplate = \'' . $itemModalTemplate . '\';
 const itemReplace = ' . json_encode($itemReplace) . ';
 const avatarImager = \'' . $core->avatarImager . '\';
 const isEditor = ' . $isAllowed . ';
-let rarity = ' . $rarity . ';
 ' .file_get_contents(__DIR__.'/wert.js');
 if($isAllowed)
     $jsappendix .= file_get_contents(__DIR__.'/wert_admin.js');
