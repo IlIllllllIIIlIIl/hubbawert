@@ -29,27 +29,25 @@ document.getElementById("search").addEventListener("keyup", function(event){
 });
 
 document.getElementById("catSearch").addEventListener("keyup", function(event){
-	if (this.value.length > 0) {
-		const searchValue = this.value.toLowerCase();
-		const categoryList = document.getElementById('categoryList');
-		categoryList.innerHTML = '';
+	const searchValue = this.value.toLowerCase();
+	const categoryList = document.getElementById('categoryList');
+	categoryList.innerHTML = '';
 
-		categories.forEach((cat) => {
-			if (cat[2].toLowerCase().includes(searchValue)) {
-				const catElement = document.createElement('div');
-				catElement.className = 'col-md-6';
+	categories.forEach((cat) => {
+		if (cat[2].toLowerCase().includes(searchValue)) {
+			const catElement = document.createElement('div');
+			catElement.className = 'col-md-6';
 
-				catElement.innerHTML = `<a href="javascript:void(0);"
+			catElement.innerHTML = `<a href="javascript:void(0);"
 							id="categoryButton_${cat[1]}"
 						   	class="btn btn-dark btn-sm w-100 mb-2 ${selectedCategory !== 0 && selectedCategory === cat[1] ? 'selected' : ''}"
 						   	onclick="sortByCategory(${cat[1]})" role="button">
 						   	${cat[3] ? `<img src="_dat/serve/img/wert/furni/${cat[3]}" width="16" height="16" loading="lazy">&nbsp;` : ''}
 						   	${cat[2]}
 							</a>`;
-				categoryList.appendChild(catElement);
-			}
-		});
-	}
+			categoryList.appendChild(catElement);
+		}
+	});
 
 });
 
