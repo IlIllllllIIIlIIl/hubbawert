@@ -626,8 +626,8 @@ $pagecontent .= '<div class="container">
         <a role="button" class="btn btn-dark" data-r="2">Häufig</a>
         <a role="button" class="btn btn-dark" data-r="3">Ungewöhnlich</a>
         <a role="button" class="btn btn-dark" data-r="4">Selten</a>
-        <a role="button" class="btn btn-dark" data-r="5">Sehr selten</a>';
-$pagecontent .= '</div>
+        <a role="button" class="btn btn-dark" data-r="5">Sehr selten</a>
+    </div>
 </div>';
 
 if($isAllowed)

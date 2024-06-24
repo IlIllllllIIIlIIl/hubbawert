@@ -29,6 +29,7 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
                     });
 
                     responsive_feedback("Item Name wurde nicht gefunden.", data.length === 0 ? 1:2);
+                    console.log(data.length === 0);
 
 
                     /*if (data.length === 1) {
@@ -118,13 +119,13 @@ document.getElementById('addItemForm').addEventListener('submit', function(e) {
 
 
 function responsive_feedback(err, type) {
-    if(type === 1)
+    if(type === 1) {
         if(!feedbacks.includes(err))
             feedbacks.push(err);
-    else if(type === 2)
+    } else if(type === 2) {
         if(feedbacks.includes(err))
             feedbacks = feedbacks.filter(item => item !== err);
-
+    }
 
     if(feedbacks.length > 0) {
         button.setAttribute('disabled', '');
@@ -136,11 +137,12 @@ function responsive_feedback(err, type) {
 }
 
 function writeAlerts(errors) {
+    console.log(feedbacks);
     alert.innerHTML = '';
     alert.innerHTML += '<span>Warnung ('+errors.length+'):</span><br>';
     let i = 1;
     errors.forEach(err => {
-        alert.innerHTML += '<span>('+i+') ' + err + '</span><br>';
+        alert.innerHTML += '<span>('+i+')&nbsp;' + err + '</span><br>';
         i++;
     });
     alert.style.display = 'block';
