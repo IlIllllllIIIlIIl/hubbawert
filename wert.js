@@ -159,7 +159,8 @@ function filterResults(sortedItems = null) {
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
 		if (selectedCategory > 0 && parseInt(item[7]) !== selectedCategory) return;
-		if (rarity > 0 && parseInt(item[1]) !== rarity) return;
+		if (rarity > 0 && item[1] !== parseInt(rarity)) return;
+
 		if (searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase())) return;
 
 		let itemToAdd = itemTemplate;

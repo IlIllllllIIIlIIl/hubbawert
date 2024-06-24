@@ -75,9 +75,9 @@ function readItemsFromCache($items): array {
 
         $level = match (true) {
             $amount > 50 => 1,
-            $amount > 30 => 2,
-            $amount > 15 => 3,
-            $amount > 5 => 4,
+            $amount > 35 => 2,
+            $amount > 20 => 3,
+            $amount > 10 => 4,
             $amount > 0 => 5,
             default => 0
         };
@@ -626,8 +626,8 @@ $pagecontent .= '<div class="container">
         <a role="button" class="btn btn-dark" data-r="2">Häufig</a>
         <a role="button" class="btn btn-dark" data-r="3">Ungewöhnlich</a>
         <a role="button" class="btn btn-dark" data-r="4">Selten</a>
-        <a role="button" class="btn btn-dark" data-r="5">Sehr selten</a>
-    </div>
+        <a role="button" class="btn btn-dark" data-r="5">Sehr selten</a>';
+$pagecontent .= '</div>
 </div>';
 
 if($isAllowed)
