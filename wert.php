@@ -36,12 +36,13 @@ function createNewCacheFile($c, $path): array {
     $select->execute();
     $categories = $select->fetchAll(PDO::FETCH_ASSOC);
 
-
-    file_put_contents($path, json_encode([
+    $data = [
         'items' => $items,
         'categories' => $categories
-    ]));
-    return $items;
+    ];
+
+    file_put_contents($path, json_encode($data));
+    return $data;
 }
 
 function readItemsFromCache($items): array {
@@ -285,7 +286,7 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
 
         //Handle itemCategories
         if($itemCategory != null) {
-            if(is_numeric((int)$itemCategory)) {
+            if(is_numeric((int)$itemCategory) && $itemCategory > 0) {
                 $sql = 'SELECT id
                     FROM 
                         furniture_rare_categories
@@ -362,7 +363,7 @@ if(isset($_GET['admin']) && $_GET['admin'] == 'add' && $isAllowed) {
                 $itemPrice,
                 1,
                 time(),
-                $itemCategory,
+                $itemCategory==0 ? null:$itemCategory,
                 ($itemImage == 'disabled') ? '' : $itemImage //Don't know yet if null is possible
             ];
             try {
