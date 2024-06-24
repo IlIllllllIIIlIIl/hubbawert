@@ -42,6 +42,11 @@ function readCacheFile($c, $items): array {
             continue;
         }
 
+        if($item['category'] == null) {
+            echo 'yes';
+        }
+
+        //print_r($item['category']);
         /*
          * itemArray[]
          * (shown values)

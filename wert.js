@@ -114,7 +114,7 @@ document.getElementById("raritynav").addEventListener("click", event => {
 });
 
 document.querySelector(".custom-select").addEventListener("change", event => {
-	if(event.target.value > 0)
+	if (event.target.value > 0)
 		filterResults(sortItemArray(items, parseInt(event.target.value)));
 });
 
@@ -130,8 +130,6 @@ function sortItemArray(itemArray, sortingMethod) {
 		(a, b) => {
 			switch(sortingMethod) {
 				case 1:
-					console.log(a[10]);
-					console.log(b[10]);
 					return a[10] > b[10] ? 1 : -1;
 				case 2:
 					return compareValidPrice(a, b, (a, b) => a[9] > b[9] ? 1 : -1);
@@ -154,7 +152,6 @@ function sortItemArray(itemArray, sortingMethod) {
 		}
 	);
 
-	console.log(itemArray);
 	return itemArray;
 }
 
@@ -168,22 +165,18 @@ function filterResults(sortedItems = null) {
 
 	itemsToDisplay.forEach(item => {
 		if (i >= maxItemsToShow) return;
+		if (category > 0 && parseInt(item[7]) !== category) return;
+		if (rarity > 0 && parseInt(item[1]) !== rarity) return;
+		if (searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase())) return;
 
-		const matchCategory = item[7] !== null?
-			category > 0 && parseInt(item[7]) !== category: true;
-		const matchRarity = rarity > 0 && item[1] !== rarity;
-		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
+		let itemToAdd = itemTemplate;
 
-		if (!(matchRarity || matchCategory || matchSearchName)) {
-			let itemToAdd = itemTemplate;
+		itemReplace.forEach((replace, index) => {
+			itemToAdd = itemToAdd.replace(replace, item[index]);
+		});
 
-			itemReplace.forEach((replace, index) => {
-				itemToAdd = itemToAdd.replace(replace, item[index]);
-			});
-
-			container.insertAdjacentHTML("beforeend", itemToAdd);
-			i++;
-		}
+		container.insertAdjacentHTML("beforeend", itemToAdd);
+		i++;
 	});
 
 	if (window.scrollY  > 240)
