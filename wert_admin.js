@@ -29,8 +29,6 @@ document.getElementById("itemName").addEventListener("keyup", function (e) {
                     });
 
                     responsive_feedback("Item Name wurde nicht gefunden.", data.length === 0 ? 1:2);
-                    console.log(data.length === 0);
-
 
                     /*if (data.length === 1) {
                         Future work needs to be done here
@@ -137,7 +135,6 @@ function responsive_feedback(err, type) {
 }
 
 function writeAlerts(errors) {
-    console.log(feedbacks);
     alert.innerHTML = '';
     alert.innerHTML += '<span>Warnung ('+errors.length+'):</span><br>';
     let i = 1;

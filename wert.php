@@ -748,7 +748,7 @@ if($isAllowed) {
                                 $options = $select->fetchAll(PDO::FETCH_ASSOC);
 
                                 foreach ($options as $op)
-                                    $pagecontent .= '<option value="'.$op['id'].'">'.$op['name'].'('.$op['count'].')</option>';
+                                    $pagecontent .= '<option value="'.$op['id'].'">'.$op['name'].' ('.$op['count'].')</option>';
 
                             $pagecontent .= '</select>
                         </div>

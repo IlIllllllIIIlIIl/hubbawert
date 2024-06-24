@@ -52,10 +52,9 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 });
 
 function sortByCategory(value) {
-	const modal = bootstrap.Modal.getInstance(document.getElementById('categories'));
 	const id = value === 'reset' ? 0 : parseInt(value);
 
-	if (isNaN(id) || modal === null) return;
+	if (isNaN(id)) return;
 
 	const toggle = document.getElementById('toggleCategory');
 	const button = document.getElementById('selectCategory');
@@ -95,7 +94,13 @@ function sortByCategory(value) {
 	}
 
 	filterResults();
-	modal.hide();
+	const categoryModal = bootstrap.Modal.getInstance(document.getElementById('categories'));
+	const itemModal = bootstrap.Modal.getInstance(document.getElementById('details'));
+
+	if(categoryModal != null)
+		categoryModal.hide();
+	if(itemModal != null)
+		itemModal.hide();
 }
 
 document.getElementById("raritynav").addEventListener("click", event => {
@@ -285,7 +290,8 @@ async function itemModal(){
 
 			if (data.info.category_name !== null) {
 				replace += `<div class="col">Kategorie</div>
-				<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy">${data.info.category_name}</div>
+				<div class="col">
+				<a href="javascript:void(0);" onclick="sortByCategory(${data.info.category_id})">${data.info.category_name}</a></div>
 				<div class="w-100"></div>`;
 			}
 			replace += `<div class="col">Umlauf</div>
