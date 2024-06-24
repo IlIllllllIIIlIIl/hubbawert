@@ -35,16 +35,16 @@ document.getElementById("catSearch").addEventListener("keyup", function(event){
 		categoryList.innerHTML = '';
 
 		categories.forEach((cat) => {
-			if (cat[1].toLowerCase().includes(searchValue)) {
+			if (cat[2].toLowerCase().includes(searchValue)) {
 				const catElement = document.createElement('div');
 				catElement.className = 'col-md-6';
 
 				catElement.innerHTML = `<a href="javascript:void(0);"
-							id="categoryButton_${cat[0]}"
-						   	class="btn btn-dark btn-sm w-100 mb-2 ${selectedCategory !== 0 && selectedCategory === cat[0] ? 'selected' : ''}"
-						   	onclick="sortByCategory(${cat[0]})" role="button">
-						   	${cat[2] ? `<img src="_dat/serve/img/wert/furni/${cat[2]}" width="16" height="16" loading="lazy">&nbsp;` : ''}
-						   	${cat[1]}
+							id="categoryButton_${cat[1]}"
+						   	class="btn btn-dark btn-sm w-100 mb-2 ${selectedCategory !== 0 && selectedCategory === cat[1] ? 'selected' : ''}"
+						   	onclick="sortByCategory(${cat[1]})" role="button">
+						   	${cat[3] ? `<img src="_dat/serve/img/wert/furni/${cat[3]}" width="16" height="16" loading="lazy">&nbsp;` : ''}
+						   	${cat[2]}
 							</a>`;
 				categoryList.appendChild(catElement);
 			}
