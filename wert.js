@@ -119,7 +119,6 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 });
 
 function sortItemArray(itemArray, sortingMethod) {
-	console.log(itemArray);
 	const compareValidPrice = (a, b, compareFunc) => {
 		const isNotAValidPrice = (item) => item[4] === 'Unbekannt';
 		if (isNotAValidPrice(a)) return 1;
@@ -131,6 +130,8 @@ function sortItemArray(itemArray, sortingMethod) {
 		(a, b) => {
 			switch(sortingMethod) {
 				case 1:
+					console.log(a[10]);
+					console.log(b[10]);
 					return a[10] > b[10] ? 1 : -1;
 				case 2:
 					return compareValidPrice(a, b, (a, b) => a[9] > b[9] ? 1 : -1);
