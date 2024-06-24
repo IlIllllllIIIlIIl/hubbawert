@@ -589,7 +589,7 @@ $cssappendix .= '</style>';
 
 
 // Main page
-$data = (file_exists($cachePath) && time() - filemtime($cachePath) <= 86400) ?
+$data = (file_exists($cachePath) && time() - filemtime($cachePath) <= 1) ?
     json_decode(file_get_contents($cachePath), true) : createNewCacheFile($core, $cachePath);
 
 $itemArray = readItemsFromCache($data['items']);
