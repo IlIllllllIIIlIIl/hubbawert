@@ -12,7 +12,7 @@ $pagetitle = 'Wert';
 $cachePath = $core->path.'/_inc/.cache/wert/index.cache';
 $uploadDir = $core->path . '/_dat/serve/img/wert/furni/';
 $defaultImage = '_dat/serve/img/wert/not_found.png';
-$maxItemsToShow = 50;
+$maxItemsToShow = 501;
 $isAjaxClient = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
 
@@ -52,7 +52,6 @@ function readCacheFile($c, $items): array {
          * 4: price
          * 5: image
          * 6: public_name
-         * (raw values)
          * 7: category
          * 8: price
          * 9: time

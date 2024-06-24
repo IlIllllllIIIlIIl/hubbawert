@@ -131,7 +131,7 @@ function sortItemArray(itemArray, sortingMethod) {
 		(a, b) => {
 			switch(sortingMethod) {
 				case 1:
-					return a[10] < b[10] ? 1 : -1;
+					return a[10] > b[10] ? 1 : -1;
 				case 2:
 					return compareValidPrice(a, b, (a, b) => a[9] > b[9] ? 1 : -1);
 				case 3:
@@ -141,7 +141,7 @@ function sortItemArray(itemArray, sortingMethod) {
 				case 5:
 					return compareValidPrice(a, b, (a, b) => a[8] > b[8] ? 1 : -1);
 				case 6:
-					return compareValidPrice(a, b, (a, b) => a[8] > b[8] ? 1 : -1);
+					return compareValidPrice(a, b, (a, b) => a[8] < b[8] ? 1 : -1);
 				case 7:
 					return a[11] > b[11] ? 1 : -1;
 				case 8:
