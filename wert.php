@@ -672,7 +672,7 @@ $select->execute();
 
 $listcontent = '';
 while ($cat = $select->fetch(PDO::FETCH_ASSOC))
-    $listcontent .= '<div class="col-md-6"><a href="javascript:void(0);" id="categoryButton_'.$cat['id'].'" onclick="sortByCategory('.$cat['id'].')" class="btn btn-dark btn-sm w-100 mb-2" role="button">' . (isset($cat['image']) && !empty($cat['image']) ? '<img src="' . $core->url . '_dat/serve/img/wert/furni/' . filter_var($cat['image'], FILTER_SANITIZE_URL) . '" width="16" height="16" loading="lazy">&nbsp;' : '') . htmlspecialchars($cat['name']) . '</a></div>';
+    $listcontent .= '<div class="col-md-6"><a href="javascript:void(0);" id="categoryButton_'.$cat['id'].'" onclick="sortByCategory('.$cat['id'].')" class="btn btn-dark btn-sm w-100 mb-2" role="button">' . (!empty($cat['image']) ? '<img src="' . $core->url . '_dat/serve/img/wert/furni/' . filter_var($cat['image'], FILTER_SANITIZE_URL) . '" width="16" height="16" loading="lazy">&nbsp;' : '') . htmlspecialchars($cat['name']) . '</a></div>';
 
 $pagecontent .= str_replace('{categoryList}', $listcontent, $categoryModalTemplate);
 

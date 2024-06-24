@@ -1,6 +1,5 @@
 let searchNameWait, searchName = "",
 	searchCatWait, searchCat = "",
-	appliedSorting = 0,
 	category = 0;
 
 let xmlheader = {
@@ -11,11 +10,11 @@ let xmlheader = {
 
 window.onscroll = () => {
 	const small = window.innerWidth < 768;
-	if(!small){
-		if(window.scrollY > 250){
+	if (!small) {
+		if(window.scrollY > 250) {
 			document.querySelector(".sticky-top").style.borderBottomLeftRadius = "14px";
 			document.querySelector(".sticky-top").style.borderBottomRightRadius = "14px";
-		}else{
+		} else {
 			document.querySelector(".sticky-top").style.borderBottomLeftRadius = "0px";
 			document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
 		}
@@ -24,7 +23,6 @@ window.onscroll = () => {
 
 
 document.getElementById("search").addEventListener("keyup", function(event){
-	appliedSorting = 0;
 	if (searchName !== this.value) {
 		searchName = this.value;
 		clearTimeout(searchNameWait);
@@ -33,6 +31,7 @@ document.getElementById("search").addEventListener("keyup", function(event){
 });
 
 document.getElementById("catSearch").addEventListener("keyup", function(event){
+	/* Will change that soon */
 	if (searchCat !== this.value && this.value.length > 0) {
 		searchCat = this.value;
 		clearTimeout(searchCatWait);
@@ -115,40 +114,50 @@ document.getElementById("raritynav").addEventListener("click", event => {
 });
 
 document.querySelector(".custom-select").addEventListener("change", event => {
-	let itemArray = null;
-	appliedSorting = parseInt(event.target.value);
-	if(event.target.value > 0) {
-		itemArray = items;
-		itemArray.sort(
-			(a, b) => {
-				switch(appliedSorting) {
-					case 1:
-						return a[10] < b[10] ? 1 : -1;
-					case 2:
-						return a[9] < b[9] ? 1 : -1;
-					case 3:
-						return a[2] < b[2] ? 1 : -1;
-					case 4:
-						return a[2] > b[2] ? 1 : -1;
-					case 5:
-						return a[8] > b[8] ? 1 : -1;
-					case 6:
-						return a[8] < b[8] ? 1 : -1;
-					case 7:
-						return a[11] > b[11] ? 1 : -1;
-					case 8:
-						return a[11] < b[11] ? 1 : -1;
-					case 9:
-						return Math.random() - 0.5;
-
-				}
-			}
-		);
-	}
-	filterResults(itemArray);
+	if(event.target.value > 0)
+		filterResults(sortItemArray(items, parseInt(event.target.value)));
 });
+
+function sortItemArray(itemArray, sortingMethod) {
+	console.log(itemArray);
+	const compareValidPrice = (a, b, compareFunc) => {
+		const isNotAValidPrice = (item) => item[4] === 'Unbekannt';
+		if (isNotAValidPrice(a)) return 1;
+		if (isNotAValidPrice(b)) return -1;
+		return compareFunc(a, b);
+	};
+
+	itemArray.sort(
+		(a, b) => {
+			switch(sortingMethod) {
+				case 1:
+					return a[10] < b[10] ? 1 : -1;
+				case 2:
+					return compareValidPrice(a, b, (a, b) => a[9] > b[9] ? 1 : -1);
+				case 3:
+					return a[2] < b[2] ? 1 : -1;
+				case 4:
+					return a[2] > b[2] ? 1 : -1;
+				case 5:
+					return compareValidPrice(a, b, (a, b) => a[8] > b[8] ? 1 : -1);
+				case 6:
+					return compareValidPrice(a, b, (a, b) => a[8] > b[8] ? 1 : -1);
+				case 7:
+					return a[11] > b[11] ? 1 : -1;
+				case 8:
+					return a[11] < b[11] ? 1 : -1;
+				case 9:
+					return Math.random() - 0.5;
+
+			}
+		}
+	);
+
+	console.log(itemArray);
+	return itemArray;
+}
+
 function filterResults(sortedItems = null) {
-	if(appliedSorting > 10 || appliedSorting < 0) return;
 
 	let i = 0;
 	const container = document.querySelector(".rare");
@@ -163,11 +172,10 @@ function filterResults(sortedItems = null) {
 			category > 0 && parseInt(item[7]) !== category: true;
 		const matchRarity = rarity > 0 && item[1] !== rarity;
 		const matchSearchName = searchName !== "" && !item[6].toLowerCase().includes(searchName.toLowerCase());
-		const sortingHelper = [2,5,6].includes(appliedSorting) && item[4] === 'Unbekannt';
 
-		if (!(matchRarity || matchCategory || matchSearchName || sortingHelper)) {
+		if (!(matchRarity || matchCategory || matchSearchName)) {
 			let itemToAdd = itemTemplate;
-			console.log('added');
+
 			itemReplace.forEach((replace, index) => {
 				itemToAdd = itemToAdd.replace(replace, item[index]);
 			});
@@ -261,10 +269,10 @@ async function itemModal(){
 	iModal.innerHTML = itemModalTemplate;
 	iModal.children[0].innerHTML = this.innerHTML;
 
-	if(isEditor){
+	if (isEditor) {
 		iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten">');
 		document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
-			if(event.target.value.includes('Bearbeiten')){
+			if (event.target.value.includes('Bearbeiten')) {
 				event.preventDefault();
 				event.target.value = '💾 Speichern';
 				event.target.style.color = '#3ab4e3';
@@ -287,7 +295,7 @@ async function itemModal(){
 			let replace = '';
 			const isLegalTime = (data.info.timestamp_release !== null && parseInt(data.info.timestamp_release) !== 0);
 
-			if(data.info.category_name !== null) {
+			if (data.info.category_name !== null) {
 				replace += `<div class="col">Kategorie</div>
 				<div class="col"><img src="http://localhost/_dat/serve/img/wert/furni/${data.info.category_image}" width="16" height="16" loading="lazy">${data.info.category_name}</div>
 				<div class="w-100"></div>`;
@@ -296,7 +304,7 @@ async function itemModal(){
 			<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
 			<div class="w-100"></div>`;
 
-			if(isLegalTime) {
+			if (isLegalTime) {
 				replace += `<div class="col">Veröffentlichung</div>
 				<div class="col">${dateFormat(data.info.timestamp_release)}</div>
 				<div class="w-100"></div>`;
@@ -311,14 +319,14 @@ async function itemModal(){
 			iModal.children[1].innerHTML = replace;
 
 			/*Box 2*/
-			iModal.children[2].innerText = data.info.longdesc != null ? data.info.longdesc: " ";
+			iModal.children[2].innerText = data.info.longdesc != null ? data.info.longdesc : " ";
 
 			/*Box 3*/
-			if(data.owners.length >= 1) {
-				iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+data.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
+			if (data.owners.length >= 1) {
+				iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">' + data.owners.length + '</h4><h5>(sortiert nach zuletzt online)</h5>';
 				data.owners.forEach(owner => {
 					let img = document.createElement('img');
-					img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
+					img.src = avatarImager + '?figure=' + owner.figure + '&head_direction=2';
 					img.title = owner.username + ' ' + owner.c + 'x';
 					img.loading = "lazy";
 					iModal.children[4].appendChild(img);
@@ -329,20 +337,20 @@ async function itemModal(){
 			}
 
 			/*Box 4*/
-			if(data.changes.length >= 1) {
+			if (data.changes.length >= 1) {
 				iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
 				let labels = [(isLegalTime) ? dateFormat(data.info.timestamp_release) : 'Veröffentlicht'], points = [];
 				let previousTimestamp = -1;
 
 				data.changes.forEach(change => {
 					points.push(change.old_price);
-					if(previousTimestamp > -1){
+					if (previousTimestamp > -1) {
 						labels.push(dateFormat(change.timestamp));
 					}
 					previousTimestamp = change.timestamp;
 				});
 
-				points.push(data.info.price < 0 ? 0: data.info.price);
+				points.push(data.info.price < 0 ? 0 : data.info.price);
 				labels.push(dateFormat(previousTimestamp));
 
 				/*Chart.js*/
@@ -363,8 +371,8 @@ async function itemModal(){
 							},
 							tooltip: {
 								callbacks: {
-									label: function(context) {
-										if(context.parsed.y === 0) {
+									label: function (context) {
+										if (context.parsed.y === 0) {
 											return 'Unbekannt';
 										} else {
 											const fullnumber = Intl.NumberFormat('de-DE').format(context.parsed.y);
@@ -389,7 +397,7 @@ async function itemModal(){
 			iModal.children[1].innerHTML = `<div class="col">Item Name</div><div class="col">${this.id}</div>`;
 
 			iModal.children[2].innerText = 'Fehler';
-			console.error('Item: '+this.id+' - Error: '+error);
+			console.error('Item: ' + this.id + ' - Error: ' + error);
 
 			for (let i = 0; i < 2; i++) {
 				if (iModal.lastElementChild) iModal.removeChild(iModal.lastElementChild);
