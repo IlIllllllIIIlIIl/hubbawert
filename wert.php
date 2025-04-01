@@ -1,8 +1,8 @@
 <?php
 // Permissions
-$allowedPeople = [4, 1100852, 6292, 895535, 662198, 273757, 22457];
-$adminPeople = [4, 6292, 13757, 22457]; //BIFI2000, Wassereis, Wassereis, Bluesurfer
-$devPeople = [4,22457]; //BIFI2000, Bluesurfer
+$allowedPeople = [4, 1100852, 6292, 895535, 662198, 273757, 22457, 788511];
+$adminPeople = [4, 6292, 13757, 22457, 788511]; //BIFI2000, Wassereis, Wassereis, Bluesurfer, Maurice
+$devPeople = [4, 22457, 788511]; //BIFI2000, Bluesurfer, Maurice
 $isAllowed = isset($u_details['id']) && in_array($u_details['id'], $allowedPeople) ? 1 : 0;
 $isAdmin = isset($u_details['id']) && in_array($u_details['id'], $adminPeople) ? 1 : 0;
 $isDev = isset($u_details['id']) && in_array($u_details['id'], $devPeople) ? 1 : 0;
