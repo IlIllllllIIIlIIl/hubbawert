@@ -31,21 +31,22 @@ if(isset($_GET['i'])){
 		$select->execute([$response['info']['id'],$response['info']['id']]);
 		$response['owners'] = $select->fetchAll(PDO::FETCH_ASSOC);
 		// get price history
-		// get price history and admin logs in one query
-		$select = $core->m->prepare('
-		    SELECT p.username, c.old_price, c.timestamp
-		    FROM furniture_rare_changes c
-		    LEFT JOIN players p ON p.id = c.player_id
-		    WHERE c.furni_id = ?
-		    ORDER BY c.timestamp DESC
-		');
-		$select->execute([$response['info']['rare_id']]);
-		$changes = $select->fetchAll(PDO::FETCH_ASSOC);
+		$changes = $core->m->prepare('SELECT old_price, timestamp FROM furniture_rare_changes WHERE furni_id = ? ORDER BY timestamp ASC');
+		$changes->execute([$response['info']['rare_id']]);
+		$response['changes'] = $changes->fetchAll(PDO::FETCH_ASSOC);
 		
-		// use the same data for both price history and admin logs
-		$response['changes'] = $changes;
+		// get admin logs
 		if ($isAdmin) {
-		    $response['admin_logs'] = array_slice($changes, 0, 20);
+		    $logsQuery = $core->m->prepare('
+		        SELECT p.username, c.old_price, c.timestamp
+		        FROM furniture_rare_changes c
+		        LEFT JOIN players p ON p.id = c.player_id
+		        WHERE c.furni_id = ?
+		        ORDER BY c.timestamp DESC
+		        LIMIT 20
+		    ');
+		    $logsQuery->execute([$response['info']['rare_id']]);
+		    $response['admin_logs'] = $logsQuery->fetchAll(PDO::FETCH_ASSOC);
 		}
 	}else{
 		http_response_code(404);
