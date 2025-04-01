@@ -153,8 +153,7 @@ async function itemModal(e){
 
 if(isAdmin) {
     let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
-    const itemLogs = recentLogs.filter(log => log.item_id === this.id);
-    itemLogs.forEach(log => {
+    json.changes.forEach(log => {
         logsHtml += `<tr>
             <td>${log.username}</td>
             <td>${log.old_price.toLocaleString()}</td>
