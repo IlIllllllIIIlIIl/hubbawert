@@ -548,9 +548,15 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 						        </div>
 						        <div class="d-flex justify-content-end gap-2">
 						            <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target=".category-toggle, #editCategory'.$cat['id'].'">Abbrechen</button>
-						            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { this.form.action.value=\'delete_category\'; this.form.submit(); }">🗑️ Löschen</button>
+						            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { document.getElementById(\'deleteForm'.$cat['id'].'\').submit(); }">🗑️ Löschen</button>
 						            <button type="submit" class="btn btn-success btn-sm">Speichern</button>
+						            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { document.getElementById(\'deleteForm'.$cat['id'].'\').submit(); }">🗑️ Löschen</button>
 						        </div>
+						    </form>
+						    <form method="POST" id="deleteForm'.$cat['id'].'" style="display:none">
+						        <input type="hidden" name="action" value="delete_category">
+						        <input type="hidden" name="category_id" value="'.$cat['id'].'">
+						    </form>
 						    </form>
 						</div>' : '').
 						'</div>';
