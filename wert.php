@@ -152,27 +152,31 @@ img.rarity.l0 {
 .btn-group{
 	white-space:nowrap;
 }
-.cats a{
-border: 1px solid var(--bs-border-color);
-position: relative;
-padding-right: 35px
+.cats .cat-link {
+display: block;
+text-decoration: none;
+color: inherit;
+padding: 6px;
+flex-grow: 1
 }
-.cats a > img{
-float:left;
+.cats .cat-link:hover {
+color: inherit
+}
+.cats img {
+float: left;
 margin-right: 8px;
 height: 16px
 }
 .cats .edit-btn {
 cursor: pointer;
-position: absolute;
-right: 8px;
-top: 50%;
-transform: translateY(-50%);
+padding: 6px 12px;
 opacity: 0.7;
-transition: opacity 0.2s ease
+transition: opacity 0.2s ease;
+border-left: 1px solid var(--bs-border-color)
 }
 .cats .edit-btn:hover {
-opacity: 1
+opacity: 1;
+background: rgba(255, 255, 255, 0.1)
 }
 #details .modal-dialog{
 	max-width:768px;
@@ -532,10 +536,12 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
 						$pagecontent .= '<div class="col-md-6">
 						<div class="d-flex mb-2">
-						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1 d-flex align-items-center justify-content-between" role="button">
-						        <span class="d-flex align-items-center">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</span>
-						        '.($isEditor ? '<span class="edit-btn" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten">✏️</span>' : '').'
-						    </a>
+						    <div class="btn btn-dark btn-sm flex-grow-1 d-flex align-items-center justify-content-between p-0">
+						        <a href="'.$core->url.'wert?c='.$cat['id'].'" class="cat-link" role="button">
+						            <span class="d-flex align-items-center">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</span>
+						        </a>
+						        '.($isEditor ? '<span class="edit-btn" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten" onclick="event.stopPropagation()">✏️</span>' : '').'
+						    </div>
 						</div>'.
 						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
 						    <form method="POST" class="mb-3">
