@@ -450,25 +450,28 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 		<div class="modal-content">
 			<div class="modal-header">
 			<h5 class="modal-title">Kategorien</h5>
-			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+			<div class="d-flex align-items-center gap-2">'.
+			($isEditor ? '<button type="button" class="btn btn-success btn-sm" data-bs-toggle="collapse" data-bs-target=".category-toggle">➕ Hinzufügen</button>' : '').
+			'<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
 			</div>
-			<div class="modal-body">
-				<div class="categories-form d-none">
-				    <form method="POST">
-				        <input type="hidden" name="action" value="add_category">
-				        <div class="mb-3">
-				            <label class="form-label">Kategorie Name</label>
-				            <input type="text" name="category_name" class="form-control" required>
-				        </div>
-				        <div class="d-flex justify-content-between">
-				            <button type="button" class="btn btn-secondary" id="cancelCategoryBtn">Abbrechen</button>
-				            <button type="submit" class="btn btn-success">Speichern</button>
-				        </div>
-				    </form>
-				</div>
-				<!--<input type="text" name="catSearch" id="catSearch" placeholder="🔍 Kategorie suchen ..." class="form-control w-100 mb-2">-->
-				<div class="cats">
-					<div class="row">';
+			</div>
+			<div class="modal-body">'.
+			($isEditor ? '<div class="collapse category-toggle">
+			    <form method="POST" class="mb-3">
+			        <input type="hidden" name="action" value="add_category">
+			        <div class="mb-3">
+			            <label class="form-label">Kategorie Name</label>
+			            <input type="text" name="category_name" class="form-control" required>
+			        </div>
+			        <div class="d-flex justify-content-between">
+			            <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target=".category-toggle">Abbrechen</button>
+			            <button type="submit" class="btn btn-success">Speichern</button>
+			        </div>
+			    </form>
+			</div>' : '').
+			'
+				<div class="cats collapse category-toggle show">
+				<div class="row">';
 					$select = $core->m->prepare('SELECT id,name,image FROM furniture_rare_categories ORDER BY name ASC');
 					$select->execute();
 					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {

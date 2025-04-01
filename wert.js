@@ -216,28 +216,3 @@ item.addEventListener("click", itemModal);
 });
 }
 setTooltips();
-
-// Categories modal functionality
-if (isEditor) {
-    const categoriesModal = document.getElementById('categories');
-    const modalHeader = categoriesModal.querySelector('.modal-header');
-    modalHeader.querySelector('.btn-close').insertAdjacentHTML('beforebegin', '<button type="button" class="btn btn-success btn-sm me-2">➕ Hinzufügen</button>');
-    
-    // Function to toggle form visibility
-    function toggleView(show) {
-        const formDiv = categoriesModal.querySelector('.categories-form');
-        const catsDiv = categoriesModal.querySelector('.cats');
-        formDiv.classList.toggle('d-none', !show);
-        catsDiv.classList.toggle('d-none', show);
-    }
-    
-    // Add event listeners
-    const addButton = modalHeader.querySelector('.btn-success');
-    addButton.addEventListener('click', () => toggleView(true));
-    
-    // Handle cancel button
-    categoriesModal.querySelector('#cancelCategoryBtn').addEventListener('click', () => toggleView(false));
-    
-    // Reset form view when modal is hidden
-    categoriesModal.addEventListener('hidden.bs.modal', () => toggleView(false));
-}
