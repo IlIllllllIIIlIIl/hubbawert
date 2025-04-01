@@ -537,7 +537,7 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 						$pagecontent .= '<div class="col-md-6">
 						<div class="d-flex cat-wrapper'.($isEditor ? ' has-edit' : '').' mb-2">
 						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a>'.
-						    ($isEditor ? '<button type="button" class="btn btn-dark btn-sm edit-btn" data-bs-toggle="collapse" data-bs-target=".category-toggle, #editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
+						    ($isEditor ? '<button type="button" class="btn btn-dark btn-sm edit-btn" data-bs-toggle="collapse" data-bs-target=".cats.category-toggle, #editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
 						'</div>'.
 						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
 						    <form method="POST" class="mb-3 border rounded p-3" id="categoryForm'.$cat['id'].'">
@@ -548,7 +548,7 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 						            <input type="text" name="category_name" class="form-control form-control-sm" value="'.htmlspecialchars($cat['name']).'" required>
 						        </div>
 						        <div class="d-flex justify-content-end gap-2">
-						            <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target=".category-toggle, #editCategory'.$cat['id'].'">Abbrechen</button>
+						            <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target=".cats.category-toggle, #editCategory'.$cat['id'].'">Abbrechen</button>
 						            <button type="submit" class="btn btn-success" onclick="document.getElementById(\'categoryAction'.$cat['id'].'\').value=\'edit_category\'">Speichern</button>
 						            <button type="submit" class="btn btn-danger" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { document.getElementById(\'categoryAction'.$cat['id'].'\').value=\'delete_category\'; return true; } return false;">🗑️ Löschen</button>
 						        </div>
