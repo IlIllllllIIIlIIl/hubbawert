@@ -216,6 +216,47 @@ function setTooltips(){
 	});
 }
 setTooltips();
+
+// Categories modal functionality
+if(isEditor) {
+    const categoriesModal = document.getElementById('categories');
+    
+    categoriesModal.addEventListener('show.bs.modal', function () {
+        const modalHeader = this.querySelector('.modal-header');
+        if(!modalHeader.querySelector('.btn-success')) {
+            const closeButton = modalHeader.querySelector('.btn-close');
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'btn btn-success btn-sm me-2';
+            addButton.textContent = '➕ Hinzufügen';
+            addButton.addEventListener('click', () => toggleCategoryForm(true));
+            modalHeader.insertBefore(addButton, closeButton);
+        }
+    });
+
+    // Handle form visibility toggling
+    function toggleCategoryForm(show) {
+        const formDiv = categoriesModal.querySelector('.categories-form');
+        const catsDiv = categoriesModal.querySelector('.cats');
+        if (show) {
+            formDiv.classList.remove('d-none');
+            catsDiv.classList.add('d-none');
+        } else {
+            formDiv.classList.add('d-none');
+            catsDiv.classList.remove('d-none');
+        }
+    }
+
+    // Handle cancel button
+    categoriesModal.querySelector('#cancelCategoryBtn').addEventListener('click', () => {
+        toggleCategoryForm(false);
+    });
+
+    // Reset form view when modal is hidden
+    categoriesModal.addEventListener('hidden.bs.modal', function () {
+        toggleCategoryForm(false);
+    });
+}
 /*
 function catHandler(event){
 	event.preventDefault();
