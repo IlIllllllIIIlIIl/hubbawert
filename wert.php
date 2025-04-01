@@ -180,8 +180,8 @@ img.rarity.l0 {
 #details .box{
 	padding:0 !important
 }
-#details .modal-body .edit, #details .modal-body .editFile{
-	position: absolute;
+#details .modal-body .edit, #details .modal-body .delete, #details .modal-body .editFile{
+position: absolute;
 	bottom: 15px;
 	right: 15px;
 	cursor: pointer;
@@ -189,17 +189,23 @@ img.rarity.l0 {
 	border:0
 }
 #details .modal-body .edit{
-	right: 15px;
+right: 60px;
+}
+#details .modal-body .delete{
+right: 15px;
+color: #e37373;
 }
 #details .modal-body .editFile{
 	left: 15px;
 	max-width:200px
 }
-#details .modal-body .edit:hover{
-	opacity:0.8
+#details .modal-body .edit:hover,
+#details .modal-body .delete:hover{
+opacity:0.8
 }
-#details .modal-body .edit:active{
-	opacity:0.6
+#details .modal-body .edit:active,
+#details .modal-body .delete:active{
+opacity:0.6
 }
 </style>';
 /*
@@ -252,7 +258,34 @@ if($isEditor){
 	$maxSizeBytes = 5242880;
 	$error = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
-		$isEdit = isset($_POST['oldName']);
+	if(isset($_POST['delete'])){
+	    $select = $core->m->prepare('SELECT image FROM furniture_rare_details WHERE item_name=?');
+	    $select->execute([$_POST['delete']]);
+	    $item = $select->fetch(PDO::FETCH_ASSOC);
+	    if($item){
+	        $select = $core->m->prepare('SELECT id FROM furniture_rare_details WHERE item_name=?');
+	        $select->execute([$_POST['delete']]);
+	        $furni = $select->fetch(PDO::FETCH_ASSOC);
+	        
+	        if($furni){
+	            $deleteChanges = $core->m->prepare('DELETE FROM furniture_rare_changes WHERE furni_id=?');
+	            $deleteChanges->execute([$furni['id']]);
+	        }
+	        
+	        @unlink($filedir.'/'.$item['image']);
+	        $delete = $core->m->prepare('DELETE FROM furniture_rare_details WHERE item_name=?');
+	        if($delete->execute([$_POST['delete']])){
+	            @unlink($cachePath);
+	            header('Location: '.$core->url.'wert');
+	            exit;
+	        }else{
+	            $error .= 'Fehler beim Löschen des Möbels<br>';
+	        }
+	    }else{
+	        $error .= 'Möbel nicht gefunden<br>';
+	    }
+	}
+	$isEdit = isset($_POST['oldName']);
 		$allowedExts = array('png', 'jpg', 'jpeg', 'gif');
 		$allowedMime = array('image/png', 'image/jpeg', 'image/pjpeg', 'image/gif');
 		if(!isset($_POST['itemName'])){

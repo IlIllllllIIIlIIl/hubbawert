@@ -105,9 +105,9 @@ async function itemModal(e){
 	iModal.innerHTML = itemModalTemplate;
 	iModal.children[0].innerHTML = this.innerHTML;
 	if(isEditor){
-		iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten">');
-		document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
-			if(event.target.value.includes('Bearbeiten')){
+				iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
+				document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
+				if(event.target.value.includes('Bearbeiten')){
 				event.preventDefault();
 				event.target.value = '💾 Speichern';
 				event.target.style.color = '#3ab4e3';
@@ -118,8 +118,18 @@ async function itemModal(e){
 				makeEditable('#details .item > :nth-child(2)', 'price');
 				makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 				makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
-			}
-		});
+				}
+				});
+				document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
+				if(confirm('Möchtest du diese Rarität wirklich löschen?')){
+				event.preventDefault();
+				const form = document.createElement('form');
+				form.method = 'POST';
+				form.innerHTML = `<input type="hidden" name="delete" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">`;
+				document.body.appendChild(form);
+				form.submit();
+				}
+				});
 	}
 
 	const response = await fetch("?i="+this.id);
