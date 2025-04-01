@@ -234,19 +234,10 @@ function toggleCategoryForm(show) {
 }
 
 if (isEditor) {
-    // Create and add the button when modal is shown
-    categoriesModal.addEventListener('show.bs.modal', function () {
-        const modalHeader = this.querySelector('.modal-header');
-        if (!modalHeader.querySelector('.btn-success')) {
-            const closeButton = modalHeader.querySelector('.btn-close');
-            const addButton = document.createElement('button');
-            addButton.type = 'button';
-            addButton.className = 'btn btn-success btn-sm me-2';
-            addButton.textContent = '➕ Hinzufügen';
-            addButton.addEventListener('click', () => toggleCategoryForm(true));
-            modalHeader.insertBefore(addButton, closeButton);
-        }
-    });
+    const modalHeader = categoriesModal.querySelector('.modal-header');
+    modalHeader.querySelector('.btn-close').insertAdjacentHTML('beforebegin', '<button type="button" class="btn btn-success btn-sm me-2">➕ Hinzufügen</button>');
+    const addButton = modalHeader.querySelector('.btn-success');
+    addButton.addEventListener('click', () => toggleCategoryForm(true));
 
     // Handle cancel button
     categoriesModal.querySelector('#cancelCategoryBtn').addEventListener('click', () => {
