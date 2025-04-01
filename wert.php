@@ -104,9 +104,10 @@ $cssappendix .= '<style>
 	padding: 7px 3px !important
 }
 .btn{
-	font-size: 15px;
-	padding: 6px;
-	line-height:24px
+font-size: 15px;
+padding: 6px;
+line-height:24px;
+display: inline-block !important
 }
 .col-md-3 .btn{
 	border:var(--bs-border-width) solid var(--bs-border-color)
@@ -539,24 +540,18 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 						    ($isEditor ? '<button type="button" class="btn btn-dark btn-sm edit-btn" data-bs-toggle="collapse" data-bs-target=".category-toggle, #editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
 						'</div>'.
 						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
-						    <form method="POST" class="mb-3 border rounded p-3">
-						        <input type="hidden" name="action" value="edit_category">
+						    <form method="POST" class="mb-3 border rounded p-3" id="categoryForm'.$cat['id'].'">
+						        <input type="hidden" name="action" id="categoryAction'.$cat['id'].'" value="edit_category">
 						        <input type="hidden" name="category_id" value="'.$cat['id'].'">
 						        <div class="mb-3">
 						            <label class="form-label">Kategorie Name</label>
 						            <input type="text" name="category_name" class="form-control form-control-sm" value="'.htmlspecialchars($cat['name']).'" required>
 						        </div>
 						        <div class="d-flex justify-content-end gap-2">
-						            <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target=".category-toggle, #editCategory'.$cat['id'].'">Abbrechen</button>
-						            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { document.getElementById(\'deleteForm'.$cat['id'].'\').submit(); }">🗑️ Löschen</button>
-						            <button type="submit" class="btn btn-success btn-sm">Speichern</button>
-						            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { document.getElementById(\'deleteForm'.$cat['id'].'\').submit(); }">🗑️ Löschen</button>
+						            <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target=".category-toggle, #editCategory'.$cat['id'].'">Abbrechen</button>
+						            <button type="submit" class="btn btn-success" onclick="document.getElementById(\'categoryAction'.$cat['id'].'\').value=\'edit_category\'">Speichern</button>
+						            <button type="submit" class="btn btn-danger" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { document.getElementById(\'categoryAction'.$cat['id'].'\').value=\'delete_category\'; return true; } return false;">🗑️ Löschen</button>
 						        </div>
-						    </form>
-						    <form method="POST" id="deleteForm'.$cat['id'].'" style="display:none">
-						        <input type="hidden" name="action" value="delete_category">
-						        <input type="hidden" name="category_id" value="'.$cat['id'].'">
-						    </form>
 						    </form>
 						</div>' : '').
 						'</div>';
