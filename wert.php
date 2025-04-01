@@ -449,9 +449,12 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title">Kategorien</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-				</div>
+			<h5 class="modal-title">Kategorien</h5>
+			<div class="d-flex align-items-center gap-2">
+			<button type="button" class="btn btn-success btn-sm">➕ Hinzufügen</button>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+			</div>
+			</div>
 			<div class="modal-body">
 				<div class="categories-form d-none">
 				    <form method="POST">
