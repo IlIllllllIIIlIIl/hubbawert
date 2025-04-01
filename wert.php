@@ -260,16 +260,56 @@ if($isEditor){
 	$maxSizeBytes = 5242880;
 	$error = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
-	if(isset($_POST['action']) && $_POST['action'] === 'add_category'){
-	    if(empty($_POST['category_name'])) {
-	        $error .= 'Kategorie Name ist erforderlich<br>';
-	    } else {
-	        $insert = $core->m->prepare('INSERT INTO furniture_rare_categories (name) VALUES (?)');
-	        if($insert->execute([$_POST['category_name']])){
+	if(isset($_POST['action'])) {
+	    if($_POST['action'] === 'add_category'){
+	        if(empty($_POST['category_name'])) {
+	            $error .= 'Kategorie Name ist erforderlich<br>';
+	        } else {
+	            $insert = $core->m->prepare('INSERT INTO furniture_rare_categories (name) VALUES (?)');
+	            if($insert->execute([$_POST['category_name']])){
+	                header('Location: '.$core->url.'wert');
+	                exit;
+	            } else {
+	                $error .= 'Fehler beim Erstellen der Kategorie<br>';
+	            }
+	        }
+	    }
+	    else if($_POST['action'] === 'edit_category'){
+	        if(empty($_POST['category_name'])) {
+	            $error .= 'Kategorie Name ist erforderlich<br>';
+	        } else {
+	            $update = $core->m->prepare('UPDATE furniture_rare_categories SET name = ? WHERE id = ?');
+	            if($update->execute([$_POST['category_name'], $_POST['category_id']])){
+	                header('Location: '.$core->url.'wert');
+	                exit;
+	            } else {
+	                $error .= 'Fehler beim Bearbeiten der Kategorie<br>';
+	            }
+	        }
+	    }
+	    else if($_POST['action'] === 'delete_category') {
+	        $delete = $core->m->prepare('DELETE FROM furniture_rare_categories WHERE id = ?');
+	        if($delete->execute([$_POST['category_id']])) {
+	            // Reset category to 0 for items that used this category
+	            $update = $core->m->prepare('UPDATE furniture_rare_details SET category = 0 WHERE category = ?');
+	            $update->execute([$_POST['category_id']]);
 	            header('Location: '.$core->url.'wert');
 	            exit;
 	        } else {
-	            $error .= 'Fehler beim Erstellen der Kategorie<br>';
+	            $error .= 'Fehler beim Löschen der Kategorie<br>';
+	        }
+	    }
+	    else if($_POST['action'] === 'edit_category'){
+	        if(empty($_POST['category_name'])) {
+	            $error .= 'Kategorie Name ist erforderlich<br>';
+	        } else {
+	            $update = $core->m->prepare('UPDATE furniture_rare_categories SET name = ? WHERE id = ?');
+	            if($update->execute([$_POST['category_name'], $_POST['category_id']])){
+	                header('Location: '.$core->url.'wert');
+	                exit;
+	            } else {
+	                $error .= 'Fehler beim Bearbeiten der Kategorie<br>';
+	            }
 	        }
 	    }
 	}
@@ -475,7 +515,29 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 					$select = $core->m->prepare('SELECT id,name,image FROM furniture_rare_categories ORDER BY name ASC');
 					$select->execute();
 					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-						$pagecontent .= '<div class="col-md-6"><a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm w-100 mb-2" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a></div>';
+						$pagecontent .= '<div class="col-md-6">
+						<div class="d-flex gap-2 mb-2">
+						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a>'.
+						    ($isEditor ? '<button type="button" class="btn btn-dark btn-sm" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
+						'</div>'.
+						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
+						    <form method="POST" class="mb-3">
+						        <input type="hidden" name="action" value="edit_category">
+						        <input type="hidden" name="category_id" value="'.$cat['id'].'">
+						        <div class="mb-3">
+						            <label class="form-label">Kategorie Name</label>
+						            <input type="text" name="category_name" class="form-control" value="'.htmlspecialchars($cat['name']).'" required>
+						        </div>
+						        <div class="d-flex justify-content-between align-items-center">
+						            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { this.form.action.value=\'delete_category\'; this.form.submit(); }">🗑️ Löschen</button>
+						            <div>
+						                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'">Abbrechen</button>
+						                <button type="submit" class="btn btn-success btn-sm">Speichern</button>
+						            </div>
+						        </div>
+						    </form>
+						</div>' : '').
+						'</div>';
 					}
 $pagecontent .= '</div>
 				</div>
