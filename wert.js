@@ -151,8 +151,7 @@ async function itemModal(e){
 	<div class="col">${this.id}</div>`;
 	iModal.children[2].innerText = json.info.longdesc;
 
-let editMode = document.querySelector('#details .modal-body .edit')?.value?.includes('Speichern');
-if(isAdmin && editMode) {
+if(isAdmin && document.querySelector('#details .modal-body .edit')?.value?.includes('Speichern')) {
     iModal.children[4].innerHTML = '<div class="text-center">Admin View</div>';
 } else {
     iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
