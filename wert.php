@@ -1,5 +1,7 @@
 <?php
-ini_set('display_errors', 1);
+$select = $core->m->prepare('SELECT p.id FROM furniture_rare_staff s LEFT JOIN players p ON(p.username = s.username)');
+$select->execute();
+$allowedPeople = $select->fetchAll(PDO::FETCH_COLUMN);
 if(isset($_GET['i'])){
 	header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
@@ -24,7 +26,7 @@ if(isset($_GET['i'])){
 			}
 		}
 		// get owners
-		$select = $core->m->prepare('SELECT p.username,p.figure,COUNT(i.id) AS c FROM items i LEFT JOIN players p ON(p.id=i.user_id) WHERE (i.base_item=? OR (i.gift_base_item=? AND i.base_item != i.gift_base_item)) AND p.rank < 7 GROUP BY p.id ORDER BY p.last_online DESC');
+		$select = $core->m->prepare('SELECT p.username,p.figure,COUNT(i.id) AS c FROM items i LEFT JOIN players p ON(p.id=i.user_id) WHERE (i.base_item=? OR (i.gift_base_item=? AND i.base_item != i.gift_base_item)) AND p.rank < 8 GROUP BY p.id ORDER BY p.last_online DESC');
 		$select->execute([$response['info']['id'],$response['info']['id']]);
 		$response['owners'] = $select->fetchAll(PDO::FETCH_ASSOC);
 		// get price history
@@ -244,7 +246,6 @@ $pagecontent .= '<div class="container">
 	</div>
 </div>';
 // admin section
-$allowedPeople = [4, 1100852, 6292, 895535, 662198, 273757];
 $isEditor = isset($u_details['id']) && in_array($u_details['id'], $allowedPeople) ? 1 : 0;
 if($isEditor){
 	$filedir = $core->path.'/_dat/serve/img/wert/furni';
@@ -341,7 +342,7 @@ if($isEditor){
 $pagecontent .= '<div class="row rare justify-content-between">';
 // cache for 30 minutes
 if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
-	$rankPeople = $core->m->prepare('SELECT id FROM players WHERE rank > 6');
+	$rankPeople = $core->m->prepare('SELECT id FROM players WHERE rank > 7');
 	$rankPeople->execute();
 	$result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
 	$rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
