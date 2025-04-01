@@ -153,12 +153,27 @@ img.rarity.l0 {
 	white-space:nowrap;
 }
 .cats a{
-	border: 1px solid var(--bs-border-color)
+border: 1px solid var(--bs-border-color);
+position: relative;
+padding-right: 35px
 }
 .cats a > img{
-	float:left
+float:left;
+margin-right: 8px;
+height: 16px
 }
-
+.cats .edit-btn {
+cursor: pointer;
+position: absolute;
+right: 8px;
+top: 50%;
+transform: translateY(-50%);
+opacity: 0.7;
+transition: opacity 0.2s ease
+}
+.cats .edit-btn:hover {
+opacity: 1
+}
 #details .modal-dialog{
 	max-width:768px;
 }
@@ -516,10 +531,12 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 					$select->execute();
 					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
 						$pagecontent .= '<div class="col-md-6">
-						<div class="d-flex gap-2 mb-2">
-						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a>'.
-						    ($isEditor ? '<button type="button" class="btn btn-dark btn-sm" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
-						'</div>'.
+						<div class="d-flex mb-2">
+						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1 d-flex align-items-center justify-content-between" role="button">
+						        <span class="d-flex align-items-center">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</span>
+						        '.($isEditor ? '<span class="edit-btn" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten">✏️</span>' : '').'
+						    </a>
+						</div>'.
 						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
 						    <form method="POST" class="mb-3">
 						        <input type="hidden" name="action" value="edit_category">
