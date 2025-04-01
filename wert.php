@@ -152,31 +152,22 @@ img.rarity.l0 {
 .btn-group{
 	white-space:nowrap;
 }
-.cats .cat-link {
-display: block;
-text-decoration: none;
-color: inherit;
-padding: 6px;
-flex-grow: 1
+.cats a{
+border: 1px solid var(--bs-border-color);
+position: relative
 }
-.cats .cat-link:hover {
-color: inherit
-}
-.cats img {
-float: left;
-margin-right: 8px;
-height: 16px
+.cats a > img{
+float:left;
+margin-right: 8px
 }
 .cats .edit-btn {
 cursor: pointer;
-padding: 6px 12px;
+margin-left: 8px;
 opacity: 0.7;
-transition: opacity 0.2s ease;
-border-left: 1px solid var(--bs-border-color)
+transition: opacity 0.2s ease
 }
 .cats .edit-btn:hover {
-opacity: 1;
-background: rgba(255, 255, 255, 0.1)
+opacity: 1
 }
 #details .modal-dialog{
 	max-width:768px;
@@ -535,13 +526,10 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 					$select->execute();
 					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
 						$pagecontent .= '<div class="col-md-6">
-						<div class="d-flex mb-2">
-						    <div class="btn btn-dark btn-sm flex-grow-1 d-flex align-items-center justify-content-between p-0">
-						        <a href="'.$core->url.'wert?c='.$cat['id'].'" class="cat-link" role="button">
-						            <span class="d-flex align-items-center">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</span>
-						        </a>
+						<div class="d-flex gap-2 mb-2">
+						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'
 						        '.($isEditor ? '<span class="edit-btn" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten" onclick="event.stopPropagation()">✏️</span>' : '').'
-						    </div>
+						    </a>
 						</div>'.
 						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
 						    <form method="POST" class="mb-3">
