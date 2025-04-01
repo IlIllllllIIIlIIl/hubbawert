@@ -31,7 +31,7 @@ if(isset($_GET['i'])){
 		$select->execute([$response['info']['id'],$response['info']['id']]);
 		$response['owners'] = $select->fetchAll(PDO::FETCH_ASSOC);
 		// get price history
-		$select = $core->m->prepare('SELECT old_price, `timestamp` FROM furniture_rare_changes WHERE furni_id=?');
+		$select = $core->m->prepare('SELECT c.old_price, c.timestamp, p.username FROM furniture_rare_changes c LEFT JOIN players p ON p.id = c.player_id WHERE c.furni_id=?');
 		$select->execute([$response['info']['rare_id']]);
 		$response['changes'] = $select->fetchAll(PDO::FETCH_ASSOC);
 	}else{
@@ -368,6 +368,7 @@ if($isEditor){
 		</div>
 	</form>';
 }
+
 $pagecontent .= '<div class="row rare justify-content-between">';
 // cache for 30 minutes
 if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
@@ -376,18 +377,6 @@ if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
 	$result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
 	$rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
 	
-	$recentLogs = [];
-	// Fetch last 20 logs for admin view if admin
-	if ($isAdmin) {
-	    $logsQuery = $core->m->prepare('
-	        SELECT c.player_id, p.username, c.furni_id, c.old_price, c.timestamp
-	        FROM furniture_rare_changes c
-	        LEFT JOIN players p ON p.id = c.player_id
-	        ORDER BY c.timestamp DESC LIMIT 20
-	    ');
-	    $logsQuery->execute();
-	    $recentLogs = $logsQuery->fetchAll(PDO::FETCH_ASSOC);
-	}
 	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.category,r.image,r.views,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
 	$select->execute();
 	$items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
@@ -491,7 +480,6 @@ const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
 const isEditor = '.$isEditor.';
 const isAdmin = '.$isAdmin.';
-const recentLogs = '.json_encode($recentLogs).';
 let rarity = '.$rarity.';
 let category = '.$category.';
 let search = document.getElementById("search").value;
