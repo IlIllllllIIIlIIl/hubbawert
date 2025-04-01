@@ -189,7 +189,7 @@ position: absolute;
 	border:0
 }
 #details .modal-body .edit{
-right: 60px;
+right: 105px;
 }
 #details .modal-body .delete{
 right: 15px;
