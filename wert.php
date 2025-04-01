@@ -156,14 +156,16 @@ img.rarity.l0 {
 gap: 0
 }
 .cats a {
-border: 1px solid var(--bs-border-color);
-border-top-right-radius: 0;
-border-bottom-right-radius: 0;
-border-right: none
+border: 1px solid var(--bs-border-color)
 }
 .cats a > img {
 float: left;
 margin-right: 8px
+}
+.cats .cat-wrapper.has-edit a {
+border-top-right-radius: 0;
+border-bottom-right-radius: 0;
+border-right: none
 }
 .cats .edit-btn {
 cursor: pointer;
