@@ -1,7 +1,8 @@
 <?php
-$select = $core->m->prepare('SELECT p.id FROM furniture_rare_staff s LEFT JOIN players p ON(p.username = s.username)');
+$select = $core->m->prepare('SELECT p.id, s.edit_rights FROM furniture_rare_staff s LEFT JOIN players p ON(p.username = s.username)');
 $select->execute();
-$allowedPeople = $select->fetchAll(PDO::FETCH_COLUMN);
+$staffData = $select->fetchAll(PDO::FETCH_ASSOC);
+$allowedPeople = array_column($staffData, 'edit_rights', 'id');
 if(isset($_GET['i'])){
 	header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
@@ -252,25 +253,20 @@ $pagecontent .= '<div class="container">
 	</div>
 </div>';
 // admin section
-$isEditor = isset($u_details['id']) && in_array($u_details['id'], $allowedPeople) ? 1 : 0;
+$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
+$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
 if($isEditor){
 	$filedir = $core->path.'/_dat/serve/img/wert/furni';
 	$maxSizeBytes = 5242880;
 	$error = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	if(isset($_POST['delete'])){
-	    $select = $core->m->prepare('SELECT image FROM furniture_rare_details WHERE item_name=?');
+	    $select = $core->m->prepare('SELECT id, image FROM furniture_rare_details WHERE item_name=?');
 	    $select->execute([$_POST['delete']]);
 	    $item = $select->fetch(PDO::FETCH_ASSOC);
 	    if($item){
-	        $select = $core->m->prepare('SELECT id FROM furniture_rare_details WHERE item_name=?');
-	        $select->execute([$_POST['delete']]);
-	        $furni = $select->fetch(PDO::FETCH_ASSOC);
-	        
-	        if($furni){
-	            $deleteChanges = $core->m->prepare('DELETE FROM furniture_rare_changes WHERE furni_id=?');
-	            $deleteChanges->execute([$furni['id']]);
-	        }
+	        $deleteChanges = $core->m->prepare('DELETE FROM furniture_rare_changes WHERE furni_id=?');
+	        $deleteChanges->execute([$item['id']]);
 	        
 	        @unlink($filedir.'/'.$item['image']);
 	        $delete = $core->m->prepare('DELETE FROM furniture_rare_details WHERE item_name=?');
@@ -481,6 +477,7 @@ const itemModalTemplate = \''.$itemModalTemplate.'\';
 const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
 const isEditor = '.$isEditor.';
+const isAdmin = '.$isAdmin.';
 let rarity = '.$rarity.';
 let category = '.$category.';
 let search = document.getElementById("search").value;

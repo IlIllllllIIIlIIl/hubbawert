@@ -151,16 +151,20 @@ async function itemModal(e){
 	<div class="col">${this.id}</div>`;
 	iModal.children[2].innerText = json.info.longdesc;
 
-
-	iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
-	json.owners.forEach(owner => {
-		let img = document.createElement('img');
-		img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
-		img.title = owner.username + ' ' + owner.c + 'x';
-		img.loading = "lazy";
-		iModal.children[4].appendChild(img);
-		new bootstrap.Tooltip(img);
-	});
+let editMode = document.querySelector('#details .modal-body .edit')?.value?.includes('Speichern');
+if(isAdmin && editMode) {
+    iModal.children[4].innerHTML = '<div class="text-center">Admin View</div>';
+} else {
+    iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
+    json.owners.forEach(owner => {
+        let img = document.createElement('img');
+        img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
+        img.title = owner.username + ' ' + owner.c + 'x';
+        img.loading = "lazy";
+        iModal.children[4].appendChild(img);
+        new bootstrap.Tooltip(img);
+    });
+}
 
 	if(json.changes.length > 1){
 		iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
