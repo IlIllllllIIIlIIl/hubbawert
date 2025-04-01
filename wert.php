@@ -153,21 +153,17 @@ img.rarity.l0 {
 	white-space:nowrap;
 }
 .cats .cat-wrapper {
-gap: 0
+gap: 2px
 }
-.cats .cat-wrapper.has-edit > a {
-border-top-right-radius: 0;
-border-bottom-right-radius: 0;
-border-right: 0
+.cats a {
+border: 1px solid var(--bs-border-color)
 }
-.cats .cat-wrapper > a > img {
+.cats a > img {
 float: left;
 margin-right: 8px
 }
 .cats .edit-btn {
 cursor: pointer;
-border-top-left-radius: 0;
-border-bottom-left-radius: 0;
 opacity: 0.7;
 padding: 6px 10px;
 transition: opacity 0.2s ease
