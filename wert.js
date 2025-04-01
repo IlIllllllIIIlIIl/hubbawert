@@ -152,7 +152,16 @@ async function itemModal(e){
 	iModal.children[2].innerText = json.info.longdesc;
 
 if(isAdmin) {
-    iModal.children[4].innerHTML = '<div class="text-center">Admin View</div>';
+    let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
+    recentLogs.forEach(log => {
+        logsHtml += `<tr>
+            <td>${log.username}</td>
+            <td>${log.old_price.toLocaleString()}</td>
+            <td>${dateFormat(log.timestamp)}</td>
+        </tr>`;
+    });
+    logsHtml += '</tbody></table></div>';
+    iModal.children[4].innerHTML = logsHtml;
 } else {
     iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
     json.owners.forEach(owner => {
