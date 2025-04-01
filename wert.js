@@ -218,34 +218,26 @@ item.addEventListener("click", itemModal);
 setTooltips();
 
 // Categories modal functionality
-const categoriesModal = document.getElementById('categories');
-
-// Handle form visibility toggling
-function toggleCategoryForm(show) {
-    const formDiv = categoriesModal.querySelector('.categories-form');
-    const catsDiv = categoriesModal.querySelector('.cats');
-    if (show) {
-        formDiv.classList.remove('d-none');
-        catsDiv.classList.add('d-none');
-    } else {
-        formDiv.classList.add('d-none');
-        catsDiv.classList.remove('d-none');
-    }
-}
-
 if (isEditor) {
+    const categoriesModal = document.getElementById('categories');
     const modalHeader = categoriesModal.querySelector('.modal-header');
     modalHeader.querySelector('.btn-close').insertAdjacentHTML('beforebegin', '<button type="button" class="btn btn-success btn-sm me-2">➕ Hinzufügen</button>');
+    
+    // Function to toggle form visibility
+    function toggleView(show) {
+        const formDiv = categoriesModal.querySelector('.categories-form');
+        const catsDiv = categoriesModal.querySelector('.cats');
+        formDiv.classList.toggle('d-none', !show);
+        catsDiv.classList.toggle('d-none', show);
+    }
+    
+    // Add event listeners
     const addButton = modalHeader.querySelector('.btn-success');
-    addButton.addEventListener('click', () => toggleCategoryForm(true));
-
+    addButton.addEventListener('click', () => toggleView(true));
+    
     // Handle cancel button
-    categoriesModal.querySelector('#cancelCategoryBtn').addEventListener('click', () => {
-        toggleCategoryForm(false);
-    });
-
+    categoriesModal.querySelector('#cancelCategoryBtn').addEventListener('click', () => toggleView(false));
+    
     // Reset form view when modal is hidden
-    categoriesModal.addEventListener('hidden.bs.modal', function () {
-        toggleCategoryForm(false);
-    });
+    categoriesModal.addEventListener('hidden.bs.modal', () => toggleView(false));
 }
