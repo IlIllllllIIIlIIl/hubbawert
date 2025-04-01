@@ -376,8 +376,8 @@ if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
 	$result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
 	$rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
 	
-	// Fetch last 20 logs for admin view
 	$recentLogs = [];
+	// Fetch last 20 logs for admin view if admin
 	if ($isAdmin) {
 	    $logsQuery = $core->m->prepare('
 	        SELECT c.player_id, p.username, c.furni_id, c.old_price, c.timestamp
