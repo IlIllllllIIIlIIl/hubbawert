@@ -90,7 +90,29 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
+let isAddMode = false;
+
+document.getElementById('addItemBtn')?.addEventListener('click', () => {
+    isAddMode = true;
+    const iModal = document.querySelector('#details .modal-body');
+    iModal.replaceChildren();
+    iModal.innerHTML = itemModalTemplate;
+    
+    // Create empty form structure
+    document.querySelector('#details .modal-content').innerHTML = `
+        <form class="modal-body row" enctype="multipart/form-data" method="POST">
+            <div class="col-md-12 item">
+                <input class="editFile" type="file" name="file" accept="image/*" required>
+                <input type="text" name="itemName" placeholder="item_name" required>
+                <input type="text" name="itemDesc" placeholder="Beschreibung" required>
+            </div>
+        </form>`;
+    
+    new bootstrap.Modal('#details').show();
+});
+
 async function itemModal(e){
+    if(isAddMode) return;
 const iModal = document.querySelector('#details .modal-body');
 
 if(lastModal != this.id){
