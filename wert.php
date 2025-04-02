@@ -530,7 +530,15 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 			'
 				<div class="cats collapse category-toggle show">
 				<div class="row">';
-					$select = $core->m->prepare('SELECT id,name,image FROM furniture_rare_categories ORDER BY name ASC');
+					$select = $core->m->prepare('SELECT frc.id, frc.name, (
+					    SELECT frd.image
+					    FROM furniture_rare_details frd
+					    WHERE frd.category_id = frc.id
+					    ORDER BY RAND()
+					    LIMIT 1
+					) as image
+					FROM furniture_rare_categories frc
+					ORDER BY frc.name ASC');
 					$select->execute();
 					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
 						$pagecontent .= '<div class="col-md-6">
