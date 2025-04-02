@@ -217,50 +217,7 @@ color: #e37373;
 #details .modal-body .editFile{
 	left: 15px;
 	max-width:200px
-	}
-	#details .modal-body .item input[name="itemName"],
-	#details .modal-body .item input[name="itemDesc"] {
-	    position: absolute;
-	    width: calc(100% - 30px);
-	    margin: 0 15px;
-	    background: rgba(0,0,0,0.7);
-	    border: 1px solid #376d9d;
-	    color: white;
-	    padding: 5px 10px;
-	}
-	#details .modal-body .item input[name="itemName"] {
-	    bottom: 15px;
-	}
-	#details .modal-body .item input[name="itemDesc"] {
-	    bottom: 55px;
-	}
-	#details .modal-body .item .editFile {
-	    position: absolute;
-	    top: 50%;
-	    left: 50%;
-	    transform: translate(-50%, -50%);
-	    width: auto;
-	}
-	#details .modal-body .item input[type="text"] {
-	    position: absolute;
-	    bottom: 15px;
-	    width: calc(100% - 30px);
-	    margin: 0 15px;
-	    background: rgba(0,0,0,0.7);
-	    border: 1px solid #376d9d;
-	    color: white;
-	    padding: 5px 10px;
-	}
-	#details .modal-body .item input[name="itemDesc"] {
-	    bottom: 55px;
-	}
-	#details .modal-body .item .editFile {
-	    position: absolute;
-	    top: 50%;
-	    left: 50%;
-	    transform: translate(-50%, -50%);
-	    max-width: 80%;
-	}
+}
 #details .modal-body .edit:hover,
 #details .modal-body .delete:hover{
 opacity:0.8
@@ -268,6 +225,16 @@ opacity:0.8
 #details .modal-body .edit:active,
 #details .modal-body .delete:active{
 opacity:0.6
+}
+#insertModal .modal-body {
+    padding: 1rem;
+}
+#insertModal .btn {
+    font-size: 15px;
+    padding: 6px 12px;
+}
+#insertModal .modal-footer {
+    padding: 0.75rem;
 }
 </style>';
 /*
@@ -317,10 +284,9 @@ $pagecontent .= '<div class="container">
 $isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
 $isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
 if($isEditor){
-$filedir = $core->path.'/_dat/serve/img/wert/furni';
-$maxSizeBytes = 5242880;
-$error = '';
-$pagecontent .= '<div class="text-end mb-2"><button type="button" class="btn btn-success" id="addItemBtn">+ Item hinzufügen</button></div>';
+	$filedir = $core->path.'/_dat/serve/img/wert/furni';
+	$maxSizeBytes = 5242880;
+	$error = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	if(isset($_POST['action'])) {
 	    if($_POST['action'] === 'add_category'){
@@ -467,21 +433,13 @@ $pagecontent .= '<div class="text-end mb-2"><button type="button" class="btn btn
 			$pagecontent .= '<div class="row box"><div class="col" style="color:#e37373">'.$error.'</div></div>';
 		}
 	}
-	$pagecontent .= '<form enctype="multipart/form-data" method="POST" class="row box" style="border:1px solid #376d9d">
-		<div class="col-md-3">
-			<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-			<input class="form-control" type="file" name="file" accept="image/*" required>
-		</div>
-		<div class="col-md-3">
-			<input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
-		</div>
-		<div class="col-md-4">
-			<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
-		</div>
-		<div class="col-md-2">
-			<input class="form-control" type="submit" value="Einfügen">
-		</div>
-	</form>';
+	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
+	<div class="col-12">
+	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
+	🎁 Neues Item einfügen
+	</button>
+	</div>
+	</div>';
 }
 
 $pagecontent .= '<div class="row rare justify-content-between">';
@@ -503,6 +461,28 @@ $i = 0;
 $itemArray = [];
 $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chrome
 
+$insertModalTemplate = '<div class="modal-header">
+<h5 class="modal-title">Neues Item einfügen</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<div class="row">
+<div class="col-md-12 mb-3">
+<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
+<input class="form-control" type="file" name="file" accept="image/*" required>
+</div>
+<div class="col-md-6 mb-3">
+<input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
+</div>
+<div class="col-md-6 mb-3">
+<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+<button type="submit" class="btn btn-primary">Einfügen</button>
+</div>';
 $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
 $itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
 $itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}'];
@@ -630,13 +610,54 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 		</div>
 	</div>
 </div>';
+
+// Add insert modal
+$pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<form class="modal-content" enctype="multipart/form-data" method="POST">
+<div class="modal-header">
+<h5 class="modal-title">Neues Item einfügen</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<div class="row">
+<div class="col-md-12 mb-3">
+<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
+<input class="form-control" type="file" name="file" accept="image/*" required>
+</div>
+<div class="col-md-6 mb-3">
+<input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
+</div>
+<div class="col-md-6 mb-3">
+<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+<button type="submit" class="btn btn-primary">Einfügen</button>
+</div>
+</form>
+</div>
+</div>';
+
+// Append insert modal after details modal
+$pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<form class="modal-content needs-validation" enctype="multipart/form-data" method="POST" novalidate>
+'.$insertModalTemplate.'
+</form>
+</div>
+</div>';
 $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
 <script src="_dat/serve/js/chart.umd.js"></script>
 <script>
+const maxSizeBytes = '.$maxSizeBytes.';
 const items = '.json_encode($itemArray).';
 const maxItemsToShow = '.$maxItemsToShow.';
 const itemTemplate = \''.$itemTemplate.'\';
 const itemModalTemplate = \''.$itemModalTemplate.'\';
+const insertModalTemplate = \''.$insertModalTemplate.'\';
 const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
 const isEditor = '.$isEditor.';

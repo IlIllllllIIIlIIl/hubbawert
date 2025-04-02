@@ -90,37 +90,7 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-let isAddMode = false;
-
-document.getElementById('addItemBtn')?.addEventListener('click', () => {
-    isAddMode = true;
-    const iModal = document.querySelector('#details .modal-body');
-    iModal.replaceChildren();
-    iModal.innerHTML = itemModalTemplate;
-    
-    // Create add form in modal
-    iModal.children[0].innerHTML = `
-        <input class="editFile" type="file" name="file" accept="image/*" required>
-        <input type="text" name="itemName" placeholder="item_name (z.B. dragonpillar*4)" required>
-        <span style="opacity:0">0</span>
-        <input type="text" name="itemDesc" placeholder="Beschreibung" required>
-    `;
-    
-    iModal.children[2].innerHTML = 'Bitte fülle alle Felder aus';
-    
-    // Create form wrapper
-    document.querySelector('#details .modal-content').innerHTML = `
-        <form class="modal-body row" enctype="multipart/form-data" method="POST">
-            ${iModal.innerHTML}
-            <input class="edit" type="submit" value="💾 Speichern">
-        </form>`;
-
-    new bootstrap.Modal('#details').show();
-    isAddMode = false;
-});
-
 async function itemModal(e){
-    if(isAddMode) return;
 const iModal = document.querySelector('#details .modal-body');
 
 if(lastModal != this.id){
@@ -246,3 +216,45 @@ item.addEventListener("click", itemModal);
 });
 }
 setTooltips();
+
+// Initialize insert modal form validation
+if (isEditor) {
+    const insertModalForm = document.querySelector('#insertModal form');
+    if (insertModalForm) {
+        insertModalForm.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+    }
+}
+
+// Initialize insert modal
+document.addEventListener('DOMContentLoaded', () => {
+    const insertModalDiv = document.getElementById('insertModal');
+    if (insertModalDiv && isEditor) {
+        const form = insertModalDiv.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+
+        // Initialize Bootstrap modal
+        const insertModal = new bootstrap.Modal('#insertModal');
+    }
+});
+
+// Initialize insert modal functionality
+const insertModal = new bootstrap.Modal('#insertModal');
+document.querySelector('#insertModal form').addEventListener('submit', function(e) {
+    if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    this.classList.add('was-validated');
+});
