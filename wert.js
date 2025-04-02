@@ -240,6 +240,8 @@ if (isEditor) {
                 reader.onload = function(e) {
                     imagePreview.src = e.target.result;
                     imagePreview.style.display = 'block';
+                    imagePreview.style.maxWidth = '200px';
+                    imagePreview.style.margin = 'auto';
                 };
                 reader.readAsDataURL(this.files[0]);
             } else {
