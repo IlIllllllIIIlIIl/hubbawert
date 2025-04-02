@@ -230,49 +230,40 @@ if (isEditor) {
             this.classList.add('was-validated');
         });
 
-        // Image preview
+        // Image preview handler
         const fileInput = insertModalForm.querySelector('input[type="file"]');
         const imagePreview = document.getElementById('imagePreview');
         
-        fileInput.addEventListener('change', function(e) {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(this.files[0]);
-            } else {
-                imagePreview.style.display = 'none';
-            }
-        });
+        if (fileInput && imagePreview) {
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        if (e.target && e.target.result) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.display = 'block';
+                        }
+                    };
+                    
+                    reader.onerror = function(e) {
+                        console.error('Error reading file:', e);
+                        imagePreview.style.display = 'none';
+                    };
+                    
+                    try {
+                        reader.readAsDataURL(this.files[0]);
+                    } catch (error) {
+                        console.error('Error starting file read:', error);
+                        imagePreview.style.display = 'none';
+                    }
+                } else {
+                    imagePreview.style.display = 'none';
+                }
+            });
+        }
     }
 }
 
-// Initialize insert modal
-document.addEventListener('DOMContentLoaded', () => {
-    const insertModalDiv = document.getElementById('insertModal');
-    if (insertModalDiv && isEditor) {
-        const form = insertModalDiv.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
-
-        // Initialize Bootstrap modal
-        const insertModal = new bootstrap.Modal('#insertModal');
-    }
-});
-
-// Initialize insert modal functionality
+// Initialize Bootstrap modal once
 const insertModal = new bootstrap.Modal('#insertModal');
-document.querySelector('#insertModal form').addEventListener('submit', function(e) {
-    if (!this.checkValidity()) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    this.classList.add('was-validated');
-});
