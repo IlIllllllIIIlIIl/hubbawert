@@ -361,14 +361,17 @@ if($isEditor){
 	$isEdit = isset($_POST['oldName']);
 		$allowedExts = array('png', 'jpg', 'jpeg', 'gif');
 		$allowedMime = array('image/png', 'image/jpeg', 'image/pjpeg', 'image/gif');
-		if(!isset($_POST['itemName'])){
-			$error .= 'item_name Feld war leer<br>';
+		if(empty($_POST['itemName'])){
+		    $error .= 'Item Name ist erforderlich<br>';
 		}
-		if(!isset($_POST['itemDesc'])){
-			$error .= 'Keine Beschreibung eingegeben<br>';
+		if(empty($_POST['itemDesc'])){
+		    $error .= 'Beschreibung ist erforderlich<br>';
 		}
-		if(!isset($_FILES['file'])){
-			$error .= 'Kein Bild ausgewählt<br>';
+		if(empty($_POST['price']) || !is_numeric($_POST['price'])){
+		    $error .= 'Gültiger Preis ist erforderlich<br>';
+		}
+		if(!isset($_FILES['file']) || empty($_FILES['file']['name'])){
+		    $error .= 'Bild ist erforderlich<br>';
 		}
 		if(empty($error)){
 			$imageHash = '';
@@ -385,9 +388,11 @@ if($isEditor){
 					move_uploaded_file($_FILES['file']['tmp_name'], $destination);
 				}
 				if(!$isEdit){
-					try {
-						$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image) VALUES (?,?,?)');
-						$insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash]);
+				try {
+				// Ensure category is set and valid
+				$category = isset($_POST['category']) ? intval($_POST['category']) : 0;
+				$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image,price,category) VALUES (?,?,?,?,?)');
+				$insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash, $_POST['price'], $category]);
 					}catch(PDOException $err){
 						$error .= 'Konnte nicht eingefügt werden: ';
 						if($err->getCode() == 23000){
@@ -457,42 +462,72 @@ $i = 0;
 $itemArray = [];
 $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chrome
 
-$insertModalTemplate = '<div class="modal-header">
+// Generate category options and add insert modal
+$categoryOptions = '<option value="0">Bitte wählen...</option>';
+$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
+$select->execute();
+while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
+    $categoryOptions .= '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
+}
+
+$pagecontent .= '
+<div class="modal fade" id="insertModal" tabindex="-1" aria-labelledby="insertModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<form method="post" enctype="multipart/form-data">
+<div class="modal-header">
 <h5 class="modal-title">Neue Rarität hinzufügen</h5>
 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
-<div class="modal-body p-0">
-<div class="box item">
-<img id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
+<div class="modal-body">
+<div style="border:1px solid #2c2e3c;padding:12px;margin-bottom:1rem">
+    <div class="box item">
+        <img id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
+    </div>
+    <input type="hidden" name="MAX_FILE_SIZE" value="' . $maxSizeBytes . '">
+    <script>
+    function loadPreviewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const output = document.getElementById("imagePreview");
+            output.src = e.target.result;
+            output.style.display = "block";
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+    </script>
+    <input class="form-control mt-3" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
-<div style="border:1px solid #2c2e3c;padding:12px">
-<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-<script>
-function loadPreviewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const output = document.getElementById("imagePreview");
-        output.src = e.target.result;
-        output.style.display = "block";
-    };
-    reader.readAsDataURL(event.target.files[0]);
-}
-</script>
-<input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
-</div>
-<div class="d-flex">
-<div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
-<input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
-</div>
-<div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
-<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
-</div>
+<div class="d-flex gap-3">
+    <div style="border:1px solid #2c2e3c;padding:12px;flex:1">
+        <div class="mb-3">
+            <label class="d-block mb-2">Item Name:</label>
+            <input class="form-control" name="itemName" type="text" placeholder="z.B. dragonpillar*4" autocomplete="off" required>
+        </div>
+        <div class="mb-3">
+            <label class="d-block mb-2">Preis:</label>
+            <input class="form-control" name="price" type="number" min="0" required>
+        </div>
+        <div>
+            <label class="d-block mb-2">Kategorie:</label>
+            <select class="form-control" name="category" required>' . $categoryOptions . '</select>
+        </div>
+    </div>
+    <div style="border:1px solid #2c2e3c;padding:12px;flex:1">
+        <label class="d-block mb-2">Beschreibung:</label>
+        <textarea class="form-control" name="itemDesc" rows="8" required style="height:calc(100% - 30px)"></textarea>
+    </div>
 </div>
 </div>
 <div class="modal-footer">
 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-<button type="submit" class="btn btn-primary">Einfügen</button>
+<button type="submit" class="btn btn-primary">Speichern</button>
+</div>
+</form>
+</div>
+</div>
 </div>';
+// Continue with next section
 $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
 $itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
 $itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}'];
