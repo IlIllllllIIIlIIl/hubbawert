@@ -461,16 +461,11 @@ $insertModalTemplate = '<div class="modal-header">
 <h5 class="modal-title">Neue Rarität hinzufügen</h5>
 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
-<div class="modal-body">
-<div class="row">
-<div class="col-md-12">
+<div class="modal-body p-0">
 <div class="box item">
 <img id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
 </div>
-</div>
-</div>
-<div class="row" style="margin-top:12px">
-<div class="col-md-12" style="border:1px solid #2c2e3c;padding:12px;margin-bottom:12px">
+<div style="border:1px solid #2c2e3c;padding:12px">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
 <script>
 function loadPreviewImage(event) {
@@ -485,15 +480,12 @@ function loadPreviewImage(event) {
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
-<div class="col-md-6">
-<div style="border:1px solid #2c2e3c;padding:12px">
+<div class="d-flex">
+<div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
 <input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
 </div>
-</div>
-<div class="col-md-6">
-<div style="border:1px solid #2c2e3c;padding:12px">
+<div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
 <input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
-</div>
 </div>
 </div>
 </div>
