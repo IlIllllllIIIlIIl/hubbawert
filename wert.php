@@ -490,7 +490,7 @@ $i = 0;
 $itemArray = [];
 $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chrome
 
-$categoryModalTemplate = '<div class="modal-header"><h5 class="modal-title">Kategorien</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button></div><div class="row g-2"></div>';
+$categoryModalTemplate = '<div class="row g-2 cats"></div>';
 $categoryTemplate = '<div class="col-md-6"><div class="cat-wrapper d-flex {has_edit}"><a href="#" class="btn btn-dark btn-sm flex-grow-1 mb-2" data-id="{id}" role="button">{content}</a>{edit_btn}</div></div>';
 $categoryReplace = ['{id}', '{content}', '{has_edit}', '{edit_btn}'];
 

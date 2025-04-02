@@ -264,24 +264,18 @@ async function loadCategories() {
                 
                 // Replace row with edit form
                 const modalBody = document.querySelector('#categories .modal-body');
-                modalBody.innerHTML = `
-                    <div class="modal-header">
-                        <h5 class="modal-title">Kategorie Bearbeiten</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-                    </div>
-                    <div class="p-3">
-                        <form class="mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-control" name="category_name" value="${name}" required>
-                            <input type="hidden" name="category_id" value="${id}">
-                            <div class="mt-3">
-                                <button type="button" class="btn btn-primary" onclick="editCategory('${id}', this.form.category_name.value)">Speichern</button>
-                                <button type="button" class="btn btn-danger" onclick="deleteCategory('${id}')">Löschen</button>
-                                <button type="button" class="btn btn-secondary" onclick="loadCategories()">Abbrechen</button>
-                            </div>
-                        </form>
-                    </div>
-                `;
+                modalBody.innerHTML = `<div class="p-3">
+                    <form class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="category_name" value="${name}" required>
+                        <input type="hidden" name="category_id" value="${id}">
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-primary" onclick="editCategory('${id}', this.form.category_name.value)">Speichern</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteCategory('${id}')">Löschen</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadCategories()">Abbrechen</button>
+                        </div>
+                    </form>
+                </div>`;
             });
         });
 
