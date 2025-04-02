@@ -458,11 +458,13 @@ $itemArray = [];
 $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chrome
 
 $insertModalTemplate = '<div class="modal-body row">
-<div class="col-md-12 item">
+<div class="col-md-12">
+<div class="box item">
 <img class="rarity l0" title="0">
 <span>Unbekannt</span>
 <img src="" id="imagePreview" style="display:none">
 <span>Vorschau</span>
+</div>
 </div>
 </div>
 <div class="modal-header">
@@ -615,40 +617,11 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 	</div>
 </div>';
 
-// Add insert modal
-$pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
-<div class="modal-dialog modal-lg">
-<form class="modal-content" enctype="multipart/form-data" method="POST">
-<div class="modal-header">
-<h5 class="modal-title">Neues Item einfügen</h5>
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body">
-<div class="row">
-<div class="col-md-12 mb-3">
-<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-<input class="form-control" type="file" name="file" accept="image/*" required>
-</div>
-<div class="col-md-6 mb-3">
-<input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
-</div>
-<div class="col-md-6 mb-3">
-<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
-</div>
-</div>
-</div>
-<div class="modal-footer">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-<button type="submit" class="btn btn-primary">Einfügen</button>
-</div>
-</form>
-</div>
-</div>';
 
 // Append insert modal after details modal
 $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
-<div class="modal-dialog modal-lg">
-<form class="modal-content needs-validation" enctype="multipart/form-data" method="POST" novalidate>
+<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<form class="modal-content box needs-validation" enctype="multipart/form-data" method="POST" novalidate>
 '.$insertModalTemplate.'
 </form>
 </div>
