@@ -459,10 +459,8 @@ $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chr
 
 $insertModalTemplate = '<div class="modal-body row">
 <div class="col-md-12">
-<div class="box item">
-<img class="rarity l0" title="0">
-<span>Unbekannt</span>
-<img src="" id="imagePreview" style="display:none">
+<div class="box item" style="position:relative">
+<img src="" id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain">
 <span>Vorschau</span>
 </div>
 </div>
