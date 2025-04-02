@@ -469,8 +469,8 @@ $insertModalTemplate = '<div class="modal-header">
 </div>
 </div>
 </div>
-<div class="row">
-<div class="col-md-12 mb-3">
+<div class="row g-3">
+<div class="col-md-12 mb-3" style="border:1px solid #2c2e3c;padding:12px;margin-bottom:1rem !important">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
 <script>
 function loadPreviewImage(event) {
@@ -485,11 +485,15 @@ function loadPreviewImage(event) {
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
-<div class="col-md-6 mb-3">
+<div class="col-md-6">
+<div style="border:1px solid #2c2e3c;padding:12px;height:100%">
 <input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
 </div>
-<div class="col-md-6 mb-3">
+</div>
+<div class="col-md-6">
+<div style="border:1px solid #2c2e3c;padding:12px;height:100%">
 <input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
+</div>
 </div>
 </div>
 </div>
