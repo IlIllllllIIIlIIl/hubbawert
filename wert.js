@@ -241,15 +241,6 @@ if (isEditor) {
     }
 }
 
-// Image preview function
-function loadPreviewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function() {
-        const output = document.getElementById('imagePreview');
-        output.src = reader.result;
-    };
-    reader.readAsDataURL(event.target.files[0]);
-}
 
 // Initialize Bootstrap modal once
 const insertModal = new bootstrap.Modal('#insertModal');
