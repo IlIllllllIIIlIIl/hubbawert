@@ -215,9 +215,9 @@ async function itemModal(e){
 
 // Load and display categories
 async function loadCategories() {
-    const cModal = document.querySelector('#categories .modal-dialog');
-    cModal.innerHTML = categoryModalTemplate;
-    const container = cModal.querySelector('.modal-body .row');
+    const modalBody = document.querySelector('#categories .modal-body');
+    modalBody.innerHTML = categoryModalTemplate;
+    const container = modalBody.querySelector('.row');
 
     const response = await fetch("?cat");
     if(!response.ok){
@@ -263,18 +263,24 @@ async function loadCategories() {
                 const name = link.textContent.trim();
                 
                 // Replace row with edit form
-                const modalBody = cModal.querySelector('.modal-body');
+                const modalBody = document.querySelector('#categories .modal-body');
                 modalBody.innerHTML = `
-                    <form class="mb-3">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-control" name="category_name" value="${name}" required>
-                        <input type="hidden" name="category_id" value="${id}">
-                        <div class="mt-3">
-                            <button type="button" class="btn btn-primary" onclick="editCategory('${id}', this.form.category_name.value)">Speichern</button>
-                            <button type="button" class="btn btn-danger" onclick="deleteCategory('${id}')">Löschen</button>
-                            <button type="button" class="btn btn-secondary" onclick="loadCategories()">Abbrechen</button>
-                        </div>
-                    </form>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Kategorie Bearbeiten</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                    </div>
+                    <div class="p-3">
+                        <form class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="category_name" value="${name}" required>
+                            <input type="hidden" name="category_id" value="${id}">
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-primary" onclick="editCategory('${id}', this.form.category_name.value)">Speichern</button>
+                                <button type="button" class="btn btn-danger" onclick="deleteCategory('${id}')">Löschen</button>
+                                <button type="button" class="btn btn-secondary" onclick="loadCategories()">Abbrechen</button>
+                            </div>
+                        </form>
+                    </div>
                 `;
             });
         });
