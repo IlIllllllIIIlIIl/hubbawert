@@ -457,18 +457,18 @@ $i = 0;
 $itemArray = [];
 $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chrome
 
-$insertModalTemplate = '<div class="modal-body row">
+$insertModalTemplate = '<div class="modal-header">
+<h5 class="modal-title">Neue Rarität hinzufügen</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<div class="row mb-4">
 <div class="col-md-12">
 <div class="box item">
 <img id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
 </div>
 </div>
 </div>
-<div class="modal-header">
-<h5 class="modal-title">Neues Item einfügen</h5>
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body">
 <div class="row">
 <div class="col-md-12 mb-3">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
