@@ -218,6 +218,29 @@ color: #e37373;
 	left: 15px;
 	max-width:200px
 	}
+	#details .modal-body .item input[name="itemName"],
+	#details .modal-body .item input[name="itemDesc"] {
+	    position: absolute;
+	    width: calc(100% - 30px);
+	    margin: 0 15px;
+	    background: rgba(0,0,0,0.7);
+	    border: 1px solid #376d9d;
+	    color: white;
+	    padding: 5px 10px;
+	}
+	#details .modal-body .item input[name="itemName"] {
+	    bottom: 15px;
+	}
+	#details .modal-body .item input[name="itemDesc"] {
+	    bottom: 55px;
+	}
+	#details .modal-body .item .editFile {
+	    position: absolute;
+	    top: 50%;
+	    left: 50%;
+	    transform: translate(-50%, -50%);
+	    width: auto;
+	}
 	#details .modal-body .item input[type="text"] {
 	    position: absolute;
 	    bottom: 15px;
@@ -259,7 +282,6 @@ $rarity = isset($_GET['r']) ? intval($_GET['r']) : 0;
 $category = isset($_GET['c']) ? intval($_GET['c']) : 0;
 $pagecontent .= '<div class="container">
 <div class="row box sticky-top" style="border-bottom-left-radius:0;border-bottom-right-radius:0">
-'.($isEditor ? '<button id="addItemBtn" type="button" class="btn btn-success position-absolute" style="right:20px;top:10px">+ Item hinzufügen</button>' : '').'
 	<div class="col-md-3">
 		<select class="custom-select form-control" name="sort" autocomplete="off">
 			<option value="1" selected>🟢 Neu hinzugefügt</option>
@@ -295,9 +317,10 @@ $pagecontent .= '<div class="container">
 $isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
 $isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
 if($isEditor){
-	$filedir = $core->path.'/_dat/serve/img/wert/furni';
-	$maxSizeBytes = 5242880;
-	$error = '';
+$filedir = $core->path.'/_dat/serve/img/wert/furni';
+$maxSizeBytes = 5242880;
+$error = '';
+$pagecontent .= '<div class="text-end mb-2"><button type="button" class="btn btn-success" id="addItemBtn">+ Item hinzufügen</button></div>';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	if(isset($_POST['action'])) {
 	    if($_POST['action'] === 'add_category'){

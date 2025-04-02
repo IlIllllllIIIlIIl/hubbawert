@@ -98,17 +98,25 @@ document.getElementById('addItemBtn')?.addEventListener('click', () => {
     iModal.replaceChildren();
     iModal.innerHTML = itemModalTemplate;
     
-    // Create empty form structure
+    // Create add form in modal
+    iModal.children[0].innerHTML = `
+        <input class="editFile" type="file" name="file" accept="image/*" required>
+        <input type="text" name="itemName" placeholder="item_name (z.B. dragonpillar*4)" required>
+        <span style="opacity:0">0</span>
+        <input type="text" name="itemDesc" placeholder="Beschreibung" required>
+    `;
+    
+    iModal.children[2].innerHTML = 'Bitte fülle alle Felder aus';
+    
+    // Create form wrapper
     document.querySelector('#details .modal-content').innerHTML = `
         <form class="modal-body row" enctype="multipart/form-data" method="POST">
-            <div class="col-md-12 item">
-                <input class="editFile" type="file" name="file" accept="image/*" required>
-                <input type="text" name="itemName" placeholder="item_name" required>
-                <input type="text" name="itemDesc" placeholder="Beschreibung" required>
-            </div>
+            ${iModal.innerHTML}
+            <input class="edit" type="submit" value="💾 Speichern">
         </form>`;
-    
+
     new bootstrap.Modal('#details').show();
+    isAddMode = false;
 });
 
 async function itemModal(e){
