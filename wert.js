@@ -215,8 +215,8 @@ async function itemModal(e){
 
 // Load and display categories
 async function loadCategories() {
-    const cModal = document.querySelector('#categories');
-    cModal.querySelector('.modal-content').innerHTML = categoryModalTemplate;
+    const cModal = document.querySelector('#categories .modal-dialog');
+    cModal.innerHTML = categoryModalTemplate;
     const container = cModal.querySelector('.modal-body .row');
 
     const response = await fetch("?cat");
@@ -263,7 +263,7 @@ async function loadCategories() {
                 const name = link.textContent.trim();
                 
                 // Replace row with edit form
-                const modalBody = container.parentElement;
+                const modalBody = cModal.querySelector('.modal-body');
                 modalBody.innerHTML = `
                     <form class="mb-3">
                         <label class="form-label">Name</label>
