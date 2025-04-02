@@ -226,6 +226,17 @@ opacity:0.8
 #details .modal-body .delete:active{
 opacity:0.6
 }
+#insertModal .preview-box {
+    background: no-repeat center url(_dat/serve/img/wert/rare_background.png);
+    height: 240px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#insertModal #imagePreview {
+    max-height: 200px;
+    max-width: 200px;
+}
 #insertModal .modal-body {
     padding: 1rem;
 }
@@ -466,7 +477,10 @@ $insertModalTemplate = '<div class="modal-header">
 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 <div class="modal-body">
-<div class="row">
+<div class="preview-box">
+<img src="" id="imagePreview" style="display:none">
+</div>
+<div class="row mt-3">
 <div class="col-md-12 mb-3">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
 <input class="form-control" type="file" name="file" accept="image/*" required>

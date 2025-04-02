@@ -217,16 +217,34 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Initialize insert modal form validation
+// Initialize insert modal form validation and image preview
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
+        // Form validation
         insertModalForm.addEventListener('submit', function(e) {
             if (!this.checkValidity()) {
                 e.preventDefault();
                 e.stopPropagation();
             }
             this.classList.add('was-validated');
+        });
+
+        // Image preview
+        const fileInput = insertModalForm.querySelector('input[type="file"]');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                imagePreview.style.display = 'none';
+            }
         });
     }
 }
