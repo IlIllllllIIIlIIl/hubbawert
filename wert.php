@@ -521,9 +521,9 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 			            <label class="form-label">Kategorie Name</label>
 			            <input type="text" name="category_name" class="form-control" required>
 			        </div>
-			        <div class="d-flex justify-content-between">
-			            <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target=".category-toggle">Abbrechen</button>
-			            <button type="submit" class="btn btn-success">Speichern</button>
+			        <div class="d-flex gap-2">
+			            <button type="button" class="btn btn-secondary flex-grow-1" data-bs-toggle="collapse" data-bs-target=".category-toggle">Abbrechen</button>
+			            <button type="submit" class="btn btn-success flex-grow-1">Speichern</button>
 			        </div>
 			    </form>
 			</div>' : '').
@@ -547,10 +547,10 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 						            <input type="text" name="category_name" class="form-control" value="'.htmlspecialchars($cat['name']).'" required>
 						        </div>
 						        <div class="d-flex justify-content-between align-items-center">
-						            <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { this.form.action.value=\'delete_category\'; this.form.submit(); }">🗑️ Löschen</button>
-						            <div>
-						                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'">Abbrechen</button>
-						                <button type="submit" class="btn btn-success btn-sm">Speichern</button>
+						            <div class="d-flex gap-2">
+						                <button type="button" class="btn btn-danger btn-sm flex-grow-1" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { this.form.action.value=\'delete_category\'; this.form.submit(); }">🗑️ Löschen</button>
+						                <button type="button" class="btn btn-secondary btn-sm flex-grow-1" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'">Abbrechen</button>
+						                <button type="submit" class="btn btn-success btn-sm flex-grow-1">Speichern</button>
 						            </div>
 						        </div>
 						    </form>
