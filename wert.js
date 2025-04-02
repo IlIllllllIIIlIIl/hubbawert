@@ -216,3 +216,41 @@ item.addEventListener("click", itemModal);
 });
 }
 setTooltips();
+
+// Handle category modal interactions
+document.addEventListener('DOMContentLoaded', () => {
+    // Add category button
+    const addCategoryBtn = document.querySelector('[data-bs-toggle="collapse"][data-bs-target="#addCategoryForm,#categoryList"]');
+    if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', () => {
+            const addForm = document.getElementById('addCategoryForm');
+            const categoryList = document.getElementById('categoryList');
+            addForm.classList.toggle('show');
+            categoryList.classList.toggle('show');
+        });
+    }
+
+    // Edit category buttons
+    document.querySelectorAll('[data-bs-toggle="collapse"][data-bs-target^="#editForm"]').forEach(editBtn => {
+        editBtn.addEventListener('click', () => {
+            const targetId = editBtn.getAttribute('data-bs-target').split(',')[0];
+            const editForm = document.querySelector(targetId);
+            const categoryList = document.getElementById('categoryList');
+            editForm.classList.toggle('show');
+            categoryList.classList.toggle('show');
+        });
+    });
+
+    // Cancel buttons in forms
+    document.querySelectorAll('[data-bs-toggle="collapse"][data-bs-target$=",#categoryList"]').forEach(cancelBtn => {
+        if (cancelBtn.classList.contains('btn-secondary')) {
+            cancelBtn.addEventListener('click', () => {
+                const targetIds = cancelBtn.getAttribute('data-bs-target').split(',');
+                const form = document.querySelector(targetIds[0]);
+                const categoryList = document.getElementById('categoryList');
+                form.classList.remove('show');
+                categoryList.classList.add('show');
+            });
+        }
+    });
+});
