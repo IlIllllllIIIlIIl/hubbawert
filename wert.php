@@ -460,7 +460,7 @@ $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chr
 $insertModalTemplate = '<div class="modal-body row">
 <div class="col-md-12">
 <div class="box item" style="position:relative">
-<img src="data:," id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
+<img src="data:," id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain">
 <span>Vorschau</span>
 </div>
 </div>
@@ -473,7 +473,7 @@ $insertModalTemplate = '<div class="modal-body row">
 <div class="row">
 <div class="col-md-12 mb-3">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-<input class="form-control" type="file" name="file" accept="image/*" required>
+<input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
 <div class="col-md-6 mb-3">
 <input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
