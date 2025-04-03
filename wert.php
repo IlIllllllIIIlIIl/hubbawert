@@ -386,8 +386,11 @@ if($isEditor){
 				}
 				if(!$isEdit){
 					try {
-						$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image) VALUES (?,?,?)');
-						$insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash]);
+						$_POST['price'] = str_replace([',','.'], '', $_POST['price']);
+						$price = ((!isset($_POST['price']) || !is_numeric($_POST['price'])) ? 0 : intval($_POST['price']));
+						$category = ((!isset($_POST['category']) || !is_numeric($_POST['category'])) ? 0 : intval($_POST['category']));
+						$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image,price,category) VALUES (?,?,?,?,?)');
+						$insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash, $price, $category]);
 					}catch(PDOException $err){
 						$error .= 'Konnte nicht eingefügt werden: ';
 						if($err->getCode() == 23000){
@@ -482,7 +485,27 @@ function loadPreviewImage(event) {
 </div>
 <div class="d-flex">
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
-<input class="form-control" name="itemName" type="text" placeholder="item_name (z.B. dragonpillar*4)" autocomplete="off" required>
+<div style="display:flex;align-items:center;margin-bottom:10px">
+<span style="margin-right:10px;white-space:nowrap">Item Name:</span>
+<input class="form-control" name="itemName" type="text" placeholder="z.B. dragonpillar*4" autocomplete="off" required style="width:150px;margin-left:auto">
+</div>
+<div style="display:flex;align-items:center;margin-bottom:10px">
+<span style="margin-right:10px;white-space:nowrap">Wert:</span>
+<input class="form-control" name="price" type="number" min="0" value="0" autocomplete="off" required style="width:150px;margin-left:auto">
+</div>
+<div style="display:flex;align-items:center">
+<span style="margin-right:10px;white-space:nowrap">Kategorie:</span>
+<select class="form-control" name="category" style="width:150px;margin-left:auto">
+<option value="0">Keine Kategorie</option>
+<?php
+$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
+$select->execute();
+while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
+    echo '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
+}
+?>
+</select>
+</div>
 </div>
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
 <input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
