@@ -460,6 +460,14 @@ $i = 0;
 $itemArray = [];
 $maxItemsToShow = 500; // (will show this +1) limit for shitty browsers like chrome
 
+// Get categories for dropdown
+$categoriesHtml = '<option value="0">Keine Kategorie</option>';
+$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
+$select->execute();
+while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
+    $categoriesHtml .= '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
+}
+
 $insertModalTemplate = '<div class="modal-header">
 <h5 class="modal-title">Neue Rarität hinzufügen</h5>
 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -495,16 +503,9 @@ function loadPreviewImage(event) {
 </div>
 <div style="display:flex;align-items:center">
 <span style="margin-right:10px;white-space:nowrap">Kategorie:</span>
-<select class="form-control" name="category" style="width:150px;margin-left:auto">
-<option value="0">Keine Kategorie</option>
-<?php
-$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
-$select->execute();
-while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-    echo '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
-}
-?>
-</select>
+<select class="form-control" name="category" style="width:150px;margin-left:auto">' .
+$categoriesHtml .
+'</select>
 </div>
 </div>
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
