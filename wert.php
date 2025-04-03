@@ -467,11 +467,7 @@ $select->execute();
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoriesHtml .= '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
 }
-
-$insertModalTemplate = '<div class="modal-header">
-<h5 class="modal-title">Neue Rarität hinzufügen</h5>
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-</div>
+$insertModalTemplate = '<div class="modal-body p-0">
 <div class="modal-body p-0">
 <div class="box item">
 <img id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
@@ -508,8 +504,9 @@ $categoriesHtml .
 '</select>
 </div>
 </div>
-<div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
-<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required>
+<div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
+<span style="text-align:center;margin-bottom:10px">Beschreibung</span>
+<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required style="flex:1">
 </div>
 </div>
 </div>
