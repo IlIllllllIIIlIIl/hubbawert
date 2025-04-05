@@ -516,6 +516,22 @@ function loadPreviewImage(event) {
     };
     reader.readAsDataURL(event.target.files[0]);
 }
+
+// Kategorien-Buttons Handling
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryButtons = document.querySelectorAll('input[name="categories[]"]');
+    categoryButtons.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if(this.checked) {
+                this.parentElement.classList.add('active', 'btn-dark');
+                this.parentElement.classList.remove('btn-outline-dark');
+            } else {
+                this.parentElement.classList.remove('active', 'btn-dark');
+                this.parentElement.classList.add('btn-outline-dark');
+            }
+        });
+    });
+});
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
@@ -529,11 +545,19 @@ function loadPreviewImage(event) {
 <span style="margin-right:10px;white-space:nowrap">Wert:</span>
 <input class="form-control" name="price" type="number" min="0" value="0" autocomplete="off" required style="width:150px;margin-left:auto">
 </div>
-<div style="display:flex;align-items:center">
-<span style="margin-right:10px;white-space:nowrap">Kategorien:</span>
-<select class="form-control" name="categories[]" multiple style="width:150px;margin-left:auto;height:100px">' .
-$categoriesHtml .
-'</select>
+<div style="display:flex;flex-direction:column">
+<span style="margin-bottom:10px">Kategorien:</span>
+<div style="display:flex;flex-wrap:wrap;gap:5px">';
+$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
+$select->execute();
+while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
+    $pagecontent .= '
+    <label class="btn btn-outline-dark btn-sm" style="cursor:pointer">
+        <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
+        '.htmlspecialchars($cat['name']).'
+    </label>';
+}
+$pagecontent .= '</div>
 </div>
 </div>
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
