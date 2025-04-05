@@ -517,22 +517,22 @@ function loadPreviewImage(event) {
     reader.readAsDataURL(event.target.files[0]);
 }
 
-function initCategoryButtons() {
-    var buttons = document.querySelectorAll(\\\'input[name="categories[]"]\\\');
-    buttons.forEach(function(btn) {
-        btn.addEventListener(\\\'change\\\', function() {
-            if(this.checked) {
-                this.parentElement.classList.add(\\\'active\\\', \\\'btn-dark\\\');
-                this.parentElement.classList.remove(\\\'btn-outline-dark\\\');
-            } else {
-                this.parentElement.classList.remove(\\\'active\\\', \\\'btn-dark\\\');
-                this.parentElement.classList.add(\\\'btn-outline-dark\\\');
-            }
+document.addEventListener(\\\'DOMContentLoaded\\\', function() {
+    document.querySelector(\\\'#insertModal\\\').addEventListener(\\\'shown.bs.modal\\\', function() {
+        var buttons = document.querySelectorAll(\\\'input[name="categories[]"]\\\');
+        buttons.forEach(function(btn) {
+            btn.onclick = function() {
+                if(this.checked) {
+                    this.parentElement.classList.add(\\\'active\\\', \\\'btn-dark\\\');
+                    this.parentElement.classList.remove(\\\'btn-outline-dark\\\');
+                } else {
+                    this.parentElement.classList.remove(\\\'active\\\', \\\'btn-dark\\\');
+                    this.parentElement.classList.add(\\\'btn-outline-dark\\\');
+                }
+            };
         });
     });
-}
-
-setTimeout(initCategoryButtons, 100);
+});
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
