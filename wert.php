@@ -3,6 +3,38 @@ $select = $core->m->prepare('SELECT p.id, s.edit_rights FROM furniture_rare_staf
 $select->execute();
 $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
+// Handle category migration
+if(isset($_GET['migrate_categories']) && $isAdmin) {
+    header('Content-Type: application/json');
+    
+    try {
+        // Start migration
+        $select = $core->m->prepare('SELECT id, category FROM furniture_rare_details WHERE category != 0');
+        $select->execute();
+        $items = $select->fetchAll(PDO::FETCH_ASSOC);
+        
+        $inserted = 0;
+        foreach($items as $item) {
+            $insert = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?, ?)');
+            if($insert->execute([$item['id'], $item['category']])) {
+                $inserted++;
+            }
+        }
+        
+        exit(json_encode([
+            'success' => true,
+            'message' => "Migration abgeschlossen: $inserted Kategorien migriert",
+            'total' => count($items),
+            'migrated' => $inserted
+        ]));
+    } catch(Exception $e) {
+        exit(json_encode([
+            'success' => false,
+            'message' => 'Fehler bei der Migration: ' . $e->getMessage()
+        ]));
+    }
+}
+
 if(isset($_GET['i'])){
 	header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
@@ -439,6 +471,22 @@ if($isEditor){
 	</button>
 	</div>
 	</div>';
+// Migration Button für Kategorien
+if($isAdmin) {
+    $pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
+    <div class="col-12">
+        <button id="migrationButton" class="btn btn-warning w-100" type="button">
+            🔄 Kategorien Migration starten
+        </button>
+        <div id="migrationStatus" class="mt-2 d-none">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            </div>
+            <div class="text-center mt-2" id="migrationText"></div>
+        </div>
+    </div>
+</div>';
+}
 }
 
 $pagecontent .= '<div class="row rare justify-content-between">';
