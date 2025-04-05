@@ -114,16 +114,7 @@ event.target.style.color = '#3ab4e3';
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
 <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-<div class="col-12 mt-3">
-  <label class="form-label">Kategorie</label>
-  <div class="cats">
-    <div class="row" id="editCategories"></div>
-  </div>
-</div>
 </form>`;
-// Copy categories from categories modal
-const categoriesContent = document.querySelector('#categories .cats .row').innerHTML;
-document.getElementById('editCategories').innerHTML = categoriesContent;
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
@@ -152,6 +143,9 @@ iModal.children[1].innerHTML = `
 <div class="w-100"></div>
 <div class="col">Aufrufe</div>
 <div class="col">${json.info.views}</div>
+<div class="w-100"></div>
+<div class="col">Kategorie</div>
+<div class="col">--</div>
 <div class="w-100"></div>
 <div class="col"></div>
 <div class="col">${this.id}</div>`;
