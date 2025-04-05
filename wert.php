@@ -473,7 +473,7 @@ if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
 	$result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
 	$rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
 	
-	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.image,r.views,(SELECT GROUP_CONCAT(m.category_id) FROM furniture_rare_category_mappings m WHERE m.furniture_id = r.id) as categories,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
+	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.image,r.views,(SELECT GROUP_CONCAT(CAST(m.category_id AS CHAR)) FROM furniture_rare_category_mappings m WHERE m.furniture_id = r.id) as categories,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
 	$select->execute();
 	$items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
 	file_put_contents($cachePath, json_encode($items));
@@ -542,48 +542,54 @@ $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row
 $itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
 $itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}'];
 foreach ($items as $itemId => $item) {
-	if(!isset($item['public_name'])){
-		echo "error not found: {$itemId}\n";
-		continue;
-	}
+    if(!isset($item['public_name'])){
+        echo "error not found: {$itemId}\n";
+        continue;
+    }
 
-	$amount = $item['umlauf'];
+    $amount = $item['umlauf'];
 
-	$level = match(true) {
-		$amount > 50 => 1,
-		$amount > 30 => 2,
-		$amount > 15 => 3,
-		$amount > 5 => 4,
-		$amount > 0 => 5,
-		default => 0
-	};
+    $level = match(true) {
+        $amount > 50 => 1,
+        $amount > 30 => 2,
+        $amount > 15 => 3,
+        $amount > 5 => 4,
+        $amount > 0 => 5,
+        default => 0
+    };
 
-	if(!isset($item['old_price']) || $item['old_price'] < 1){
-		$item['old_price'] = 0;
-	}
+    if(!isset($item['old_price']) || $item['old_price'] < 1){
+        $item['old_price'] = 0;
+    }
 
-	$itemData = [
-		$item['item_name'],
-		$level,
-		$amount,
-		$item['old_price'] < 1 ? '' : ' class="'.($item['price'] >= $item['old_price'] ? 'up' : 'down').'" title="vorher '.number_format($item['old_price']).'"', // priceTag
-		($item['price'] > 0 ? number_format($item['price']) : 'Unbekannt'),
-		filter_var($item['image'], FILTER_SANITIZE_URL),
-		htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name']))
-	];
+    $itemData = [
+        $item['item_name'],
+        $level,
+        $amount,
+        $item['old_price'] < 1 ? '' : ' class="'.($item['price'] >= $item['old_price'] ? 'up' : 'down').'" title="vorher '.number_format($item['old_price']).'"', // priceTag
+        ($item['price'] > 0 ? number_format($item['price']) : 'Unbekannt'),
+        filter_var($item['image'], FILTER_SANITIZE_URL),
+        htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name']))
+    ];
 
-	if($i < $maxItemsToShow && ($category == 0 || (isset($item['categories']) && in_array($category, explode(',', $item['categories']))))){
-		$pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
-		$i++;
-	}
+    // Check if we should show this item
+    $itemCategories = isset($item['categories']) ? explode(',', $item['categories'] ?? '') : [];
+    // Debug: Kategorien für jedes Item ausgeben
+    error_log("Item: " . $item['item_name'] . " Categories: " . print_r($itemCategories, true) . " Selected category: " . $category);
 
-	array_push($itemData, $item['category'], $item['price'], $item['timestamp'], $itemId);
-	array_push($itemArray, $itemData);
+    if($i < $maxItemsToShow && ($category == 0 || in_array((string)$category, $itemCategories))){
+        $pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
+        $i++;
+    }
+
+    array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId);
+    array_push($itemArray, $itemData);
 }
 $pagecontent .= '</div></div>';
+
 // category modal
 $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
-	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 		<div class="modal-content">
 			<div class="modal-header">
 			<h5 class="modal-title">Kategorien</h5>
