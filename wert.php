@@ -506,24 +506,6 @@ $insertModalTemplate = '<div class="modal-body p-0">
 </div>
 <div style="border:1px solid #2c2e3c;padding:12px">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-<style>
-.category-btn {
-    border: 1px solid #6c757d;
-    background: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.category-btn:hover {
-    background-color: rgba(33, 37, 41, 0.1);
-}
-.category-btn.selected {
-    background-color: #212529;
-    color: white;
-    border-color: #212529;
-}
-</style>
 <script>
 function loadPreviewImage(event) {
     const reader = new FileReader();
@@ -534,23 +516,6 @@ function loadPreviewImage(event) {
     };
     reader.readAsDataURL(event.target.files[0]);
 }
-
-// Initialisiere die Kategorie-Buttons wenn das Modal geöffnet wird
-document.addEventListener(\\\'DOMContentLoaded\\\', function() {
-    var modal = document.getElementById(\\\'insertModal\\\');
-    if (modal) {
-        modal.addEventListener(\\\'shown.bs.modal\\\', function() {
-            var categoryButtons = document.querySelectorAll(\\\'.category-btn\\\');
-            categoryButtons.forEach(function(btn) {
-                btn.addEventListener(\\\'click\\\', function() {
-                    var checkbox = this.querySelector(\\\'input[type="checkbox"]\\\');
-                    checkbox.checked = !checkbox.checked;
-                    this.classList.toggle(\\\'selected\\\');
-                });
-            });
-        });
-    }
-});
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
@@ -574,10 +539,10 @@ $select->execute();
 $categoryButtons = '';
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoryButtons .= '
-    <div class="category-btn" style="user-select:none;margin:2px">
+    <button type="button" class="btn btn-outline-dark btn-sm m-1" onclick="this.classList.toggle(\\\'active\\\'); this.querySelector(\\\'input\\\').checked = !this.querySelector(\\\'input\\\').checked">
         <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
         '.htmlspecialchars($cat['name']).'
-    </div>';
+    </button>';
 }
 $insertModalTemplate .= $categoryButtons.'</div></div>
 </div>
