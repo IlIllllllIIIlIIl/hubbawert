@@ -507,14 +507,21 @@ $insertModalTemplate = '<div class="modal-body p-0">
 <div style="border:1px solid #2c2e3c;padding:12px">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
 <style>
-.category-btn.active {
-    background-color: #212529 !important;
-    color: #fff !important;
-    border-color: #212529 !important;
+.category-btn {
+    border: 1px solid #6c757d;
+    background: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 .category-btn:hover {
-    background-color: #212529 !important;
-    color: #fff !important;
+    background-color: rgba(33, 37, 41, 0.1);
+}
+.category-btn.selected {
+    background-color: #212529;
+    color: white;
+    border-color: #212529;
 }
 </style>
 <script>
@@ -528,23 +535,11 @@ function loadPreviewImage(event) {
     reader.readAsDataURL(event.target.files[0]);
 }
 
-document.addEventListener(\\\'DOMContentLoaded\\\', function() {
-    document.querySelector(\\\'#insertModal\\\').addEventListener(\\\'shown.bs.modal\\\', function() {
-        var labels = document.querySelectorAll(\\\'.category-btn\\\');
-        labels.forEach(function(label) {
-            label.addEventListener(\\\'click\\\', function(e) {
-                const checkbox = this.querySelector(\\\'input[type="checkbox"]\\\');
-                checkbox.checked = !checkbox.checked;
-                if(checkbox.checked) {
-                    this.classList.add(\\\'active\\\');
-                } else {
-                    this.classList.remove(\\\'active\\\');
-                }
-                e.preventDefault();
-            });
-        });
-    });
-});
+function toggleCategory(element) {
+    const checkbox = element.querySelector(\\\'input[type="checkbox"]\\\');
+    checkbox.checked = !checkbox.checked;
+    element.classList.toggle(\\\'selected\\\');
+}
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
@@ -568,10 +563,10 @@ $select->execute();
 $categoryButtons = '';
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoryButtons .= '
-    <label class="btn btn-outline-dark btn-sm category-btn" style="cursor:pointer;user-select:none;margin:2px">
+    <div class="category-btn" style="user-select:none;margin:2px" onclick="toggleCategory(this)">
         <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
         '.htmlspecialchars($cat['name']).'
-    </label>';
+    </div>';
 }
 $insertModalTemplate .= $categoryButtons.'</div></div>
 </div>
