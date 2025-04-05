@@ -35,36 +35,6 @@ if(isset($_GET['migrate_categories']) && $isAdmin) {
     }
 }
 
-// Handle category migration
-if(isset($_GET['migrate_categories']) && $isAdmin) {
-    header('Content-Type: application/json');
-    
-    try {
-        // Start migration
-        $select = $core->m->prepare('SELECT id, category FROM furniture_rare_details WHERE category != 0');
-        $select->execute();
-        $items = $select->fetchAll(PDO::FETCH_ASSOC);
-        
-        $inserted = 0;
-        foreach($items as $item) {
-            $insert = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?, ?)');
-            if($insert->execute([$item['id'], $item['category']])) {
-                $inserted++;
-            }
-        }
-        
-        exit(json_encode([
-            'success' => true,
-            'message' => "$inserted Kategorien erfolgreich migriert"
-        ]));
-    } catch(Exception $e) {
-        exit(json_encode([
-            'success' => false,
-            'message' => 'Fehler: ' . $e->getMessage()
-        ]));
-    }
-}
-
 if(isset($_GET['i'])){
 	header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
@@ -465,17 +435,6 @@ if($isEditor){
 				}
 			} elseif(!$isEdit) {
 				$error .= 'Bild ist vermütlich nicht gültig.<br>';
-			// Migration Button für Kategorien
-			if($isAdmin) {
-			    $pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-			    <div class="col-12">
-			        <button id="migrationButton" class="btn btn-warning w-100" type="button">
-			            🔄 Kategorien Migration starten
-			        </button>
-			        <div id="migrationStatus" class="mt-2 d-none text-center"></div>
-			    </div>
-			</div>';
-			}
 			}
 			if($isEdit){
 				$select = $core->m->prepare('SELECT id,price,image FROM furniture_rare_details WHERE item_name=?');
@@ -505,8 +464,53 @@ if($isEditor){
 			$pagecontent .= '<div class="row box"><div class="col" style="color:#e37373">'.$error.'</div></div>';
 		}
 	}
+	if($isAdmin) {
+	    $pagecontent .= '<div class="row box mb-2" style="border:1px solid #376d9d">
+	        <div class="col-12">
+	            <button id="migrationButton" class="btn btn-warning w-100" type="button">
+	                🔄 Kategorien Migration starten
+	            </button>
+	            <div id="migrationStatus" class="mt-2 d-none">
+	                <div class="progress">
+	                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+	                </div>
+	                <div class="text-center mt-2" id="migrationText"></div>
+	            </div>
+	        </div>
+	    </div>
+	    <script>
+	    document.getElementById("migrationButton").addEventListener("click", async function() {
+	        const button = this;
+	        const statusDiv = document.getElementById("migrationStatus");
+	        const progressBar = statusDiv.querySelector(".progress-bar");
+	        const statusText = document.getElementById("migrationText");
+	        
+	        button.disabled = true;
+	        statusDiv.classList.remove("d-none");
+	        statusText.textContent = "Migration läuft...";
+	        
+	        try {
+	            const response = await fetch("?migrate_categories=1");
+	            const data = await response.json();
+	            
+	            if(data.success) {
+	                progressBar.style.width = "100%";
+	                statusText.textContent = data.message;
+	                button.style.display = "none";
+	            } else {
+	                throw new Error(data.message);
+	            }
+	        } catch(error) {
+	            statusText.textContent = "Fehler: " + error.message;
+	            progressBar.classList.add("bg-danger");
+	            button.disabled = false;
+	        }
+	    });
+	    </script>';
+	}
+	
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-	<div class="col-12">
+	    <div class="col-12">
 	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
 	🎁 Neues Item einfügen
 	</button>

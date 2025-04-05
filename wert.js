@@ -250,37 +250,6 @@ if(document.getElementById('migrationButton')) {
     document.getElementById('migrationButton').addEventListener('click', async function() {
         const button = this;
         const statusDiv = document.getElementById('migrationStatus');
-        
-        // Disable button and show status
-        button.disabled = true;
-        statusDiv.classList.remove('d-none');
-        statusDiv.textContent = 'Migration läuft...';
-        
-        try {
-            const response = await fetch('?migrate_categories=1');
-            const data = await response.json();
-            
-            statusDiv.textContent = data.message;
-            statusDiv.style.color = data.success ? '#28a745' : '#dc3545';
-            
-            if(data.success) {
-                button.style.display = 'none';
-            } else {
-                button.disabled = false;
-            }
-        } catch(error) {
-            statusDiv.textContent = 'Fehler bei der Anfrage';
-            statusDiv.style.color = '#dc3545';
-            button.disabled = false;
-        }
-    });
-}
-
-// Handle category migration button
-if(document.getElementById('migrationButton')) {
-    document.getElementById('migrationButton').addEventListener('click', async function() {
-        const button = this;
-        const statusDiv = document.getElementById('migrationStatus');
         const progressBar = statusDiv.querySelector('.progress-bar');
         const statusText = document.getElementById('migrationText');
         
