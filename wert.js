@@ -91,48 +91,83 @@ element.replaceWith(input);
 }
 let lastModal = 0;
 async function itemModal(e){
-const iModal = document.querySelector('#details .modal-body');
+const detailsModal = document.querySelector('#details');
+const iModal = detailsModal.querySelector('.modal-body');
 
 if(lastModal != this.id){
-iModal.replaceChildren();
+    iModal.replaceChildren();
 }
-new bootstrap.Modal('#details').show();
+const modal = new bootstrap.Modal(detailsModal);
+modal.show();
 if(lastModal == this.id){
-return false;
+    return false;
 }
 lastModal = this.id;
 
 iModal.innerHTML = itemModalTemplate;
 iModal.children[0].innerHTML = this.innerHTML;
 if(isEditor){
-iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
-document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
-if(event.target.value.includes('Bearbeiten')){
-event.preventDefault();
-event.target.value = '💾 Speichern';
-event.target.style.color = '#3ab4e3';
-iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
-document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
-<input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-<div class="col-12 mt-3">
-  <div style="border:1px solid #2c2e3c;padding:12px">
-    <div class="mb-2">Kategorien:</div>
-    <div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
-      <div class="d-flex flex-column" style="gap:8px">
-        ${document.querySelector('#categories .cats .row').innerHTML.replace(/<a href[^>]*>(.*?)<\/a>/g, match => {
-          const categoryId = match.match(/\?c=(\d+)/)[1];
-          const categoryName = match.match(/>([^<]*)<\/a>/)[1].trim();
-          return `
-            <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
-              <input type="checkbox" name="categories[]" value="${categoryId}" class="form-check-input me-2" style="cursor:pointer">
-              <span>${categoryName}</span>
-            </label>`;
-        })}
-      </div>
+const editButton = document.createElement('input');
+editButton.type = 'submit';
+editButton.className = 'edit';
+editButton.value = '✏️ Bearbeiten';
+
+const deleteButton = document.createElement('input');
+deleteButton.type = 'submit';
+deleteButton.className = 'delete';
+deleteButton.value = '🗑️ Löschen';
+
+iModal.children[0].lastChild.insertAdjacentElement('beforebegin', deleteButton);
+iModal.children[0].lastChild.insertAdjacentElement('beforebegin', editButton);
+
+editButton.addEventListener("click", event => {
+    if(event.target.value.includes('Bearbeiten')){
+        event.preventDefault();
+        event.target.value = '💾 Speichern';
+        event.target.style.color = '#3ab4e3';
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.className = 'editFile';
+fileInput.name = 'file';
+fileInput.accept = 'image/*';
+iModal.children[0].lastChild.insertAdjacentElement('beforebegin', fileInput);
+
+const form = document.createElement('form');
+form.className = 'modal-body row';
+form.enctype = 'multipart/form-data';
+form.method = 'POST';
+
+const oldNameInput = document.createElement('input');
+oldNameInput.type = 'hidden';
+oldNameInput.name = 'oldName';
+oldNameInput.value = document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText;
+
+const categoriesHtml = document.querySelector('#categories .cats .row').innerHTML.replace(/<a href[^>]*>(.*?)<\/a>/g, match => {
+    const categoryId = match.match(/\?c=(\d+)/)[1];
+    const categoryName = match.match(/>([^<]*)<\/a>/)[1].trim();
+    return `
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="categories[]" value="${categoryId}" class="form-check-input me-2" style="cursor:pointer">
+            <span>${categoryName}</span>
+        </label>`;
+});
+
+form.innerHTML = `
+    ${document.querySelector('#details .modal-body').innerHTML}
+    ${oldNameInput.outerHTML}
+    <div class="col-12 mt-3">
+        <div style="border:1px solid #2c2e3c;padding:12px">
+            <div class="mb-2">Kategorien:</div>
+            <div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
+                <div class="d-flex flex-column" style="gap:8px">
+                    ${categoriesHtml}
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-</form>`;
+`;
+
+detailsModal.querySelector('.modal-content').replaceChildren(form);
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
