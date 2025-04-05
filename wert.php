@@ -534,13 +534,23 @@ function loadPreviewImage(event) {
     };
     reader.readAsDataURL(event.target.files[0]);
 }
-</script>
-<script type="text/javascript">
-window.toggleCategory = function(element) {
-    const checkbox = element.querySelector(\\\'input[type="checkbox"]\\\');
-    checkbox.checked = !checkbox.checked;
-    element.classList.toggle(\\\'selected\\\');
-};
+
+// Initialisiere die Kategorie-Buttons wenn das Modal geöffnet wird
+document.addEventListener(\\\'DOMContentLoaded\\\', function() {
+    var modal = document.getElementById(\\\'insertModal\\\');
+    if (modal) {
+        modal.addEventListener(\\\'shown.bs.modal\\\', function() {
+            var categoryButtons = document.querySelectorAll(\\\'.category-btn\\\');
+            categoryButtons.forEach(function(btn) {
+                btn.addEventListener(\\\'click\\\', function() {
+                    var checkbox = this.querySelector(\\\'input[type="checkbox"]\\\');
+                    checkbox.checked = !checkbox.checked;
+                    this.classList.toggle(\\\'selected\\\');
+                });
+            });
+        });
+    }
+});
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
@@ -564,7 +574,7 @@ $select->execute();
 $categoryButtons = '';
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoryButtons .= '
-    <div class="category-btn" style="user-select:none;margin:2px" onclick="toggleCategory(this)">
+    <div class="category-btn" style="user-select:none;margin:2px">
         <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
         '.htmlspecialchars($cat['name']).'
     </div>';
