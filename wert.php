@@ -392,9 +392,13 @@ if($isEditor){
 						$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image,price) VALUES (?,?,?,?)');
 						if($insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash, $price])){
 						    $furnitureId = $core->m->lastInsertId();
-						    if(!empty($_POST['category'])){
+						    if(isset($_POST['categories']) && is_array($_POST['categories'])){
 						        $insertCategory = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?,?)');
-						        $insertCategory->execute([$furnitureId, $_POST['category']]);
+						        foreach($_POST['categories'] as $categoryId) {
+						            if(is_numeric($categoryId)) {
+						                $insertCategory->execute([$furnitureId, intval($categoryId)]);
+						            }
+						        }
 						    }
 						}
 					}catch(PDOException $err){
@@ -423,9 +427,13 @@ if($isEditor){
 					    $delete = $core->m->prepare('DELETE FROM furniture_rare_category_mappings WHERE furniture_id=?');
 					    $delete->execute([$itemData['id']]);
 					    
-					    if(!empty($_POST['category'])){
+					    if(isset($_POST['categories']) && is_array($_POST['categories'])){
 					        $insertCategory = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?,?)');
-					        $insertCategory->execute([$itemData['id'], $_POST['category']]);
+					        foreach($_POST['categories'] as $categoryId) {
+					            if(is_numeric($categoryId)) {
+					                $insertCategory->execute([$itemData['id'], intval($categoryId)]);
+					            }
+					        }
 					    }
 					}
 				}else{
@@ -522,8 +530,8 @@ function loadPreviewImage(event) {
 <input class="form-control" name="price" type="number" min="0" value="0" autocomplete="off" required style="width:150px;margin-left:auto">
 </div>
 <div style="display:flex;align-items:center">
-<span style="margin-right:10px;white-space:nowrap">Kategorie:</span>
-<select class="form-control" name="category" style="width:150px;margin-left:auto">' .
+<span style="margin-right:10px;white-space:nowrap">Kategorien:</span>
+<select class="form-control" name="categories[]" multiple style="width:150px;margin-left:auto;height:100px">' .
 $categoriesHtml .
 '</select>
 </div>
@@ -572,11 +580,8 @@ foreach ($items as $itemId => $item) {
         htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name']))
     ];
 
-    // Check if we should show this item
+    // Check if we should show this item based on category
     $itemCategories = isset($item['categories']) ? explode(',', $item['categories'] ?? '') : [];
-    // Debug: Kategorien für jedes Item ausgeben
-    error_log("Item: " . $item['item_name'] . " Categories: " . print_r($itemCategories, true) . " Selected category: " . $category);
-
     if($i < $maxItemsToShow && ($category == 0 || in_array((string)$category, $itemCategories))){
         $pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
         $i++;
