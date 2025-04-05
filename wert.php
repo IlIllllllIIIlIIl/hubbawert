@@ -506,47 +506,33 @@ $insertModalTemplate = '<div class="modal-body p-0">
 </div>
 <div style="border:1px solid #2c2e3c;padding:12px">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-<input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
-</div>
-<div class="d-flex">
-<div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
-<div style="display:flex;align-items:center;margin-bottom:10px">
-<span style="margin-right:10px;white-space:nowrap">Item Name:</span>
-<input class="form-control" name="itemName" type="text" placeholder="z.B. dragonpillar*4" autocomplete="off" required style="width:150px;margin-left:auto">
-</div>
-<div style="display:flex;align-items:center;margin-bottom:10px">
-<span style="margin-right:10px;white-space:nowrap">Wert:</span>
-<input class="form-control" name="price" type="number" min="0" value="0" autocomplete="off" required style="width:150px;margin-left:auto">
-</div>
-<div style="display:flex;flex-direction:column">
-<span style="margin-bottom:10px">Kategorien:</span>
-<div class="category-buttons" style="display:flex;flex-wrap:wrap;gap:5px">';
-
-// Kategorien für Checkboxen laden
-$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
-$select->execute();
-while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-    $insertModalTemplate .= '
-    <label class="btn btn-outline-dark btn-sm" style="cursor:pointer">
-        <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
-        '.htmlspecialchars($cat['name']).'
-    </label>';
+<script>
+function loadPreviewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const output = document.getElementById(\\\'imagePreview\\\');
+        output.src = e.target.result;
+        output.style.display = \\\'block\\\';
+    };
+    reader.readAsDataURL(event.target.files[0]);
 }
 
-$insertModalTemplate .= '</div>
-</div>
-</div>
-<div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
-<span style="text-align:center;margin-bottom:10px">Beschreibung</span>
-<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required style="flex:1">
-</div>
-</div>
-</div>
-</div>
-<div class="modal-footer">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-<button type="submit" class="btn btn-primary">Einfügen</button>
-</div>';
+function initCategoryButtons() {
+    var buttons = document.querySelectorAll(\\\'input[name="categories[]"]\\\');
+    buttons.forEach(function(btn) {
+        btn.addEventListener(\\\'change\\\', function() {
+            if(this.checked) {
+                this.parentElement.classList.add(\\\'active\\\', \\\'btn-dark\\\');
+                this.parentElement.classList.remove(\\\'btn-outline-dark\\\');
+            } else {
+                this.parentElement.classList.remove(\\\'active\\\', \\\'btn-dark\\\');
+                this.parentElement.classList.add(\\\'btn-outline-dark\\\');
+            }
+        });
+    });
+}
+
+setTimeout(initCategoryButtons, 100);
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
@@ -562,9 +548,7 @@ $insertModalTemplate .= '</div>
 </div>
 <div style="display:flex;flex-direction:column">
 <span style="margin-bottom:10px">Kategorien:</span>
-<div class="category-buttons" style="display:flex;flex-wrap:wrap;gap:5px">';
-
-// Kategorien für Checkboxen laden
+<div style="display:flex;flex-wrap:wrap;gap:5px">';
 $select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
 $select->execute();
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
