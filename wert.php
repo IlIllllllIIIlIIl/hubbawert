@@ -549,16 +549,18 @@ setTimeout(initCategoryButtons, 100);
 <div style="display:flex;flex-direction:column">
 <span style="margin-bottom:10px">Kategorien:</span>
 <div style="display:flex;flex-wrap:wrap;gap:5px">';
+
 $select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
 $select->execute();
+$categoryButtons = '';
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-    $pagecontent .= '
+    $categoryButtons .= '
     <label class="btn btn-outline-dark btn-sm" style="cursor:pointer">
         <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
         '.htmlspecialchars($cat['name']).'
     </label>';
 }
-$pagecontent .= '</div>
+$insertModalTemplate .= $categoryButtons.'</div>
 </div>
 </div>
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
