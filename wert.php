@@ -506,6 +506,17 @@ $insertModalTemplate = '<div class="modal-body p-0">
 </div>
 <div style="border:1px solid #2c2e3c;padding:12px">
 <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
+<style>
+.category-btn.active {
+    background-color: #212529 !important;
+    color: #fff !important;
+    border-color: #212529 !important;
+}
+.category-btn:hover {
+    background-color: #212529 !important;
+    color: #fff !important;
+}
+</style>
 <script>
 function loadPreviewImage(event) {
     const reader = new FileReader();
@@ -519,17 +530,18 @@ function loadPreviewImage(event) {
 
 document.addEventListener(\\\'DOMContentLoaded\\\', function() {
     document.querySelector(\\\'#insertModal\\\').addEventListener(\\\'shown.bs.modal\\\', function() {
-        var buttons = document.querySelectorAll(\\\'input[name="categories[]"]\\\');
-        buttons.forEach(function(btn) {
-            btn.onclick = function() {
-                if(this.checked) {
-                    this.parentElement.classList.add(\\\'active\\\', \\\'btn-dark\\\');
-                    this.parentElement.classList.remove(\\\'btn-outline-dark\\\');
+        var labels = document.querySelectorAll(\\\'.category-btn\\\');
+        labels.forEach(function(label) {
+            label.addEventListener(\\\'click\\\', function(e) {
+                const checkbox = this.querySelector(\\\'input[type="checkbox"]\\\');
+                checkbox.checked = !checkbox.checked;
+                if(checkbox.checked) {
+                    this.classList.add(\\\'active\\\');
                 } else {
-                    this.parentElement.classList.remove(\\\'active\\\', \\\'btn-dark\\\');
-                    this.parentElement.classList.add(\\\'btn-outline-dark\\\');
+                    this.classList.remove(\\\'active\\\');
                 }
-            };
+                e.preventDefault();
+            });
         });
     });
 });
@@ -548,6 +560,7 @@ document.addEventListener(\\\'DOMContentLoaded\\\', function() {
 </div>
 <div style="display:flex;flex-direction:column">
 <span style="margin-bottom:10px">Kategorien:</span>
+<div style="max-height:150px;overflow-y:auto;padding:5px;border:1px solid #2c2e3c;border-radius:4px">
 <div style="display:flex;flex-wrap:wrap;gap:5px">';
 
 $select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
@@ -555,12 +568,12 @@ $select->execute();
 $categoryButtons = '';
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoryButtons .= '
-    <label class="btn btn-outline-dark btn-sm" style="cursor:pointer">
+    <label class="btn btn-outline-dark btn-sm category-btn" style="cursor:pointer;user-select:none;margin:2px">
         <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
         '.htmlspecialchars($cat['name']).'
     </label>';
 }
-$insertModalTemplate .= $categoryButtons.'</div>
+$insertModalTemplate .= $categoryButtons.'</div></div>
 </div>
 </div>
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
