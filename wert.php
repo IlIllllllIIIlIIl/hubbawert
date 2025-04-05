@@ -530,21 +530,21 @@ function loadPreviewImage(event) {
 <input class="form-control" name="price" type="number" min="0" value="0" autocomplete="off" required style="width:150px;margin-left:auto">
 </div>
 <div style="display:flex;flex-direction:column">
-<span style="margin-bottom:10px">Kategorien:</span>
-<div style="max-height:150px;overflow-y:auto;padding:5px;border:1px solid #2c2e3c;border-radius:4px">
-<div style="display:flex;flex-wrap:wrap;gap:5px">';
+<span class="mb-2">Kategorien:</span>
+<div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
+<div class="d-flex flex-column" style="gap:8px">';
 
 $select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
 $select->execute();
-$categoryButtons = '';
+$categoryList = '';
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-    $categoryButtons .= '
-    <button type="button" class="btn btn-outline-dark btn-sm m-1" onclick="this.classList.toggle(\\\'active\\\'); this.querySelector(\\\'input\\\').checked = !this.querySelector(\\\'input\\\').checked">
-        <input type="checkbox" name="categories[]" value="'.$cat['id'].'" style="display:none">
-        '.htmlspecialchars($cat['name']).'
-    </button>';
+    $categoryList .= '
+    <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+        <input type="checkbox" name="categories[]" value="'.$cat['id'].'" class="form-check-input me-2" style="cursor:pointer">
+        <span>'.htmlspecialchars($cat['name']).'</span>
+    </label>';
 }
-$insertModalTemplate .= $categoryButtons.'</div></div>
+$insertModalTemplate .= $categoryList.'</div></div>
 </div>
 </div>
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
