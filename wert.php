@@ -3,48 +3,6 @@ $select = $core->m->prepare('SELECT p.id, s.edit_rights FROM furniture_rare_staf
 $select->execute();
 $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
-
-// Handle category migration
-if(isset($_GET['migrate_categories'])) {
-    header('Content-Type: application/json');
-    header('Cache-Control: no-cache, must-revalidate');
-    
-    try {
-        // Start migration
-        $select = $core->m->prepare('SELECT id, category FROM furniture_rare_details WHERE category != 0');
-        $select->execute();
-        $items = $select->fetchAll(PDO::FETCH_ASSOC);
-        
-        $inserted = 0;
-        foreach($items as $item) {
-            try {
-                $insert = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?, ?)');
-                if($insert->execute([$item['id'], $item['category']])) {
-                    $inserted++;
-                }
-            } catch(PDOException $e) {
-                // Ignore duplicate entry errors (code 23000)
-                if($e->getCode() != 23000) {
-                    throw $e;
-                }
-            }
-        }
-        
-        die(json_encode([
-            'success' => true,
-            'message' => "Migration abgeschlossen: $inserted Kategorien migriert",
-            'total' => count($items),
-            'migrated' => $inserted
-        ]));
-    } catch(Exception $e) {
-        http_response_code(500);
-        die(json_encode([
-            'success' => false,
-            'message' => 'Fehler bei der Migration: ' . $e->getMessage()
-        ]));
-    }
-}
-
 if(isset($_GET['i'])){
 	header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
@@ -357,8 +315,8 @@ if($isEditor){
 	        $delete = $core->m->prepare('DELETE FROM furniture_rare_categories WHERE id = ?');
 	        if($delete->execute([$_POST['category_id']])) {
 	            // Reset category to 0 for items that used this category
-	            $update = $core->m->prepare('UPDATE furniture_rare_details SET category = 0 WHERE category = ?');
-	            $update->execute([$_POST['category_id']]);
+	            $delete = $core->m->prepare('DELETE FROM furniture_rare_category_mappings WHERE category_id = ?');
+	            $delete->execute([$_POST['category_id']]);
 	            header('Location: '.$core->url.'wert');
 	            exit;
 	        } else {
@@ -431,8 +389,14 @@ if($isEditor){
 						$_POST['price'] = str_replace([',','.'], '', $_POST['price']);
 						$price = ((!isset($_POST['price']) || !is_numeric($_POST['price'])) ? 0 : intval($_POST['price']));
 						$category = ((!isset($_POST['category']) || !is_numeric($_POST['category'])) ? 0 : intval($_POST['category']));
-						$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image,price,category) VALUES (?,?,?,?,?)');
-						$insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash, $price, $category]);
+						$insert = $core->m->prepare('INSERT INTO furniture_rare_details (item_name,longdesc,image,price) VALUES (?,?,?,?)');
+						if($insert->execute([$_POST['itemName'], $_POST['itemDesc'], $imageHash, $price])){
+						    $furnitureId = $core->m->lastInsertId();
+						    if(!empty($_POST['category'])){
+						        $insertCategory = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?,?)');
+						        $insertCategory->execute([$furnitureId, $_POST['category']]);
+						    }
+						}
 					}catch(PDOException $err){
 						$error .= 'Konnte nicht eingefügt werden: ';
 						if($err->getCode() == 23000){
@@ -454,10 +418,28 @@ if($isEditor){
 				$price = ((!isset($_POST['price']) || !is_numeric($_POST['price'])) ? -1 : intval($_POST['price']));
 				if(empty($imageHash)){
 					$update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=? WHERE item_name=?');
-					$update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $_POST['oldName']]);
+					if($update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $_POST['oldName']])){
+					    // Update categories
+					    $delete = $core->m->prepare('DELETE FROM furniture_rare_category_mappings WHERE furniture_id=?');
+					    $delete->execute([$itemData['id']]);
+					    
+					    if(!empty($_POST['category'])){
+					        $insertCategory = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?,?)');
+					        $insertCategory->execute([$itemData['id'], $_POST['category']]);
+					    }
+					}
 				}else{
 					$update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=?, image=? WHERE item_name=?');
-					$update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $imageHash, $_POST['oldName']]);
+					if($update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $imageHash, $_POST['oldName']])){
+					    // Update categories
+					    $delete = $core->m->prepare('DELETE FROM furniture_rare_category_mappings WHERE furniture_id=?');
+					    $delete->execute([$itemData['id']]);
+					    
+					    if(!empty($_POST['category'])){
+					        $insertCategory = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?,?)');
+					        $insertCategory->execute([$itemData['id'], $_POST['category']]);
+					    }
+					}
 					@unlink($filedir.'/'.$itemData['image']);
 				}
 				if($price != $itemData['price']){
@@ -474,74 +456,8 @@ if($isEditor){
 			$pagecontent .= '<div class="row box"><div class="col" style="color:#e37373">'.$error.'</div></div>';
 		}
 	}
-	if($isAdmin) {
-	    $pagecontent .= <<<'EOD'
-	<div class="row box mb-2" style="border:1px solid #376d9d">
-	    <div class="col-12">
-	        <button id="migrationButton" class="btn btn-warning w-100" type="button">
-	            🔄 Kategorien Migration starten
-	        </button>
-	        <div id="migrationStatus" class="mt-2 d-none">
-	            <div class="progress">
-	                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-	            </div>
-	            <div class="text-center mt-2" id="migrationText"></div>
-	        </div>
-	    </div>
-	</div>
-	<script>
-	document.getElementById("migrationButton").addEventListener("click", async function() {
-	    const button = this;
-	    const statusDiv = document.getElementById("migrationStatus");
-	    const progressBar = statusDiv.querySelector(".progress-bar");
-	    const statusText = document.getElementById("migrationText");
-	    
-	    button.disabled = true;
-	    statusDiv.classList.remove("d-none");
-	    statusText.textContent = "Migration läuft...";
-	    
-	    try {
-	        const response = await fetch("?migrate_categories=1", {
-	            headers: {
-	                "Accept": "application/json",
-	                "Cache-Control": "no-cache"
-	            }
-	        });
-	        
-	        if (!response.ok) {
-	            throw new Error("HTTP error! status: " + response.status);
-	        }
-	        
-	        const text = await response.text();
-	        let data;
-	        
-	        try {
-	            data = JSON.parse(text);
-	        } catch (e) {
-	            throw new Error("Ungültige Server-Antwort: " + text);
-	        }
-	        
-	        if(data.success) {
-	            progressBar.style.width = "100%";
-	            progressBar.classList.add("bg-success");
-	            statusText.textContent = data.message;
-	            button.style.display = "none";
-	        } else {
-	            throw new Error(data.message || "Unbekannter Fehler");
-	        }
-	    } catch(error) {
-	        statusText.textContent = "Fehler: " + error.message;
-	        progressBar.style.width = "100%";
-	        progressBar.classList.add("bg-danger");
-	        button.disabled = false;
-	    }
-	});
-	</script>
-	EOD;
-	}
-	
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-	    <div class="col-12">
+	<div class="col-12">
 	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
 	🎁 Neues Item einfügen
 	</button>
@@ -557,7 +473,7 @@ if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
 	$result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
 	$rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
 	
-	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.category,r.image,r.views,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
+	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.image,r.views,(SELECT GROUP_CONCAT(m.category_id) FROM furniture_rare_category_mappings m WHERE m.furniture_id = r.id) as categories,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
 	$select->execute();
 	$items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
 	file_put_contents($cachePath, json_encode($items));
@@ -656,7 +572,7 @@ foreach ($items as $itemId => $item) {
 		htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name']))
 	];
 
-	if($i < $maxItemsToShow && ($category == 0 || $category == $item['category'])){
+	if($i < $maxItemsToShow && ($category == 0 || (isset($item['categories']) && in_array($category, explode(',', $item['categories']))))){
 		$pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
 		$i++;
 	}

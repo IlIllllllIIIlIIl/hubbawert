@@ -244,35 +244,3 @@ if (isEditor) {
 
 // Initialize Bootstrap modal once
 const insertModal = new bootstrap.Modal('#insertModal');
-
-// Handle category migration button
-if(document.getElementById('migrationButton')) {
-    document.getElementById('migrationButton').addEventListener('click', async function() {
-        const button = this;
-        const statusDiv = document.getElementById('migrationStatus');
-        const progressBar = statusDiv.querySelector('.progress-bar');
-        const statusText = document.getElementById('migrationText');
-        
-        // Disable button and show status
-        button.disabled = true;
-        statusDiv.classList.remove('d-none');
-        statusText.textContent = 'Migration läuft...';
-        
-        try {
-            const response = await fetch('?migrate_categories=1');
-            const data = await response.json();
-            
-            if(data.success) {
-                progressBar.style.width = '100%';
-                statusText.textContent = data.message;
-                button.style.display = 'none';
-            } else {
-                throw new Error(data.message);
-            }
-        } catch(error) {
-            statusText.textContent = 'Fehler: ' + error.message;
-            progressBar.classList.add('bg-danger');
-            button.disabled = false;
-        }
-    });
-}
