@@ -5,7 +5,7 @@ $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
 
 // Handle category migration
-if(isset($_GET['migrate_categories']) && $isAdmin) {
+if(isset($_GET['migrate_categories'])) {
     header('Content-Type: application/json');
     header('Cache-Control: no-cache, must-revalidate');
     
