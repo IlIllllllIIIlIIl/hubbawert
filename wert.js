@@ -244,3 +244,19 @@ if (isEditor) {
 
 // Initialize Bootstrap modal once
 const insertModal = new bootstrap.Modal('#insertModal');
+
+// Kategorien-Buttons Handling
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryButtons = document.querySelectorAll('input[name="categories[]"]');
+    categoryButtons.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if(this.checked) {
+                this.parentElement.classList.add('active', 'btn-dark');
+                this.parentElement.classList.remove('btn-outline-dark');
+            } else {
+                this.parentElement.classList.remove('active', 'btn-dark');
+                this.parentElement.classList.add('btn-outline-dark');
+            }
+        });
+    });
+});
