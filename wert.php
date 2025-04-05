@@ -479,10 +479,10 @@ if($isAdmin) {
             🔄 Kategorien Migration starten
         </button>
         <div id="migrationStatus" class="mt-2 d-none">
-            <div class="progress">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            <div class="progress bg-dark" style="height: 25px;">
+                <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
             </div>
-            <div class="text-center mt-2" id="migrationText"></div>
+            <div class="text-center mt-2 text-warning" id="migrationText"></div>
         </div>
     </div>
 </div>';

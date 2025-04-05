@@ -248,6 +248,44 @@ const insertModal = new bootstrap.Modal('#insertModal');
 // Handle category migration button
 if(document.getElementById('migrationButton')) {
     document.getElementById('migrationButton').addEventListener('click', async function() {
+        try {
+            const button = this;
+            const statusDiv = document.getElementById('migrationStatus');
+            const progressBar = statusDiv.querySelector('.progress-bar');
+            const statusText = document.getElementById('migrationText');
+            
+            // Disable button and show status
+            button.disabled = true;
+            statusDiv.classList.remove('d-none');
+            progressBar.style.width = '50%';
+            statusText.textContent = 'Migration läuft...';
+            
+            const response = await fetch('?migrate_categories=1');
+            const data = await response.json();
+            
+            if(data.success) {
+                progressBar.style.width = '100%';
+                statusText.textContent = data.message;
+                button.remove(); // Remove button completely after successful migration
+            } else {
+                throw new Error(data.message);
+            }
+        } catch(error) {
+            const statusText = document.getElementById('migrationText');
+            const progressBar = document.querySelector('.progress-bar');
+            statusText.textContent = 'Fehler: ' + error.message;
+            statusText.classList.remove('text-warning');
+            statusText.classList.add('text-danger');
+            progressBar.classList.remove('bg-warning');
+            progressBar.classList.add('bg-danger');
+            this.disabled = false;
+        }
+    });
+}
+
+// Handle category migration button
+if(document.getElementById('migrationButton')) {
+    document.getElementById('migrationButton').addEventListener('click', async function() {
         const button = this;
         const statusDiv = document.getElementById('migrationStatus');
         const progressBar = statusDiv.querySelector('.progress-bar');
