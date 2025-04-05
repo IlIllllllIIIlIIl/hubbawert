@@ -114,10 +114,36 @@ event.target.style.color = '#3ab4e3';
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
 <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
+<div class="col-12 mt-3">
+  <div style="border:1px solid #2c2e3c;padding:12px">
+    <div class="mb-2">Kategorien:</div>
+    <div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
+      <div class="d-flex flex-column" style="gap:8px">
+        ${document.querySelector('#categories .cats .row').innerHTML.replace(/<a href[^>]*>(.*?)<\/a>/g, match => {
+          const categoryId = match.match(/\?c=(\d+)/)[1];
+          const categoryName = match.match(/>([^<]*)<\/a>/)[1].trim();
+          return `
+            <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+              <input type="checkbox" name="categories[]" value="${categoryId}" class="form-check-input me-2" style="cursor:pointer">
+              <span>${categoryName}</span>
+            </label>`;
+        })}
+      </div>
+    </div>
+  </div>
+</div>
 </form>`;
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
+
+// Check categories that belong to this item
+const itemCategories = items.find(item => item[0] === this.id)[7]?.split(',') || [];
+document.querySelectorAll('#details input[name="categories[]"]').forEach(checkbox => {
+  if (itemCategories.includes(checkbox.value)) {
+    checkbox.checked = true;
+  }
+});
 }
 });
 document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
@@ -143,9 +169,6 @@ iModal.children[1].innerHTML = `
 <div class="w-100"></div>
 <div class="col">Aufrufe</div>
 <div class="col">${json.info.views}</div>
-<div class="w-100"></div>
-<div class="col">Kategorie</div>
-<div class="col">--</div>
 <div class="w-100"></div>
 <div class="col"></div>
 <div class="col">${this.id}</div>`;
@@ -240,7 +263,6 @@ if (isEditor) {
         });
     }
 }
-
 
 // Initialize Bootstrap modal once
 const insertModal = new bootstrap.Modal('#insertModal');
