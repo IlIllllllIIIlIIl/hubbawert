@@ -534,12 +534,13 @@ function loadPreviewImage(event) {
     };
     reader.readAsDataURL(event.target.files[0]);
 }
-
-function toggleCategory(element) {
+</script>
+<script type="text/javascript">
+window.toggleCategory = function(element) {
     const checkbox = element.querySelector(\\\'input[type="checkbox"]\\\');
     checkbox.checked = !checkbox.checked;
     element.classList.toggle(\\\'selected\\\');
-}
+};
 </script>
 <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
 </div>
