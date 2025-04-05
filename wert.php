@@ -467,7 +467,7 @@ if($isEditor){
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
 	<div class="col-12">
 	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
-	🎁 Neues Item einfügen
+	🎁 Neue Rarität einfügen
 	</button>
 	</div>
 	</div>';
@@ -548,8 +548,8 @@ $insertModalTemplate .= $categoryList.'</div></div>
 </div>
 </div>
 <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
-<span style="text-align:center;margin-bottom:10px">Beschreibung</span>
-<input class="form-control" name="itemDesc" type="text" placeholder="Beschreibung" autocomplete="off" required style="flex:1">
+<span style="margin-bottom:10px">Beschreibung</span>
+<textarea class="form-control" name="itemDesc" placeholder="Beschreibung" autocomplete="off" required style="flex:1;resize:none"></textarea>
 </div>
 </div>
 </div>
