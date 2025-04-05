@@ -3,9 +3,11 @@ $select = $core->m->prepare('SELECT p.id, s.edit_rights FROM furniture_rare_staf
 $select->execute();
 $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
+
 // Handle category migration
 if(isset($_GET['migrate_categories']) && $isAdmin) {
     header('Content-Type: application/json');
+    header('Cache-Control: no-cache, must-revalidate');
     
     try {
         // Start migration
@@ -15,20 +17,28 @@ if(isset($_GET['migrate_categories']) && $isAdmin) {
         
         $inserted = 0;
         foreach($items as $item) {
-            $insert = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?, ?)');
-            if($insert->execute([$item['id'], $item['category']])) {
-                $inserted++;
+            try {
+                $insert = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?, ?)');
+                if($insert->execute([$item['id'], $item['category']])) {
+                    $inserted++;
+                }
+            } catch(PDOException $e) {
+                // Ignore duplicate entry errors (code 23000)
+                if($e->getCode() != 23000) {
+                    throw $e;
+                }
             }
         }
         
-        exit(json_encode([
+        die(json_encode([
             'success' => true,
             'message' => "Migration abgeschlossen: $inserted Kategorien migriert",
             'total' => count($items),
             'migrated' => $inserted
         ]));
     } catch(Exception $e) {
-        exit(json_encode([
+        http_response_code(500);
+        die(json_encode([
             'success' => false,
             'message' => 'Fehler bei der Migration: ' . $e->getMessage()
         ]));
@@ -465,48 +475,69 @@ if($isEditor){
 		}
 	}
 	if($isAdmin) {
-	    $pagecontent .= '<div class="row box mb-2" style="border:1px solid #376d9d">
-	        <div class="col-12">
-	            <button id="migrationButton" class="btn btn-warning w-100" type="button">
-	                🔄 Kategorien Migration starten
-	            </button>
-	            <div id="migrationStatus" class="mt-2 d-none">
-	                <div class="progress">
-	                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-	                </div>
-	                <div class="text-center mt-2" id="migrationText"></div>
+	    $pagecontent .= <<<'EOD'
+	<div class="row box mb-2" style="border:1px solid #376d9d">
+	    <div class="col-12">
+	        <button id="migrationButton" class="btn btn-warning w-100" type="button">
+	            🔄 Kategorien Migration starten
+	        </button>
+	        <div id="migrationStatus" class="mt-2 d-none">
+	            <div class="progress">
+	                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
 	            </div>
+	            <div class="text-center mt-2" id="migrationText"></div>
 	        </div>
 	    </div>
-	    <script>
-	    document.getElementById("migrationButton").addEventListener("click", async function() {
-	        const button = this;
-	        const statusDiv = document.getElementById("migrationStatus");
-	        const progressBar = statusDiv.querySelector(".progress-bar");
-	        const statusText = document.getElementById("migrationText");
+	</div>
+	<script>
+	document.getElementById("migrationButton").addEventListener("click", async function() {
+	    const button = this;
+	    const statusDiv = document.getElementById("migrationStatus");
+	    const progressBar = statusDiv.querySelector(".progress-bar");
+	    const statusText = document.getElementById("migrationText");
+	    
+	    button.disabled = true;
+	    statusDiv.classList.remove("d-none");
+	    statusText.textContent = "Migration läuft...";
+	    
+	    try {
+	        const response = await fetch("?migrate_categories=1", {
+	            headers: {
+	                "Accept": "application/json",
+	                "Cache-Control": "no-cache"
+	            }
+	        });
 	        
-	        button.disabled = true;
-	        statusDiv.classList.remove("d-none");
-	        statusText.textContent = "Migration läuft...";
+	        if (!response.ok) {
+	            throw new Error("HTTP error! status: " + response.status);
+	        }
+	        
+	        const text = await response.text();
+	        let data;
 	        
 	        try {
-	            const response = await fetch("?migrate_categories=1");
-	            const data = await response.json();
-	            
-	            if(data.success) {
-	                progressBar.style.width = "100%";
-	                statusText.textContent = data.message;
-	                button.style.display = "none";
-	            } else {
-	                throw new Error(data.message);
-	            }
-	        } catch(error) {
-	            statusText.textContent = "Fehler: " + error.message;
-	            progressBar.classList.add("bg-danger");
-	            button.disabled = false;
+	            data = JSON.parse(text);
+	        } catch (e) {
+	            throw new Error("Ungültige Server-Antwort: " + text);
 	        }
-	    });
-	    </script>';
+	        
+	        if(data.success) {
+	            progressBar.style.width = "100%";
+	            progressBar.classList.add("bg-success");
+	            statusText.textContent = data.message;
+	            button.style.display = "none";
+	        } else {
+	            throw new Error(data.message || "Unbekannter Fehler");
+	        }
+	    } catch(error) {
+	        statusText.textContent = "Fehler: " + error.message;
+	        progressBar.style.width = "100%";
+	        progressBar.classList.add("bg-danger");
+	        button.disabled = false;
+	    }
+	});
+	</script>
+	EOD;
 	}
 	
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
@@ -516,22 +547,6 @@ if($isEditor){
 	</button>
 	</div>
 	</div>';
-// Migration Button für Kategorien
-if($isAdmin) {
-    $pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-    <div class="col-12">
-        <button id="migrationButton" class="btn btn-warning w-100" type="button">
-            🔄 Kategorien Migration starten
-        </button>
-        <div id="migrationStatus" class="mt-2 d-none">
-            <div class="progress">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-            </div>
-            <div class="text-center mt-2" id="migrationText"></div>
-        </div>
-    </div>
-</div>';
-}
 }
 
 $pagecontent .= '<div class="row rare justify-content-between">';
