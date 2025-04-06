@@ -118,6 +118,24 @@ document.querySelector('#details .modal-content').innerHTML = `<form class="moda
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
+            
+// Add category selection
+const categoryDiv = iModal.querySelector('.modal-body > div:nth-child(2)');
+const categoriesSelect = document.createElement('select');
+categoriesSelect.multiple = true;
+categoriesSelect.name = 'categories[]';
+categoriesSelect.className = 'form-control mt-3';
+const categoryOptions = document.querySelector('#insertModal select[name="categories[]"]').cloneNode(true);
+categoriesSelect.innerHTML = categoryOptions.innerHTML;
+
+// Set currently selected categories
+const currentCategories = iModal.querySelector('.col:nth-child(8)').textContent.split(',').filter(c => c);
+currentCategories.forEach(catId => {
+    const option = categoriesSelect.querySelector(`option[value="${catId}"]`);
+    if (option) option.selected = true;
+});
+
+categoryDiv.appendChild(categoriesSelect);
 }
 });
 document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
