@@ -105,48 +105,50 @@ lastModal = this.id;
 iModal.innerHTML = itemModalTemplate;
 iModal.children[0].innerHTML = this.innerHTML;
 if(isEditor){
-iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
-document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
-    if(event.target.value.includes('Bearbeiten')){
-        event.preventDefault();
-        event.target.value = '💾 Speichern';
-        event.target.style.color = '#3ab4e3';
-        iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
-        document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
-        <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-        </form>`;
-        makeEditable('#details .item > :nth-child(2)', 'price');
-        makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
-        makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
+    iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
 
-        // Add category selection
-        const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(2)');
-        const currentCategories = document.querySelector('#details .modal-body > div:nth-child(2) > div:nth-child(8)').textContent.split(',').filter(c => c);
-        const categoriesSelect = document.createElement('select');
-        categoriesSelect.multiple = true;
-        categoriesSelect.name = 'categories[]';
-        categoriesSelect.className = 'form-control mt-3';
-        const categoryOptions = document.querySelector('#insertModal select[name="categories[]"]');
-        if (categoryOptions) {
-            categoriesSelect.innerHTML = categoryOptions.innerHTML;
-            currentCategories.forEach(catId => {
-                const option = categoriesSelect.querySelector(`option[value="${catId}"]`);
-                if (option) option.selected = true;
-            });
-            categoryDiv.appendChild(categoriesSelect);
+    document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
+        if(event.target.value.includes('Bearbeiten')){
+            event.preventDefault();
+            event.target.value = '💾 Speichern';
+            event.target.style.color = '#3ab4e3';
+            iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
+            document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
+            <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
+            </form>`;
+            makeEditable('#details .item > :nth-child(2)', 'price');
+            makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
+            makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
+
+            // Add category selection
+            const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(2)');
+            const currentCategories = document.querySelector('#details .modal-body > div:nth-child(2) > div:nth-child(8)').textContent.split(',').filter(c => c);
+            const categoriesSelect = document.createElement('select');
+            categoriesSelect.multiple = true;
+            categoriesSelect.name = 'categories[]';
+            categoriesSelect.className = 'form-control mt-3';
+            const categoryOptions = document.querySelector('#insertModal select[name="categories[]"]');
+            if (categoryOptions) {
+                categoriesSelect.innerHTML = categoryOptions.innerHTML;
+                currentCategories.forEach(catId => {
+                    const option = categoriesSelect.querySelector(`option[value="${catId}"]`);
+                    if (option) option.selected = true;
+                });
+                categoryDiv.appendChild(categoriesSelect);
+            }
         }
-    }
-});
-document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
-if(confirm('Möchtest du diese Rarität wirklich löschen?')){
-event.preventDefault();
-const form = document.createElement('form');
-form.method = 'POST';
-form.innerHTML = `<input type="hidden" name="delete" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">`;
-document.body.appendChild(form);
-form.submit();
-}
-});
+    });
+
+    document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
+        if(confirm('Möchtest du diese Rarität wirklich löschen?')){
+            event.preventDefault();
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `<input type="hidden" name="delete" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
 }
 
 const response = await fetch("?i="+this.id);
