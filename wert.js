@@ -90,7 +90,16 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-const detailsModal = new bootstrap.Modal('#details');
+console.log('Initializing modal');
+const detailsModalElement = document.querySelector('#details');
+console.log('Modal element found:', detailsModalElement);
+let detailsModal = null;
+if (detailsModalElement) {
+    detailsModal = new bootstrap.Modal(detailsModalElement);
+    console.log('Modal initialized:', detailsModal);
+} else {
+    console.error('Modal element #details not found in the DOM');
+}
 
 // Function to fetch category names
 function getCategoryNames(categoryIds) {
@@ -108,11 +117,27 @@ function getCategoryNames(categoryIds) {
 }
 
 async function itemModal(e) {
-    const iModal = document.querySelector('#details .modal-body');
+    try {
+        console.log('Item clicked:', this.id);
+        
+        if (!detailsModal) {
+            console.error('Modal not initialized');
+            return;
+        }
+        
+        const iModal = document.querySelector('#details .modal-body');
+        console.log('Modal body element:', iModal);
 
-    if(lastModal != this.id){
+        if (!iModal) {
+            console.error('Modal body element not found');
+            return;
+        }
+
+        if(lastModal != this.id){
+        console.log('Different item, clearing modal content');
         iModal.replaceChildren();
     }
+    console.log('Showing modal');
     detailsModal.show();
     if(lastModal == this.id){
         return false;
@@ -245,6 +270,9 @@ async function itemModal(e) {
     } else {
         iModal.children[3].remove();
     }
+    } catch (error) {
+        console.error('Error in itemModal:', error);
+    }
 }
 
 function dateFormat(timestamp){
@@ -252,10 +280,18 @@ function dateFormat(timestamp){
 }
 
 function setTooltips(){
-    document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-    document.querySelectorAll(".rare .item").forEach(item => {
-        item.addEventListener("click", itemModal);
-    });
+    try {
+        console.log('Setting up tooltips and click handlers');
+        document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+        const items = document.querySelectorAll(".rare .item");
+        console.log('Found items:', items.length);
+        items.forEach(item => {
+            console.log('Adding click handler to item:', item.id);
+            item.addEventListener("click", itemModal);
+        });
+    } catch (error) {
+        console.error('Error in setTooltips:', error);
+    }
 }
 
 setTooltips();
@@ -285,4 +321,8 @@ if (isEditor) {
 }
 
 // Initialize Bootstrap modal once
-const insertModal = new bootstrap.Modal('#insertModal');
+// Initialize Bootstrap modal once
+if (document.querySelector('#insertModal')) {
+    const insertModal = new bootstrap.Modal('#insertModal');
+    console.log('Insert modal initialized');
+}
