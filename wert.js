@@ -90,7 +90,7 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-let detailsModal = null;
+const detailsModal = new bootstrap.Modal('#details');
 
 // Function to fetch category names
 function getCategoryNames(categoryIds) {
@@ -108,95 +108,32 @@ function getCategoryNames(categoryIds) {
 }
 
 async function itemModal(e) {
-    const modalEl = document.querySelector('#details');
-    const iModal = modalEl.querySelector('.modal-body');
-    
-    // Initialize or get modal instance
-    if (!detailsModal) {
-        detailsModal = new bootstrap.Modal(modalEl, {
-            backdrop: 'static',
-            keyboard: false
-        });
-        
-        // Add hide event listener to cleanup
-        modalEl.addEventListener('hidden.bs.modal', () => {
-            const modalBody = modalEl.querySelector('.modal-body');
-            if (modalBody) {
-                const newBody = modalBody.cloneNode(false);
-                modalBody.parentNode.replaceChild(newBody, modalBody);
-            }
-        });
-    }
+    const iModal = document.querySelector('#details .modal-body');
 
-    // Clear modal when showing new item
-    if(lastModal != this.id) {
-        lastModal = this.id;
-        const newModalBody = iModal.cloneNode(false);
-        iModal.parentNode.replaceChild(newModalBody, iModal);
-        
-        detailsModal.show();
+    if(lastModal != this.id){
+        iModal.replaceChildren();
     }
-    
-    if(lastModal == this.id) {
+    detailsModal.show();
+    if(lastModal == this.id){
         return false;
     }
     lastModal = this.id;
 
-    // Clear existing content
-    while (iModal.firstChild) {
-        iModal.removeChild(iModal.firstChild);
-    }
-
-    // Create new content
-    const template = document.createElement('div');
-    template.innerHTML = itemModalTemplate;
-    
-    // Add content parts one by one
-    Array.from(template.children).forEach(child => {
-        iModal.appendChild(child);
-    });
-    
+    iModal.innerHTML = itemModalTemplate;
     iModal.children[0].innerHTML = this.innerHTML;
     
     if(isEditor){
-        const editButton = document.createElement('input');
-        editButton.className = 'edit';
-        editButton.type = 'submit';
-        editButton.value = '✏️ Bearbeiten';
-
-        const deleteButton = document.createElement('input');
-        deleteButton.className = 'delete';
-        deleteButton.type = 'submit';
-        deleteButton.value = '🗑️ Löschen';
-
-        iModal.children[0].lastChild.insertAdjacentElement('beforebegin', editButton);
-        iModal.children[0].lastChild.insertAdjacentElement('beforebegin', deleteButton);
-
-        const handleEdit = (event) => {
+        iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
+        document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
             if(event.target.value.includes('Bearbeiten')){
                 event.preventDefault();
                 event.target.value = '💾 Speichern';
                 event.target.style.color = '#3ab4e3';
-
-                const fileInput = document.createElement('input');
-                fileInput.className = 'editFile';
-                fileInput.type = 'file';
-                fileInput.name = 'file';
-                fileInput.accept = 'image/*';
-                iModal.children[0].lastChild.insertAdjacentElement('beforebegin', fileInput);
-
-                const form = document.createElement('form');
-                form.className = 'modal-body row';
-                form.enctype = 'multipart/form-data';
-                form.method = 'POST';
-                form.innerHTML = document.querySelector('#details .modal-body').innerHTML;
-                form.innerHTML += `
-                    <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-                    <input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
-                `;
-                document.querySelector('#details .modal-content').innerHTML = '';
-                document.querySelector('#details .modal-content').appendChild(form);
-
+                iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
+                document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
+                <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
+                <input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
+                </form>`;
                 makeEditable('#details .item > :nth-child(2)', 'price');
                 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
                 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
@@ -216,9 +153,9 @@ async function itemModal(e) {
                 });
                 categoryDiv.appendChild(categoriesSelect);
             }
-        };
+        });
 
-        const handleDelete = (event) => {
+        document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
             if(confirm('Möchtest du diese Rarität wirklich löschen?')){
                 event.preventDefault();
                 const form = document.createElement('form');
@@ -227,15 +164,7 @@ async function itemModal(e) {
                 document.body.appendChild(form);
                 form.submit();
             }
-        };
-
-        // Remove old event listeners if they exist
-        editButton.removeEventListener('click', handleEdit);
-        deleteButton.removeEventListener('click', handleDelete);
-
-        // Add new event listeners
-        editButton.addEventListener('click', handleEdit);
-        deleteButton.addEventListener('click', handleDelete);
+        });
     }
 
     const response = await fetch("?i="+this.id);
