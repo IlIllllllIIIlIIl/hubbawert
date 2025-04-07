@@ -1,93 +1,97 @@
+// Initialize Bootstrap modals
+const detailsModal = new bootstrap.Modal('#details');
+const insertModal = new bootstrap.Modal('#insertModal');
+
 window.onscroll = () => {
-const small = window.innerWidth < 768;
-if(!small){
-if(window.pageYOffset > 250){
-document.querySelector(".sticky-top").style.borderBottomLeftRadius = "14px";
-document.querySelector(".sticky-top").style.borderBottomRightRadius = "14px";
-}else{
-document.querySelector(".sticky-top").style.borderBottomLeftRadius = "0px";
-document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
-}
-}
+    const small = window.innerWidth < 768;
+    if(!small){
+        if(window.pageYOffset > 250){
+            document.querySelector(".sticky-top").style.borderBottomLeftRadius = "14px";
+            document.querySelector(".sticky-top").style.borderBottomRightRadius = "14px";
+        }else{
+            document.querySelector(".sticky-top").style.borderBottomLeftRadius = "0px";
+            document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
+        }
+    }
 };
 let searchWait;
 document.getElementById("search").addEventListener("keyup", function(event){
-if (search != this.value) {
-search = this.value;
-clearTimeout(searchWait);
-searchWait = setTimeout(filterResults, 500);
-}
+    if (search != this.value) {
+        search = this.value;
+        clearTimeout(searchWait);
+        searchWait = setTimeout(filterResults, 500);
+    }
 });
 document.getElementById("raritynav").addEventListener("click", event => {
-event.preventDefault();
-document.querySelector("#raritynav a[data-r='"+rarity+"']").classList.remove("active");
-event.target.classList.add("active");
-rarity = event.target.dataset.r;
-filterResults();
+    event.preventDefault();
+    document.querySelector("#raritynav a[data-r='"+rarity+"']").classList.remove("active");
+    event.target.classList.add("active");
+    rarity = event.target.dataset.r;
+    filterResults();
 });
 let appliedSorting = 0;
 document.querySelector(".custom-select").addEventListener("change", event => {
-let itemArray = null;
-appliedSorting = event.target.value;
-if(event.target.value > 0){
-itemArray = items;
-itemArray.sort(
-(a, b) => {
-switch(event.target.value){
-case "1":
-return a[10] < b[10] ? 1 : -1;
-case "2":
-return a[9] < b[9] ? 1 : -1;
-case "3":
-return a[2] < b[2] ? 1 : -1;
-case "4":
-return a[2] > b[2] ? 1 : -1;
-case "5":
-return a[8] > b[8] ? 1 : -1;
-case "6":
-return a[8] < b[8] ? 1 : -1;
-case "7":
-return Math.random() - 0.5;
-}
-}
-);
-}
-filterResults(itemArray);
+    let itemArray = null;
+    appliedSorting = event.target.value;
+    if(event.target.value > 0){
+        itemArray = items;
+        itemArray.sort(
+            (a, b) => {
+                switch(event.target.value){
+                    case "1":
+                        return a[10] < b[10] ? 1 : -1;
+                    case "2":
+                        return a[9] < b[9] ? 1 : -1;
+                    case "3":
+                        return a[2] < b[2] ? 1 : -1;
+                    case "4":
+                        return a[2] > b[2] ? 1 : -1;
+                    case "5":
+                        return a[8] > b[8] ? 1 : -1;
+                    case "6":
+                        return a[8] < b[8] ? 1 : -1;
+                    case "7":
+                        return Math.random() - 0.5;
+                }
+            }
+        );
+    }
+    filterResults(itemArray);
 });
 function filterResults(sortedItems = null){
-let i = 0;
-const container = document.querySelector(".rare");
-container.replaceChildren();
-(sortedItems || items).forEach(item => {
-const matchCategory = (category > 0 && item[7] != category);
-const matchRarity = (rarity > 0 && item[1] != rarity);
-const matchSearch = (search == "" && i > maxItemsToShow && rarity == 0 && category == 0) || (search !== "" && !item[6].toLowerCase().includes(search.toLowerCase()));
-const sortingHelper = ((appliedSorting == 4 || appliedSorting == 5) && item[8] < 1); /* < 1 skip unknown prices in price sorting */
-if(!(matchSearch || matchRarity || matchCategory || sortingHelper)){
-i++;
-let itemToAdd = itemTemplate;
-for (let j = 0; j < itemReplace.length; j++) {
-itemToAdd = itemToAdd.replace(itemReplace[j], item[j]);
-}
-container.insertAdjacentHTML("beforeend", itemToAdd);
-}
-});
-if(window.pageYOffset > 240){
-scrollTo(0, 230);
-}
-setTooltips();
+    let i = 0;
+    const container = document.querySelector(".rare");
+    container.replaceChildren();
+    (sortedItems || items).forEach(item => {
+        const matchCategory = (category > 0 && item[7] != category);
+        const matchRarity = (rarity > 0 && item[1] != rarity);
+        const matchSearch = (search == "" && i > maxItemsToShow && rarity == 0 && category == 0) || (search !== "" && !item[6].toLowerCase().includes(search.toLowerCase()));
+        const sortingHelper = ((appliedSorting == 4 || appliedSorting == 5) && item[8] < 1); /* < 1 skip unknown prices in price sorting */
+        if(!(matchSearch || matchRarity || matchCategory || sortingHelper)){
+            i++;
+            let itemToAdd = itemTemplate;
+            for (let j = 0; j < itemReplace.length; j++) {
+                itemToAdd = itemToAdd.replace(itemReplace[j], item[j]);
+            }
+            container.insertAdjacentHTML("beforeend", itemToAdd);
+        }
+    });
+    if(window.pageYOffset > 240){
+        scrollTo(0, 230);
+    }
+    setTooltips();
 }
 function makeEditable(selector, name, f = false){
-let element = document.querySelector(selector);
-let input = document.createElement('input');
-input.type = 'text';
-input.value = element.innerText;
-input.required = '';
-input.name = name;
-if(f){
-element = element.firstChild;
-}
-element.replaceWith(input);
+    let element = document.querySelector(selector);
+    let input = document.createElement('input');
+    input.type = 'text';
+    input.value = element.innerText;
+    input.required = '';
+    input.name = name;
+    if(f){
+        element = element.firstChild;
+    }
+    element.replaceWith(input);
 }
 let lastModal = 0;
 
@@ -112,7 +116,7 @@ async function itemModal(e) {
     if(lastModal != this.id){
         iModal.replaceChildren();
     }
-    new bootstrap.Modal('#details').show();
+    detailsModal.show();
     if(lastModal == this.id){
         return false;
     }
@@ -282,6 +286,3 @@ if (isEditor) {
         });
     }
 }
-
-// Initialize Bootstrap modal once
-const insertModal = new bootstrap.Modal('#insertModal');
