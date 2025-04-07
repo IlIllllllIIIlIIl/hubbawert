@@ -526,9 +526,9 @@ $insertModalTemplate = '<div class="modal-body p-0">
 function loadPreviewImage(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
-        const output = document.getElementById('imagePreview');
+        const output = document.getElementById(\\"imagePreview\\");
         output.src = e.target.result;
-        output.style.display = 'block';
+        output.style.display = \\"block\\";
     };
     reader.readAsDataURL(event.target.files[0]);
 }
