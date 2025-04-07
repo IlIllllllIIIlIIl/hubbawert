@@ -1,19 +1,3 @@
-// Global state
-let search = '';
-let rarity = 0;
-let category = 0;
-let items = [];
-let maxItemsToShow = 50;
-let itemTemplate = '';
-let itemModalTemplate = '';
-let itemReplace = [];
-let isEditor = false;
-let isAdmin = false;
-let avatarImager = '';
-
-// Bootstrap and Chart.js werden als externe Abhängigkeiten erwartet
-/* global bootstrap, Chart */
-
 window.onscroll = () => {
 const small = window.innerWidth < 768;
 if(!small){
@@ -26,16 +10,14 @@ document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
 }
 }
 };
-
 let searchWait;
-document.getElementById("search").addEventListener("keyup", function() {
+document.getElementById("search").addEventListener("keyup", function(event){
 if (search != this.value) {
 search = this.value;
 clearTimeout(searchWait);
 searchWait = setTimeout(filterResults, 500);
 }
 });
-
 document.getElementById("raritynav").addEventListener("click", event => {
 event.preventDefault();
 document.querySelector("#raritynav a[data-r='"+rarity+"']").classList.remove("active");
@@ -43,7 +25,6 @@ event.target.classList.add("active");
 rarity = event.target.dataset.r;
 filterResults();
 });
-
 let appliedSorting = 0;
 document.querySelector(".custom-select").addEventListener("change", event => {
 let itemArray = null;
@@ -73,7 +54,6 @@ return Math.random() - 0.5;
 }
 filterResults(itemArray);
 });
-
 function filterResults(sortedItems = null){
 let i = 0;
 const container = document.querySelector(".rare");
@@ -82,7 +62,7 @@ container.replaceChildren();
 const matchCategory = (category > 0 && item[7] != category);
 const matchRarity = (rarity > 0 && item[1] != rarity);
 const matchSearch = (search == "" && i > maxItemsToShow && rarity == 0 && category == 0) || (search !== "" && !item[6].toLowerCase().includes(search.toLowerCase()));
-const sortingHelper = ((appliedSorting == 4 || appliedSorting == 5) && item[8] < 1);
+const sortingHelper = ((appliedSorting == 4 || appliedSorting == 5) && item[8] < 1); /* < 1 skip unknown prices in price sorting */
 if(!(matchSearch || matchRarity || matchCategory || sortingHelper)){
 i++;
 let itemToAdd = itemTemplate;
@@ -97,14 +77,6 @@ scrollTo(0, 230);
 }
 setTooltips();
 }
-
-// Modal State Management
-const modalState = {
-  currentItemId: null,
-  isEditing: false,
-  cleanup: null
-};
-
 function makeEditable(selector, name, f = false){
 let element = document.querySelector(selector);
 let input = document.createElement('input');
@@ -116,175 +88,87 @@ if(f){
 element = element.firstChild;
 }
 element.replaceWith(input);
-return input;
 }
-
-function cleanupModalHandlers() {
-  if (modalState.cleanup) {
-    modalState.cleanup();
-    modalState.cleanup = null;
-  }
-}
-
-async function itemModal() {
+let lastModal = 0;
+async function itemModal(e){
 const iModal = document.querySelector('#details .modal-body');
-const modalInstance = new bootstrap.Modal('#details');
 
-// Wenn das gleiche Item nochmal geklickt wird und wir nicht im Bearbeitungsmodus sind
-if(modalState.currentItemId === this.id && !modalState.isEditing) {
-  return false;
+if(lastModal != this.id){
+iModal.replaceChildren();
 }
-
-// Cleanup vorheriger Event-Handler
-cleanupModalHandlers();
-
-// Reset Modal State wenn ein neues Item geöffnet wird
-if(modalState.currentItemId !== this.id) {
-  iModal.replaceChildren();
-  modalState.currentItemId = this.id;
-  modalState.isEditing = false;
+new bootstrap.Modal('#details').show();
+if(lastModal == this.id){
+return false;
 }
-
-modalInstance.show();
+lastModal = this.id;
 
 iModal.innerHTML = itemModalTemplate;
 iModal.children[0].innerHTML = this.innerHTML;
+if(isEditor){
+iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
+document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
+if(event.target.value.includes('Bearbeiten')){
+event.preventDefault();
+event.target.value = '💾 Speichern';
+event.target.style.color = '#3ab4e3';
+iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
+document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
+<input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
+<input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
+</form>`;
+makeEditable('#details .item > :nth-child(2)', 'price');
+makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
+makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
 
-if(isEditor) {
-  const editButton = document.createElement('input');
-  editButton.type = 'submit';
-  editButton.className = 'edit';
-  editButton.value = '✏️ Bearbeiten';
-
-  const deleteButton = document.createElement('input');
-  deleteButton.type = 'submit';
-  deleteButton.className = 'delete';
-  deleteButton.value = '🗑️ Löschen';
-
-  iModal.children[0].lastChild.insertAdjacentElement('beforebegin', editButton);
-  iModal.children[0].lastChild.insertAdjacentElement('beforebegin', deleteButton);
-
-  // Edit Handler
-  const handleEdit = async (event) => {
-    if(!modalState.isEditing) {
-      event.preventDefault();
-      modalState.isEditing = true;
-      event.target.value = '💾 Speichern';
-      event.target.style.color = '#3ab4e3';
-
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.className = 'editFile';
-      fileInput.name = 'file';
-      fileInput.accept = 'image/*';
-      iModal.children[0].lastChild.insertAdjacentElement('beforebegin', fileInput);
-
-      // Form erstellen
-      const form = document.createElement('form');
-      form.className = 'modal-body row';
-      form.enctype = 'multipart/form-data';
-      form.method = 'POST';
-      form.innerHTML = iModal.innerHTML;
-      
-      // Hidden input für den alten Namen
-      const oldNameInput = document.createElement('input');
-      oldNameInput.type = 'hidden';
-      oldNameInput.name = 'oldName';
-      oldNameInput.value = document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText;
-      form.appendChild(oldNameInput);
-
-      document.querySelector('#details .modal-content').replaceChildren(form);
-
-      // Felder editierbar machen
-      makeEditable('#details .item > :nth-child(2)', 'price');
-      makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
-      makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
-      
-      // Kategorie-Auswahl hinzufügen
-      const categorySelect = document.createElement('select');
-      categorySelect.name = 'category';
-      categorySelect.className = 'form-control mt-2';
-      categorySelect.required = true;
-      categorySelect.innerHTML = document.querySelector('#categories select').innerHTML;
-      const currentCategory = document.querySelector('#details .modal-body > div:nth-child(1) > div:nth-child(8)').innerText;
-      if (currentCategory !== '--') {
-        Array.from(categorySelect.options).forEach(option => {
-          if (option.text === currentCategory) {
-            option.selected = true;
-          }
-        });
-      }
-      document.querySelector('#details .modal-body > div:nth-child(1) > div:nth-child(8)').replaceWith(categorySelect);
-
-      // Form Submit Handler
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        try {
-          const formData = new FormData(form);
-          const response = await fetch('?', {
-            method: 'POST',
-            body: formData
-          });
-          
-          if(!response.ok) throw new Error('Speichern fehlgeschlagen');
-          
-          // Reset Modal State nach erfolgreichem Speichern
-          modalState.isEditing = false;
-          modalState.currentItemId = null;
-          modalInstance.hide();
-          
-          // Seite neu laden um Änderungen zu zeigen
-          window.location.reload();
-        } catch(err) {
-          console.error('Fehler beim Speichern:', err);
-          alert('Fehler beim Speichern der Änderungen');
-        }
-      });
+// Add category selection
+const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
+const categoriesSelect = document.createElement('select');
+categoriesSelect.name = 'categories[]';
+categoriesSelect.multiple = true;
+categoriesSelect.className = 'form-control mt-2';
+categoriesSelect.innerHTML = categoriesHtml; // This comes from PHP
+const currentCategories = this.dataset.categories ? this.dataset.categories.split(',') : [];
+Array.from(categoriesSelect.options).forEach(option => {
+    if (currentCategories.includes(option.value)) {
+        option.selected = true;
     }
-  };
-
-  // Delete Handler
-  const handleDelete = async (event) => {
-    if(confirm('Möchtest du diese Rarität wirklich löschen?')) {
-      event.preventDefault();
-      try {
-        const formData = new FormData();
-        formData.append('delete', document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText);
-        
-        const response = await fetch('?', {
-          method: 'POST',
-          body: formData
-        });
-
-        if(!response.ok) throw new Error('Löschen fehlgeschlagen');
-        
-        modalState.currentItemId = null;
-        modalInstance.hide();
-        window.location.reload();
-      } catch(err) {
-        console.error('Fehler beim Löschen:', err);
-        alert('Fehler beim Löschen des Items');
-      }
-    }
-  };
-
-  editButton.addEventListener('click', handleEdit);
-  deleteButton.addEventListener('click', handleDelete);
-
-  // Cleanup-Funktion speichern
-  modalState.cleanup = () => {
-    editButton.removeEventListener('click', handleEdit);
-    deleteButton.removeEventListener('click', handleDelete);
-  };
+});
+categoryDiv.appendChild(categoriesSelect);
+}
+});
+document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
+if(confirm('Möchtest du diese Rarität wirklich löschen?')){
+event.preventDefault();
+const form = document.createElement('form');
+form.method = 'POST';
+form.innerHTML = `<input type="hidden" name="delete" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">`;
+document.body.appendChild(form);
+form.submit();
+}
+});
 }
 
 const response = await fetch("?i="+this.id);
 if(!response.ok){
 console.error('item detail request failed');
-return;
+}
+const json = await response.json();
+
+// Function to fetch category names
+async function fetchCategoryNames(categoryIds) {
+    if (!categoryIds || categoryIds.length === 0) return '--';
+    const categoryNames = [];
+    const select = document.createElement('select');
+    select.innerHTML = categoriesHtml;
+    categoryIds.forEach(id => {
+        const option = select.querySelector(`option[value="${id}"]`);
+        if (option) {
+            categoryNames.push(option.textContent);
+        }
+    });
+    return categoryNames.join(', ') || '--';
 }
 
-const json = await response.json();
 iModal.children[1].innerHTML = `
 <div class="col">Umlauf</div>
 <div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
@@ -292,8 +176,8 @@ iModal.children[1].innerHTML = `
 <div class="col">Aufrufe</div>
 <div class="col">${json.info.views}</div>
 <div class="w-100"></div>
-<div class="col">Kategorie</div>
-<div class="col">${json.info.category || '--'}</div>
+<div class="col">Kategorien</div>
+<div class="col">--</div>
 <div class="w-100"></div>
 <div class="col"></div>
 <div class="col">${this.id}</div>`;
@@ -354,11 +238,9 @@ plugins: { legend: { display: false } }
 iModal.children[3].remove();
 }
 }
-
 function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
-
 function setTooltips(){
 document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
 document.querySelectorAll(".rare .item").forEach(item => {
@@ -367,10 +249,20 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Initialize insert modal form validation
+// Initialize insert modal form validation and image preview
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
+        // Form validation
+        insertModalForm.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+
+        // Form validation only
         insertModalForm.addEventListener('submit', function(e) {
             if (!this.checkValidity()) {
                 e.preventDefault();
@@ -381,5 +273,6 @@ if (isEditor) {
     }
 }
 
+
 // Initialize Bootstrap modal once
-new bootstrap.Modal('#insertModal');
+const insertModal = new bootstrap.Modal('#insertModal');
