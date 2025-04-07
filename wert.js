@@ -90,6 +90,26 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
+
+// Setup category selection
+function setupCategorySelection(item) {
+    const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
+    const categoriesSelect = document.createElement('select');
+    categoriesSelect.name = 'categories[]';
+    categoriesSelect.multiple = true;
+    categoriesSelect.className = 'form-control mt-2';
+    categoriesSelect.innerHTML = categoriesHtml;
+
+    const currentCategories = item.dataset.categories ? item.dataset.categories.split(',') : [];
+    Array.from(categoriesSelect.options).forEach(option => {
+        if (currentCategories.includes(option.value)) {
+            option.selected = true;
+        }
+    });
+
+    categoryDiv.appendChild(categoriesSelect);
+}
+
 async function itemModal(e){
 const iModal = document.querySelector('#details .modal-body');
 
@@ -218,25 +238,6 @@ item.addEventListener("click", itemModal);
 });
 }
 setTooltips();
-
-// Setup category selection
-function setupCategorySelection(item) {
-    const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
-    const categoriesSelect = document.createElement('select');
-    categoriesSelect.name = 'categories[]';
-    categoriesSelect.multiple = true;
-    categoriesSelect.className = 'form-control mt-2';
-    categoriesSelect.innerHTML = categoriesHtml;
-
-    const currentCategories = item.dataset.categories ? item.dataset.categories.split(',') : [];
-    Array.from(categoriesSelect.options).forEach(option => {
-        if (currentCategories.includes(option.value)) {
-            option.selected = true;
-        }
-    });
-
-    categoryDiv.appendChild(categoriesSelect);
-}
 
 // Initialize insert modal form validation and image preview
 if (isEditor) {
