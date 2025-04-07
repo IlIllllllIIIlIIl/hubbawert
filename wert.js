@@ -147,7 +147,7 @@ iModal.children[1].innerHTML = `
 <div class="col">${json.info.views}</div>
 <div class="w-100"></div>
 <div class="col">Kategorie</div>
-<div class="col">--</div>
+<div class="col">${this.dataset.categories ? document.querySelector('#categories select option[value="' + this.dataset.categories + '"]')?.textContent || '--' : '--'}</div>
 <div class="w-100"></div>
 <div class="col"></div>
 <div class="col">${this.id}</div>`;
@@ -219,30 +219,11 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Setup category selection
-function setupCategorySelection(item) {
-    const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
-    const categoriesSelect = document.createElement('select');
-    categoriesSelect.name = 'categories[]';
-    categoriesSelect.multiple = true;
-    categoriesSelect.className = 'form-control mt-2';
-    categoriesSelect.innerHTML = categoriesHtml;
-
-    const currentCategories = item.dataset.categories ? item.dataset.categories.split(',') : [];
-    Array.from(categoriesSelect.options).forEach(option => {
-        if (currentCategories.includes(option.value)) {
-            option.selected = true;
-        }
-    });
-
-    categoryDiv.appendChild(categoriesSelect);
-}
-
 // Initialize insert modal form validation and image preview
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
-        // Form validation
+        // Form validation 
         insertModalForm.addEventListener('submit', function(e) {
             if (!this.checkValidity()) {
                 e.preventDefault();
@@ -261,7 +242,6 @@ if (isEditor) {
         });
     }
 }
-
 
 // Initialize Bootstrap modal once
 const insertModal = new bootstrap.Modal('#insertModal');
