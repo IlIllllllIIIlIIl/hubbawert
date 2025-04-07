@@ -1,3 +1,18 @@
+// Global variables
+let rarity = 0;
+let category = 0;
+let items = [];
+let itemTemplate = '';
+let itemReplace = [];
+let maxItemsToShow = 50;
+let itemModalTemplate = '';
+let isEditor = false;
+let isAdmin = false;
+let avatarImager = '';
+// Import bootstrap and Chart if they're not already included in HTML
+const bootstrap = window.bootstrap;
+const Chart = window.Chart;
+
 window.onscroll = () => {
 const small = window.innerWidth < 768;
 if(!small){
@@ -11,12 +26,14 @@ document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
 }
 };
 let searchWait;
-document.getElementById("search").addEventListener("keyup", function(event){
-if (search != this.value) {
-search = this.value;
-clearTimeout(searchWait);
-searchWait = setTimeout(filterResults, 500);
-}
+let search = ""; // Initialize search variable
+document.getElementById("search").addEventListener("keyup", function(){
+    const newValue = this.value;
+    if (search !== newValue) {
+        search = newValue;
+        clearTimeout(searchWait);
+        searchWait = setTimeout(filterResults, 500);
+    }
 });
 document.getElementById("raritynav").addEventListener("click", event => {
 event.preventDefault();
@@ -90,7 +107,7 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-async function itemModal(e){
+async function itemModal(){
 const iModal = document.querySelector('#details .modal-body');
 
 if(lastModal != this.id){
@@ -258,6 +275,5 @@ if (isEditor) {
     }
 }
 
-
-// Initialize Bootstrap modal once
-const insertModal = new bootstrap.Modal('#insertModal');
+// Initialize Bootstrap modal
+new bootstrap.Modal('#insertModal');

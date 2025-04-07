@@ -728,5 +728,5 @@ const isAdmin = '.$isAdmin.';
 let rarity = '.$rarity.';
 let category = '.$category.';
 let search = document.getElementById("search").value;
-'.str_replace(["\r\n", "\r"], "\n", file_get_contents(__DIR__.'/wert.js')).'
+'.file_get_contents(__DIR__.'/wert.js').'
 </script>';
