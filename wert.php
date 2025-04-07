@@ -720,9 +720,9 @@ $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
 const maxSizeBytes = '.$maxSizeBytes.';
 const items = '.json_encode($itemArray).';
 const maxItemsToShow = '.$maxItemsToShow.';
-const itemTemplate = \''.$itemTemplate.'\';
-const itemModalTemplate = \''.$itemModalTemplate.'\';
-const insertModalTemplate = \''.$insertModalTemplate.'\';
+const itemTemplate = '.json_encode($itemTemplate).';
+const itemModalTemplate = '.json_encode($itemModalTemplate).';
+const insertModalTemplate = '.json_encode($insertModalTemplate).';
 const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
 const isEditor = '.$isEditor.';
