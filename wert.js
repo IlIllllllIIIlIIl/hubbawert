@@ -148,14 +148,8 @@ form.submit();
 });
 }
 
-const response = await fetch("?i="+this.id);
-if(!response.ok){
-console.error('item detail request failed');
-}
-const json = await response.json();
-
 // Function to fetch category names
-async function fetchCategoryNames(categoryIds) {
+function getCategoryNames(categoryIds) {
     if (!categoryIds || categoryIds.length === 0) return '--';
     const categoryNames = [];
     const select = document.createElement('select');
@@ -169,6 +163,14 @@ async function fetchCategoryNames(categoryIds) {
     return categoryNames.join(', ') || '--';
 }
 
+const response = await fetch("?i="+this.id);
+if(!response.ok){
+    console.error('item detail request failed');
+}
+const json = await response.json();
+
+const categoryNames = getCategoryNames(json.info.categories ? json.info.categories.split(',') : []);
+
 iModal.children[1].innerHTML = `
 <div class="col">Umlauf</div>
 <div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
@@ -177,7 +179,7 @@ iModal.children[1].innerHTML = `
 <div class="col">${json.info.views}</div>
 <div class="w-100"></div>
 <div class="col">Kategorien</div>
-<div class="col">--</div>
+<div class="col">${categoryNames}</div>
 <div class="w-100"></div>
 <div class="col"></div>
 <div class="col">${this.id}</div>`;
