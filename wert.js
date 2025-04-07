@@ -124,12 +124,10 @@ const categoryDisplay = document.querySelector('#details .modal-body .category-d
 if (categorySelect && categoryDisplay) {
     categorySelect.style.display = 'block';
     categoryDisplay.style.display = 'none';
-    // Categories are already selected from the JSON data
-    categorySelect.style.display = 'block';
-    categoryDisplay.style.display = 'none';
 }
 }
 });
+
 document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
 if(confirm('Möchtest du diese Rarität wirklich löschen?')){
 event.preventDefault();
@@ -224,6 +222,7 @@ plugins: { legend: { display: false } }
 iModal.children[3].remove();
 }
 }
+
 function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
