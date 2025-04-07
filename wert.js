@@ -90,29 +90,7 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-let detailsModal;
-let insertModal;
-
-// Initialize Bootstrap modals
-function initializeModals() {
-    if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap is not loaded');
-        return;
-    }
-
-    const detailsEl = document.getElementById('details');
-    const insertEl = document.getElementById('insertModal');
-
-    if (detailsEl) {
-        detailsModal = new bootstrap.Modal(detailsEl);
-    }
-    if (insertEl && isEditor) {
-        insertModal = new bootstrap.Modal(insertEl);
-    }
-}
-
-// Call initialization after DOM is loaded and remove old initialization
-document.addEventListener('DOMContentLoaded', initializeModals);
+let detailsModal = null;
 
 // Function to fetch category names
 function getCategoryNames(categoryIds) {
@@ -130,40 +108,95 @@ function getCategoryNames(categoryIds) {
 }
 
 async function itemModal(e) {
-    const iModal = document.querySelector('#details .modal-body');
-
-    if(lastModal != this.id){
-        iModal.replaceChildren();
-    }
+    const modalEl = document.querySelector('#details');
+    const iModal = modalEl.querySelector('.modal-body');
+    
+    // Initialize or get modal instance
     if (!detailsModal) {
-        const detailsEl = document.getElementById('details');
-        if (!detailsEl || typeof bootstrap === 'undefined') {
-            console.error('Modal initialization failed - missing element or bootstrap');
-            return;
-        }
-        detailsModal = new bootstrap.Modal(detailsEl);
+        detailsModal = new bootstrap.Modal(modalEl, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        
+        // Add hide event listener to cleanup
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            const modalBody = modalEl.querySelector('.modal-body');
+            if (modalBody) {
+                const newBody = modalBody.cloneNode(false);
+                modalBody.parentNode.replaceChild(newBody, modalBody);
+            }
+        });
     }
-    detailsModal.show();
-    if (lastModal == this.id) {
+
+    // Clear modal when showing new item
+    if(lastModal != this.id) {
+        lastModal = this.id;
+        const newModalBody = iModal.cloneNode(false);
+        iModal.parentNode.replaceChild(newModalBody, iModal);
+        
+        detailsModal.show();
+    }
+    
+    if(lastModal == this.id) {
         return false;
     }
     lastModal = this.id;
 
-    iModal.innerHTML = itemModalTemplate;
+    // Clear existing content
+    while (iModal.firstChild) {
+        iModal.removeChild(iModal.firstChild);
+    }
+
+    // Create new content
+    const template = document.createElement('div');
+    template.innerHTML = itemModalTemplate;
+    
+    // Add content parts one by one
+    Array.from(template.children).forEach(child => {
+        iModal.appendChild(child);
+    });
+    
     iModal.children[0].innerHTML = this.innerHTML;
     
     if(isEditor){
-        iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
-        document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
+        const editButton = document.createElement('input');
+        editButton.className = 'edit';
+        editButton.type = 'submit';
+        editButton.value = '✏️ Bearbeiten';
+
+        const deleteButton = document.createElement('input');
+        deleteButton.className = 'delete';
+        deleteButton.type = 'submit';
+        deleteButton.value = '🗑️ Löschen';
+
+        iModal.children[0].lastChild.insertAdjacentElement('beforebegin', editButton);
+        iModal.children[0].lastChild.insertAdjacentElement('beforebegin', deleteButton);
+
+        const handleEdit = (event) => {
             if(event.target.value.includes('Bearbeiten')){
                 event.preventDefault();
                 event.target.value = '💾 Speichern';
                 event.target.style.color = '#3ab4e3';
-                iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
-                document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
-                <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-                <input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
-                </form>`;
+
+                const fileInput = document.createElement('input');
+                fileInput.className = 'editFile';
+                fileInput.type = 'file';
+                fileInput.name = 'file';
+                fileInput.accept = 'image/*';
+                iModal.children[0].lastChild.insertAdjacentElement('beforebegin', fileInput);
+
+                const form = document.createElement('form');
+                form.className = 'modal-body row';
+                form.enctype = 'multipart/form-data';
+                form.method = 'POST';
+                form.innerHTML = document.querySelector('#details .modal-body').innerHTML;
+                form.innerHTML += `
+                    <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
+                    <input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
+                `;
+                document.querySelector('#details .modal-content').innerHTML = '';
+                document.querySelector('#details .modal-content').appendChild(form);
+
                 makeEditable('#details .item > :nth-child(2)', 'price');
                 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
                 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
@@ -183,9 +216,9 @@ async function itemModal(e) {
                 });
                 categoryDiv.appendChild(categoriesSelect);
             }
-        });
+        };
 
-        document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
+        const handleDelete = (event) => {
             if(confirm('Möchtest du diese Rarität wirklich löschen?')){
                 event.preventDefault();
                 const form = document.createElement('form');
@@ -194,7 +227,15 @@ async function itemModal(e) {
                 document.body.appendChild(form);
                 form.submit();
             }
-        });
+        };
+
+        // Remove old event listeners if they exist
+        editButton.removeEventListener('click', handleEdit);
+        deleteButton.removeEventListener('click', handleDelete);
+
+        // Add new event listeners
+        editButton.addEventListener('click', handleEdit);
+        deleteButton.addEventListener('click', handleDelete);
     }
 
     const response = await fetch("?i="+this.id);
@@ -313,3 +354,6 @@ if (isEditor) {
         });
     }
 }
+
+// Initialize Bootstrap modal once
+const insertModal = new bootstrap.Modal('#insertModal');
