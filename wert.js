@@ -109,13 +109,15 @@ element.replaceWith(input);
 let lastModal = 0;
 async function itemModal(){
 const iModal = document.querySelector('#details .modal-body');
+const modalElement = document.querySelector('#details');
+const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
 
 if(lastModal != this.id){
-iModal.replaceChildren();
+    iModal.replaceChildren();
+    modal.show();
 }
-new bootstrap.Modal('#details').show();
 if(lastModal == this.id){
-return false;
+    return false;
 }
 lastModal = this.id;
 
@@ -244,10 +246,22 @@ function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-document.querySelectorAll(".rare .item").forEach(item => {
-item.addEventListener("click", itemModal);
-});
+    // Clean up existing tooltips to prevent duplicates
+    document.querySelectorAll(".rarity[data-bs-toggle='tooltip']").forEach(el => {
+        const tooltip = bootstrap.Tooltip.getInstance(el);
+        if (tooltip) {
+            tooltip.dispose();
+        }
+    });
+    
+    // Initialize tooltips
+    document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+    
+    // Remove existing click listeners before adding new ones
+    document.querySelectorAll(".rare .item").forEach(item => {
+        item.removeEventListener("click", itemModal);
+        item.addEventListener("click", itemModal);
+    });
 }
 setTooltips();
 
