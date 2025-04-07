@@ -199,7 +199,22 @@ if(isEditor) {
       makeEditable('#details .item > :nth-child(2)', 'price');
       makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
       makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
-      makeEditable('#details .modal-body > div:nth-child(1) > div:nth-child(8)', 'category');
+      
+      // Kategorie-Auswahl hinzufügen
+      const categorySelect = document.createElement('select');
+      categorySelect.name = 'category';
+      categorySelect.className = 'form-control mt-2';
+      categorySelect.required = true;
+      categorySelect.innerHTML = document.querySelector('#categories select').innerHTML;
+      const currentCategory = document.querySelector('#details .modal-body > div:nth-child(1) > div:nth-child(8)').innerText;
+      if (currentCategory !== '--') {
+        Array.from(categorySelect.options).forEach(option => {
+          if (option.text === currentCategory) {
+            option.selected = true;
+          }
+        });
+      }
+      document.querySelector('#details .modal-body > div:nth-child(1) > div:nth-child(8)').replaceWith(categorySelect);
 
       // Form Submit Handler
       form.addEventListener('submit', async (e) => {
