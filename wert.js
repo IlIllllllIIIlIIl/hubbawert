@@ -200,137 +200,138 @@ async function itemModal(e) {
         }
         console.log('Showing modal');
         detailsModal.show();
-    if(lastModal == this.id){
-        return false;
-    }
-    lastModal = this.id;
+        
+        if(lastModal == this.id){
+            return false;
+        }
+        lastModal = this.id;
 
-    iModal.innerHTML = itemModalTemplate;
-    iModal.children[0].innerHTML = this.innerHTML;
+            iModal.innerHTML = itemModalTemplate;
+            iModal.children[0].innerHTML = this.innerHTML;
+            
+            if(isEditor){
+                iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
+                document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
+                    if(event.target.value.includes('Bearbeiten')){
+                        event.preventDefault();
+                        event.target.value = '💾 Speichern';
+                        event.target.style.color = '#3ab4e3';
+                        iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
+                        document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
+                        <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
+                        <input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
+                        </form>`;
+                        makeEditable('#details .item > :nth-child(2)', 'price');
+                        makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
+                        makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
     
-    if(isEditor){
-        iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
-        document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
-            if(event.target.value.includes('Bearbeiten')){
-                event.preventDefault();
-                event.target.value = '💾 Speichern';
-                event.target.style.color = '#3ab4e3';
-                iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
-                document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
-                <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-                <input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
-                </form>`;
-                makeEditable('#details .item > :nth-child(2)', 'price');
-                makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
-                makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
-
-                // Add category selection
-                const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
-                const categoriesSelect = document.createElement('select');
-                categoriesSelect.name = 'categories[]';
-                categoriesSelect.multiple = true;
-                categoriesSelect.className = 'form-control mt-2';
-                categoriesSelect.innerHTML = categoriesHtml;
-                const currentCategories = this.dataset.categories ? this.dataset.categories.split(',') : [];
-                Array.from(categoriesSelect.options).forEach(option => {
-                    if (currentCategories.includes(option.value)) {
-                        option.selected = true;
+                        // Add category selection
+                        const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
+                        const categoriesSelect = document.createElement('select');
+                        categoriesSelect.name = 'categories[]';
+                        categoriesSelect.multiple = true;
+                        categoriesSelect.className = 'form-control mt-2';
+                        categoriesSelect.innerHTML = categoriesHtml;
+                        const currentCategories = this.dataset.categories ? this.dataset.categories.split(',') : [];
+                        Array.from(categoriesSelect.options).forEach(option => {
+                            if (currentCategories.includes(option.value)) {
+                                option.selected = true;
+                            }
+                        });
+                        categoryDiv.appendChild(categoriesSelect);
                     }
                 });
-                categoryDiv.appendChild(categoriesSelect);
-            }
-        });
-
-        document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
-            if(confirm('Möchtest du diese Rarität wirklich löschen?')){
-                event.preventDefault();
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `<input type="hidden" name="delete" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">`;
-                document.body.appendChild(form);
-                form.submit();
-            }
-        });
-    }
-
-    const response = await fetch("?i="+this.id);
-    if(!response.ok){
-        console.error('item detail request failed');
-        return;
-    }
-    const json = await response.json();
-
-    const categoryNames = getCategoryNames(json.info.categories ? json.info.categories.split(',') : []);
     
-    iModal.children[1].innerHTML = `
-    <div class="col">Umlauf</div>
-    <div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
-    <div class="w-100"></div>
-    <div class="col">Aufrufe</div>
-    <div class="col">${json.info.views}</div>
-    <div class="w-100"></div>
-    <div class="col">Kategorien</div>
-    <div class="col">${categoryNames}</div>
-    <div class="w-100"></div>
-    <div class="col"></div>
-    <div class="col">${this.id}</div>`;
-    
-    iModal.children[2].innerText = json.info.longdesc;
-
-    if(isAdmin) {
-        let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
-        json.changes.sort((a, b) => b.timestamp - a.timestamp);
-        json.changes.forEach(log => {
-            logsHtml += `<tr>
-                <td>${log.username}</td>
-                <td>${log.old_price.toLocaleString()}</td>
-                <td>${dateFormat(log.timestamp)}</td>
-            </tr>`;
-        });
-        logsHtml += '</tbody></table></div>';
-        iModal.children[4].innerHTML = logsHtml;
-    } else {
-        iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
-        json.owners.forEach(owner => {
-            let img = document.createElement('img');
-            img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
-            img.title = owner.username + ' ' + owner.c + 'x';
-            img.loading = "lazy";
-            iModal.children[4].appendChild(img);
-            new bootstrap.Tooltip(img);
-        });
-    }
-
-    if(json.changes.length > 1){
-        iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
-        let labels = [json.info.timestamp_release == 0 ? 'Release' : dateFormat(json.info.timestamp_release)], points = [];
-        let previousTimestamp = -1;
-        json.changes.forEach(change => {
-            points.push(change.old_price);
-            if(previousTimestamp > -1){
-                labels.push(dateFormat(change.timestamp));
+                document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
+                    if(confirm('Möchtest du diese Rarität wirklich löschen?')){
+                        event.preventDefault();
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.innerHTML = `<input type="hidden" name="delete" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">`;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
             }
-            previousTimestamp = change.timestamp;
-        });
-        points.push(json.info.price);
-        labels.push(dateFormat(previousTimestamp));
-        new Chart("chart", {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: points,
-                    borderColor: "#db9f21",
-                    fill: false
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } }
-            }
-        });
-    } else {
-        iModal.children[3].remove();
-    }
+
+        const response = await fetch("?i="+this.id);
+        if(!response.ok){
+            console.error('item detail request failed');
+            return;
+        }
+        const json = await response.json();
+
+        const categoryNames = getCategoryNames(json.info.categories ? json.info.categories.split(',') : []);
+        
+        iModal.children[1].innerHTML = `
+            <div class="col">Umlauf</div>
+            <div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
+            <div class="w-100"></div>
+            <div class="col">Aufrufe</div>
+            <div class="col">${json.info.views}</div>
+            <div class="w-100"></div>
+            <div class="col">Kategorien</div>
+            <div class="col">${categoryNames}</div>
+            <div class="w-100"></div>
+            <div class="col"></div>
+            <div class="col">${this.id}</div>`;
+        
+        iModal.children[2].innerText = json.info.longdesc;
+
+        if(isAdmin) {
+            let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
+            json.changes.sort((a, b) => b.timestamp - a.timestamp);
+            json.changes.forEach(log => {
+                logsHtml += `<tr>
+                    <td>${log.username}</td>
+                    <td>${log.old_price.toLocaleString()}</td>
+                    <td>${dateFormat(log.timestamp)}</td>
+                </tr>`;
+            });
+            logsHtml += '</tbody></table></div>';
+            iModal.children[4].innerHTML = logsHtml;
+        } else {
+            iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
+            json.owners.forEach(owner => {
+                let img = document.createElement('img');
+                img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
+                img.title = owner.username + ' ' + owner.c + 'x';
+                img.loading = "lazy";
+                iModal.children[4].appendChild(img);
+                new bootstrap.Tooltip(img);
+            });
+        }
+
+        if(json.changes.length > 1){
+            iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
+            let labels = [json.info.timestamp_release == 0 ? 'Release' : dateFormat(json.info.timestamp_release)], points = [];
+            let previousTimestamp = -1;
+            json.changes.forEach(change => {
+                points.push(change.old_price);
+                if(previousTimestamp > -1){
+                    labels.push(dateFormat(change.timestamp));
+                }
+                previousTimestamp = change.timestamp;
+            });
+            points.push(json.info.price);
+            labels.push(dateFormat(previousTimestamp));
+            new Chart("chart", {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: points,
+                        borderColor: "#db9f21",
+                        fill: false
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } }
+                }
+            });
+        } else {
+            iModal.children[3].remove();
+        }
     } catch (error) {
         console.error('Error in itemModal:', error);
     }
@@ -340,24 +341,20 @@ function dateFormat(timestamp){
     return new Date(timestamp*1000).toLocaleDateString();
 }
 
-function setTooltips(){
+function setTooltips() {
     try {
         console.log('Setting up tooltips and click handlers');
         document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
         const items = document.querySelectorAll(".rare .item");
         console.log('Found items:', items.length);
+        
         items.forEach(item => {
             console.log('Adding click handler to item:', item.id);
-            // Remove any existing handlers
-            const clone = item.cloneNode(true);
-            item.parentNode.replaceChild(clone, item);
-            
-            // Add new click handler
-            clone.addEventListener("click", function(e) {
+            item.onclick = function(e) {
                 e.preventDefault();
                 console.log('Item clicked:', this.id);
                 itemModal.call(this, e);
-            });
+            };
         });
     } catch (error) {
         console.error('Error in setTooltips:', error);
@@ -366,31 +363,19 @@ function setTooltips(){
 
 setTooltips();
 
-// Initialize insert modal form validation and image preview
-if (isEditor) {
+// Initialize insert modal form validation
+if (isEditor && document.querySelector('#insertModal form')) {
     const insertModalForm = document.querySelector('#insertModal form');
-    if (insertModalForm) {
-        // Form validation
-        insertModalForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
-
-        // Form validation only
-        insertModalForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
-    }
+    insertModalForm.addEventListener('submit', function(e) {
+        if (!this.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        this.classList.add('was-validated');
+    });
 }
 
-// Initialize Bootstrap modal once
+// Initialize modals
 if (document.querySelector('#insertModal')) {
     const insertModal = new bootstrap.Modal('#insertModal');
     console.log('Insert modal initialized');
