@@ -113,21 +113,41 @@ element.replaceWith(input);
 let lastModal = 0;
 let detailsModal = null;
 
-// Initialize modal after DOM content is loaded
+// Initialize modals once DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing modal');
+    console.log('Initializing modals');
     const detailsModalElement = document.querySelector('#details');
     console.log('Modal element found:', detailsModalElement);
     
     if (detailsModalElement) {
-        detailsModal = new bootstrap.Modal(detailsModalElement);
-        console.log('Modal initialized:', detailsModal);
-        
-        // Handle modal hidden event
-        detailsModalElement.addEventListener('hidden.bs.modal', () => {
-            console.log('Modal hidden event');
-            lastModal = 0;
-        });
+        try {
+            // Dispose of any existing modal instance
+            const oldModal = bootstrap.Modal.getInstance(detailsModalElement);
+            if (oldModal) {
+                oldModal.dispose();
+            }
+            
+            // Create new modal instance
+            detailsModal = new bootstrap.Modal(detailsModalElement, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+            console.log('Modal initialized:', detailsModal);
+            
+            // Handle modal hidden event
+            detailsModalElement.addEventListener('hidden.bs.modal', () => {
+                console.log('Modal hidden event');
+                lastModal = 0;
+            });
+            
+            // Handle modal shown event
+            detailsModalElement.addEventListener('shown.bs.modal', () => {
+                console.log('Modal shown event');
+            });
+        } catch (error) {
+            console.error('Error initializing modal:', error);
+        }
     } else {
         console.error('Modal element #details not found in the DOM');
     }
@@ -174,12 +194,12 @@ async function itemModal(e) {
             return;
         }
 
-        if(lastModal != this.id){
-        console.log('Different item, clearing modal content');
-        iModal.replaceChildren();
-    }
-    console.log('Showing modal');
-    detailsModal.show();
+        if(lastModal != this.id) {
+            console.log('Different item, clearing modal content');
+            iModal.replaceChildren();
+        }
+        console.log('Showing modal');
+        detailsModal.show();
     if(lastModal == this.id){
         return false;
     }
@@ -328,19 +348,15 @@ function setTooltips(){
         console.log('Found items:', items.length);
         items.forEach(item => {
             console.log('Adding click handler to item:', item.id);
-            // Remove any existing handlers first
-            const oldHandler = item.onclick;
-            item.onclick = null;
-            item.removeEventListener("click", itemModal);
+            // Remove any existing handlers
+            const clone = item.cloneNode(true);
+            item.parentNode.replaceChild(clone, item);
             
-            // Add new click handler with bound context
-            const boundHandler = itemModal.bind(item);
-            item.onclick = boundHandler;
-            
-            console.log('Click handler state:', {
-                itemId: item.id,
-                hadOldHandler: !!oldHandler,
-                hasNewHandler: !!item.onclick
+            // Add new click handler
+            clone.addEventListener("click", function(e) {
+                e.preventDefault();
+                console.log('Item clicked:', this.id);
+                itemModal.call(this, e);
             });
         });
     } catch (error) {
@@ -374,7 +390,6 @@ if (isEditor) {
     }
 }
 
-// Initialize Bootstrap modal once
 // Initialize Bootstrap modal once
 if (document.querySelector('#insertModal')) {
     const insertModal = new bootstrap.Modal('#insertModal');
