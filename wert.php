@@ -11,26 +11,11 @@ if(isset($_GET['i'])){
 		]
 	];
 	// get details
-	$select = $core->m->prepare('SELECT f.id,r.id AS rare_id,price,r.views,r.longdesc,timestamp_release,
-	    (SELECT GROUP_CONCAT(c.name) FROM furniture_rare_categories c
-	     INNER JOIN furniture_rare_category_mappings m ON m.category_id = c.id
-	     WHERE m.furniture_id = r.id) as category_names,
-	    (SELECT GROUP_CONCAT(m.category_id) FROM furniture_rare_category_mappings m
-	     WHERE m.furniture_id = r.id) as categories
-	FROM furniture_rare_details r
-	LEFT JOIN furniture f ON(r.item_name = f.item_name)
-	WHERE r.item_name=?');
+	$select = $core->m->prepare('SELECT f.id,r.id AS rare_id,price,r.views,r.longdesc,timestamp_release FROM furniture_rare_details r LEFT JOIN furniture f ON(r.item_name = f.item_name) WHERE r.item_name=?');
 	$select->execute([$_GET['i']]);
 	$details = $select->fetchAll(PDO::FETCH_ASSOC);
 	if(!empty($details)){
 		$response['info'] = $details[0];
-		
-		// Get all available categories for the dropdown
-		if ($isEditor) {
-		    $categoriesQuery = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
-		    $categoriesQuery->execute();
-		    $response['info']['all_categories'] = $categoriesQuery->fetchAll(PDO::FETCH_ASSOC);
-		}
 		// update view count if logged in user
 		if(isset($u_details['id'])){
 			$viewCache = $core->path.'/_inc/.cache/wert/view.'.$u_details['id'].'.'.strtolower($_GET['i']).'.cache';

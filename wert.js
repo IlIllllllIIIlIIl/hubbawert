@@ -1,18 +1,3 @@
-// Global variables
-let rarity = 0;
-let category = 0;
-let items = [];
-let itemTemplate = '';
-let itemReplace = [];
-let maxItemsToShow = 50;
-let itemModalTemplate = '';
-let isEditor = false;
-let isAdmin = false;
-let avatarImager = '';
-// Import bootstrap and Chart if they're not already included in HTML
-const bootstrap = window.bootstrap;
-const Chart = window.Chart;
-
 window.onscroll = () => {
 const small = window.innerWidth < 768;
 if(!small){
@@ -26,14 +11,12 @@ document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
 }
 };
 let searchWait;
-let search = ""; // Initialize search variable
-document.getElementById("search").addEventListener("keyup", function(){
-    const newValue = this.value;
-    if (search !== newValue) {
-        search = newValue;
-        clearTimeout(searchWait);
-        searchWait = setTimeout(filterResults, 500);
-    }
+document.getElementById("search").addEventListener("keyup", function(event){
+if (search != this.value) {
+search = this.value;
+clearTimeout(searchWait);
+searchWait = setTimeout(filterResults, 500);
+}
 });
 document.getElementById("raritynav").addEventListener("click", event => {
 event.preventDefault();
@@ -107,20 +90,17 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-async function itemModal(event){
-    if (event) {
-        event.preventDefault();
-    }
-    const iModal = document.querySelector('#details .modal-body');
+async function itemModal(e){
+const iModal = document.querySelector('#details .modal-body');
 
-    if(lastModal != this.id){
-        iModal.replaceChildren();
-        window.detailsModal.show();
-    }
-    if(lastModal == this.id){
-        return false;
-    }
-    lastModal = this.id;
+if(lastModal != this.id){
+iModal.replaceChildren();
+}
+new bootstrap.Modal('#details').show();
+if(lastModal == this.id){
+return false;
+}
+lastModal = this.id;
 
 iModal.innerHTML = itemModalTemplate;
 iModal.children[0].innerHTML = this.innerHTML;
@@ -138,16 +118,8 @@ document.querySelector('#details .modal-content').innerHTML = `<form class="moda
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
-// Enable category selection
-const categorySelect = document.querySelector('#details .modal-body select[name="categories[]"]');
-const categoryDisplay = document.querySelector('#details .modal-body .category-display');
-if (categorySelect && categoryDisplay) {
-    categorySelect.style.display = 'block';
-    categoryDisplay.style.display = 'none';
-}
 }
 });
-
 document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
 if(confirm('Möchtest du diese Rarität wirklich löschen?')){
 event.preventDefault();
@@ -173,15 +145,7 @@ iModal.children[1].innerHTML = `
 <div class="col">${json.info.views}</div>
 <div class="w-100"></div>
 <div class="col">Kategorie</div>
-<div class="col">
-    <select name="categories[]" class="form-control" multiple style="display:none">
-        <option value="">Bitte wählen...</option>
-        ${json.info.all_categories ? json.info.all_categories.map(cat =>
-            `<option value="${cat.id}" ${(json.info.categories || '').split(',').includes(cat.id.toString()) ? 'selected' : ''}>${cat.name}</option>`
-        ).join('') : ''}
-    </select>
-    <span class="category-display">${json.info.category_names || '--'}</span>
-</div>
+<div class="col">--</div>
 <div class="w-100"></div>
 <div class="col"></div>
 <div class="col">${this.id}</div>`;
@@ -242,52 +206,41 @@ plugins: { legend: { display: false } }
 iModal.children[3].remove();
 }
 }
-
 function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-    document.querySelectorAll("[data-bs-toggle='tooltip']").forEach(el => {
-        const tooltip = bootstrap.Tooltip.getInstance(el);
-        if (tooltip) {
-            tooltip.dispose();
-        }
-    });
-    
-    document.querySelectorAll(".rarity").forEach(el => {
-        el.setAttribute('data-bs-toggle', 'tooltip');
-        new bootstrap.Tooltip(el);
-    });
-    
-    document.querySelectorAll(".rare .item").forEach(item => {
-        item.removeEventListener("click", handleItemClick);
-        item.addEventListener("click", handleItemClick, true);
-    });
+document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+document.querySelectorAll(".rare .item").forEach(item => {
+item.addEventListener("click", itemModal);
+});
 }
-function handleItemClick(event) {
-    event.preventDefault();
-    const item = event.target.closest(".item");
-    if (item && !event.target.closest('select, input')) {
-        itemModal.call(item);
+setTooltips();
+
+// Initialize insert modal form validation and image preview
+if (isEditor) {
+    const insertModalForm = document.querySelector('#insertModal form');
+    if (insertModalForm) {
+        // Form validation
+        insertModalForm.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+
+        // Form validation only
+        insertModalForm.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.detailsModal = new bootstrap.Modal(document.getElementById('details'));
-    new bootstrap.Modal(document.getElementById('insertModal'));
-    
-    if (isEditor) {
-        const insertModalForm = document.querySelector('#insertModal form');
-        if (insertModalForm) {
-            insertModalForm.addEventListener('submit', function(e) {
-                if (!this.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                this.classList.add('was-validated');
-            });
-        }
-    }
-    
-    setTooltips();
-});
+
+// Initialize Bootstrap modal once
+const insertModal = new bootstrap.Modal('#insertModal');
