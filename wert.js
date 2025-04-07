@@ -111,35 +111,45 @@ let detailsModal = null;
 
 // Initialize modal
 const initModal = () => {
-    console.log('Initializing modal');
+    console.group('Modal Initialization');
+    console.debug('Starting initialization');
     const detailsModalElement = document.querySelector('#details');
+    console.debug('Found element:', detailsModalElement);
+    
     if (!detailsModalElement) {
-        console.error('Modal element #details not found');
+        console.error('Element #details not found');
+        console.groupEnd();
         return;
     }
 
     try {
-        // Clean up any existing modal
+        console.debug('[Modal] Checking for existing instance');
         const oldModal = bootstrap.Modal.getInstance(detailsModalElement);
         if (oldModal) {
+            console.debug('[Modal] Disposing old instance');
             oldModal.dispose();
         }
 
-        // Create new modal
+        console.debug('[Modal] Creating new instance');
         detailsModal = new bootstrap.Modal(detailsModalElement, {
             backdrop: true,
             keyboard: true
         });
 
-        // Set up event listeners
         detailsModalElement.addEventListener('hidden.bs.modal', () => {
-            console.log('Modal hidden');
+            console.debug('[Modal] Hidden event, resetting lastModal');
             lastModal = 0;
         });
 
-        console.log('Modal initialized successfully');
+        detailsModalElement.addEventListener('shown.bs.modal', () => {
+            console.debug('[Modal] Show event, current item:', lastModal);
+        });
+
+        console.debug('[Modal] Initialization complete');
     } catch (error) {
         console.error('Error initializing modal:', error);
+    } finally {
+        console.groupEnd();
     }
 };
 
@@ -163,32 +173,67 @@ function getCategoryNames(categoryIds) {
 
 // Item modal handler
 async function itemModal(e) {
+    console.group('Item Modal');
     try {
+        console.debug('Modal handler started');
+        console.debug('Event details:', {
+            type: e?.type,
+            target: e?.target?.tagName,
+            currentTarget: e?.currentTarget?.tagName
+        });
+        console.debug('Item context:', {
+            id: this?.id,
+            dataset: this?.dataset,
+            childNodes: this?.childNodes?.length
+        });
+        
         e?.preventDefault();
-        console.log('Item clicked:', this?.id);
+        console.debug('Default event prevented');
 
         if (!detailsModal) {
             console.error('Modal not initialized');
+            console.groupEnd();
             return;
         }
 
         const iModal = document.querySelector('#details .modal-body');
         if (!iModal) {
-            console.error('Modal body not found');
+            console.error('[ItemModal] Modal body not found');
             return;
         }
 
+        console.debug('[ItemModal] Current state:', {
+            lastModal,
+            currentId: this.id,
+            modalBody: !!iModal
+        });
+
         if (lastModal != this.id) {
-            console.log('New item, updating modal');
+            console.debug('[ItemModal] New item detected:', {
+                lastModalId: lastModal,
+                newId: this.id,
+                hasModalBody: !!iModal
+            });
+            
+            // Clear existing content
             iModal.replaceChildren();
             lastModal = this.id;
 
+            // Update content
+            console.debug('[ItemModal] Setting new content');
             iModal.innerHTML = itemModalTemplate;
             iModal.children[0].innerHTML = this.innerHTML;
+            
+            console.debug('[ItemModal] Content updated:', {
+                hasTemplate: !!iModal.innerHTML,
+                childrenCount: iModal.children.length
+            });
 
             if (isEditor) {
+                console.debug('[ItemModal] Editor mode detected, adding controls');
                 const editButtons = '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">';
                 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', editButtons);
+                console.debug('[ItemModal] Editor controls added');
 
                 setupEditHandler(iModal, this);
                 setupDeleteHandler();
@@ -223,6 +268,8 @@ async function itemModal(e) {
         detailsModal.show();
     } catch (error) {
         console.error('Error in itemModal:', error);
+    } finally {
+        console.groupEnd();
     }
 }
 
@@ -383,18 +430,54 @@ function dateFormat(timestamp) {
 // Setup tooltips and click handlers
 function setTooltips() {
     try {
-        console.log('Setting up tooltips and click handlers');
-        document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+        console.group('Tooltips Setup');
+        console.debug('Starting tooltips initialization');
         
+        // Set up tooltips
+        document.querySelectorAll(".rarity").forEach(el => {
+            try {
+                new bootstrap.Tooltip(el);
+            } catch (e) {
+                console.error('Error creating tooltip:', e);
+            }
+        });
+        
+        // Find items
         const items = document.querySelectorAll(".rare .item");
-        console.log('Found items:', items.length);
+        console.debug(`Found ${items.length} items to process`);
         
+        // Process each item
         items.forEach(item => {
-            item.onclick = function(e) {
+            console.group(`Item ${item.id}`);
+            console.debug('Current state:', {
+                id: item.id,
+                hasExistingHandler: !!item.onclick,
+                classes: item.className
+            });
+            
+            // Clean up old handlers
+            if (item.onclick) {
+                console.debug('Removing old onclick handler');
+                item.onclick = null;
+            }
+            
+            // Add new handler
+            const clickHandler = function(e) {
+                console.debug('[Click] Item clicked', {
+                    id: this.id,
+                    event: e.type,
+                    target: e.target.tagName
+                });
                 e.preventDefault();
+                e.stopPropagation();
                 itemModal.call(this, e);
             };
+            
+            item.addEventListener('click', clickHandler);
+            console.debug('[Tooltips] New handler attached to:', item.id);
         });
+        
+        console.debug('[Tooltips] Setup complete');
     } catch (error) {
         console.error('Error in setTooltips:', error);
     }
