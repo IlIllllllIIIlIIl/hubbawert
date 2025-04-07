@@ -109,12 +109,10 @@ element.replaceWith(input);
 let lastModal = 0;
 async function itemModal(){
 const iModal = document.querySelector('#details .modal-body');
-const modalElement = document.querySelector('#details');
-const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
 
 if(lastModal != this.id){
     iModal.replaceChildren();
-    modal.show();
+    detailsModal.show();
 }
 if(lastModal == this.id){
     return false;
@@ -246,39 +244,38 @@ function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-    // Clean up existing tooltips to prevent duplicates
-    document.querySelectorAll(".rarity[data-bs-toggle='tooltip']").forEach(el => {
+    document.querySelectorAll("[data-bs-toggle='tooltip']").forEach(el => {
         const tooltip = bootstrap.Tooltip.getInstance(el);
         if (tooltip) {
             tooltip.dispose();
         }
     });
     
-    // Initialize tooltips
-    document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-    
-    // Remove existing click listeners before adding new ones
-    document.querySelectorAll(".rare .item").forEach(item => {
-        item.removeEventListener("click", itemModal);
-        item.addEventListener("click", itemModal);
+    document.querySelectorAll(".rarity").forEach(el => {
+        el.setAttribute('data-bs-toggle', 'tooltip');
+        new bootstrap.Tooltip(el);
     });
+    
+    const rareContainer = document.querySelector(".rare");
+    if (rareContainer) {
+        rareContainer.removeEventListener("click", handleItemClick);
+        rareContainer.addEventListener("click", handleItemClick);
+    }
 }
+
+function handleItemClick(event) {
+    const item = event.target.closest(".item");
+    if (item) {
+        itemModal.call(item);
+    }
+}
+
+const detailsModal = new bootstrap.Modal(document.getElementById('details'));
 setTooltips();
 
-// Initialize insert modal form validation and image preview
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
-        // Form validation
-        insertModalForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
-
-        // Form validation only
         insertModalForm.addEventListener('submit', function(e) {
             if (!this.checkValidity()) {
                 e.preventDefault();
@@ -289,5 +286,7 @@ if (isEditor) {
     }
 }
 
-// Initialize Bootstrap modal
-new bootstrap.Modal('#insertModal');
+document.addEventListener('DOMContentLoaded', () => {
+    new bootstrap.Modal(document.getElementById('insertModal'));
+    setTooltips();
+});
