@@ -114,13 +114,10 @@ event.target.style.color = '#3ab4e3';
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
 <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-<input type="hidden" name="current_categories" value="${this.dataset.categories || ''}">
 </form>`;
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
-
-setupCategorySelection(this);
 }
 });
 document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
@@ -147,8 +144,8 @@ iModal.children[1].innerHTML = `
 <div class="col">Aufrufe</div>
 <div class="col">${json.info.views}</div>
 <div class="w-100"></div>
-<div class="col">Kategorien</div>
-<div class="col">${getCategoryNames(json.info.categories ? json.info.categories.split(',') : [])}</div>
+<div class="col">Kategorie</div>
+<div class="col">--</div>
 <div class="w-100"></div>
 <div class="col"></div>
 <div class="col">${this.id}</div>`;
@@ -219,40 +216,6 @@ item.addEventListener("click", itemModal);
 });
 }
 setTooltips();
-
-// Get category names helper
-function getCategoryNames(categoryIds) {
-    if (!categoryIds || categoryIds.length === 0) return '--';
-    const categoryNames = [];
-    const select = document.createElement('select');
-    select.innerHTML = categoriesHtml;
-    categoryIds.forEach(id => {
-        const option = select.querySelector(`option[value="${id}"]`);
-        if (option) {
-            categoryNames.push(option.textContent);
-        }
-    });
-    return categoryNames.join(', ') || '--';
-}
-
-// Setup category selection
-function setupCategorySelection(item) {
-    const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
-    const categoriesSelect = document.createElement('select');
-    categoriesSelect.name = 'categories[]';
-    categoriesSelect.multiple = true;
-    categoriesSelect.className = 'form-control mt-2';
-    categoriesSelect.innerHTML = categoriesHtml;
-
-    const currentCategories = item.dataset.categories ? item.dataset.categories.split(',') : [];
-    Array.from(categoriesSelect.options).forEach(option => {
-        if (currentCategories.includes(option.value)) {
-            option.selected = true;
-        }
-    });
-
-    categoryDiv.appendChild(categoriesSelect);
-}
 
 // Initialize insert modal form validation and image preview
 if (isEditor) {
