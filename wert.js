@@ -107,17 +107,20 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-async function itemModal(){
-const iModal = document.querySelector('#details .modal-body');
+async function itemModal(event){
+    if (event) {
+        event.preventDefault();
+    }
+    const iModal = document.querySelector('#details .modal-body');
 
-if(lastModal != this.id){
-    iModal.replaceChildren();
-    detailsModal.show();
-}
-if(lastModal == this.id){
-    return false;
-}
-lastModal = this.id;
+    if(lastModal != this.id){
+        iModal.replaceChildren();
+        window.detailsModal.show();
+    }
+    if(lastModal == this.id){
+        return false;
+    }
+    lastModal = this.id;
 
 iModal.innerHTML = itemModalTemplate;
 iModal.children[0].innerHTML = this.innerHTML;
@@ -256,37 +259,35 @@ function setTooltips(){
         new bootstrap.Tooltip(el);
     });
     
-    const rareContainer = document.querySelector(".rare");
-    if (rareContainer) {
-        rareContainer.removeEventListener("click", handleItemClick);
-        rareContainer.addEventListener("click", handleItemClick);
-    }
+    document.querySelectorAll(".rare .item").forEach(item => {
+        item.removeEventListener("click", handleItemClick);
+        item.addEventListener("click", handleItemClick, true);
+    });
 }
-
 function handleItemClick(event) {
+    event.preventDefault();
     const item = event.target.closest(".item");
-    if (item) {
+    if (item && !event.target.closest('select, input')) {
         itemModal.call(item);
     }
 }
 
-const detailsModal = new bootstrap.Modal(document.getElementById('details'));
-setTooltips();
-
-if (isEditor) {
-    const insertModalForm = document.querySelector('#insertModal form');
-    if (insertModalForm) {
-        insertModalForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
-    }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
+    window.detailsModal = new bootstrap.Modal(document.getElementById('details'));
     new bootstrap.Modal(document.getElementById('insertModal'));
+    
+    if (isEditor) {
+        const insertModalForm = document.querySelector('#insertModal form');
+        if (insertModalForm) {
+            insertModalForm.addEventListener('submit', function(e) {
+                if (!this.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                this.classList.add('was-validated');
+            });
+        }
+    }
+    
     setTooltips();
 });
