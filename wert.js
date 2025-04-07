@@ -55,27 +55,48 @@ return Math.random() - 0.5;
 filterResults(itemArray);
 });
 function filterResults(sortedItems = null){
-let i = 0;
-const container = document.querySelector(".rare");
-container.replaceChildren();
-(sortedItems || items).forEach(item => {
-const matchCategory = (category > 0 && item[7] != category);
-const matchRarity = (rarity > 0 && item[1] != rarity);
-const matchSearch = (search == "" && i > maxItemsToShow && rarity == 0 && category == 0) || (search !== "" && !item[6].toLowerCase().includes(search.toLowerCase()));
-const sortingHelper = ((appliedSorting == 4 || appliedSorting == 5) && item[8] < 1); /* < 1 skip unknown prices in price sorting */
-if(!(matchSearch || matchRarity || matchCategory || sortingHelper)){
-i++;
-let itemToAdd = itemTemplate;
-for (let j = 0; j < itemReplace.length; j++) {
-itemToAdd = itemToAdd.replace(itemReplace[j], item[j]);
-}
-container.insertAdjacentHTML("beforeend", itemToAdd);
-}
-});
-if(window.pageYOffset > 240){
-scrollTo(0, 230);
-}
-setTooltips();
+    console.log('filterResults called');
+    let i = 0;
+    const container = document.querySelector(".rare");
+    if (!container) {
+        console.error('Container .rare not found');
+        return;
+    }
+    console.log('Clearing container');
+    container.replaceChildren();
+    
+    (sortedItems || items).forEach(item => {
+        const matchCategory = (category > 0 && item[7] != category);
+        const matchRarity = (rarity > 0 && item[1] != rarity);
+        const matchSearch = (search == "" && i > maxItemsToShow && rarity == 0 && category == 0) || (search !== "" && !item[6].toLowerCase().includes(search.toLowerCase()));
+        const sortingHelper = ((appliedSorting == 4 || appliedSorting == 5) && item[8] < 1); /* < 1 skip unknown prices in price sorting */
+        if(!(matchSearch || matchRarity || matchCategory || sortingHelper)){
+            i++;
+            let itemToAdd = itemTemplate;
+            for (let j = 0; j < itemReplace.length; j++) {
+                itemToAdd = itemToAdd.replace(itemReplace[j], item[j]);
+            }
+            container.insertAdjacentHTML("beforeend", itemToAdd);
+        }
+    });
+    
+    if(window.pageYOffset > 240){
+        scrollTo(0, 230);
+    }
+    
+    console.log('Updating tooltips and click handlers');
+    setTooltips();
+    
+    // Double-check click handlers
+    setTimeout(() => {
+        const items = document.querySelectorAll(".rare .item");
+        console.log('Verifying click handlers on', items.length, 'items');
+        items.forEach(item => {
+            console.log('Item click test:', item.id);
+            const hasClickHandler = item.onclick !== null;
+            console.log('Has click handler:', hasClickHandler);
+        });
+    }, 100);
 }
 function makeEditable(selector, name, f = false){
 let element = document.querySelector(selector);
@@ -90,16 +111,27 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-console.log('Initializing modal');
-const detailsModalElement = document.querySelector('#details');
-console.log('Modal element found:', detailsModalElement);
 let detailsModal = null;
-if (detailsModalElement) {
-    detailsModal = new bootstrap.Modal(detailsModalElement);
-    console.log('Modal initialized:', detailsModal);
-} else {
-    console.error('Modal element #details not found in the DOM');
-}
+
+// Initialize modal after DOM content is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing modal');
+    const detailsModalElement = document.querySelector('#details');
+    console.log('Modal element found:', detailsModalElement);
+    
+    if (detailsModalElement) {
+        detailsModal = new bootstrap.Modal(detailsModalElement);
+        console.log('Modal initialized:', detailsModal);
+        
+        // Handle modal hidden event
+        detailsModalElement.addEventListener('hidden.bs.modal', () => {
+            console.log('Modal hidden event');
+            lastModal = 0;
+        });
+    } else {
+        console.error('Modal element #details not found in the DOM');
+    }
+});
 
 // Function to fetch category names
 function getCategoryNames(categoryIds) {
@@ -118,7 +150,16 @@ function getCategoryNames(categoryIds) {
 
 async function itemModal(e) {
     try {
-        console.log('Item clicked:', this.id);
+        e?.preventDefault();
+        console.log('Item clicked:', this?.id);
+        console.log('Event:', e);
+        console.log('this context:', this);
+        console.log('Modal state:', {
+            detailsModal: !!detailsModal,
+            lastModal,
+            modalElement: document.querySelector('#details'),
+            modalBody: document.querySelector('#details .modal-body')
+        });
         
         if (!detailsModal) {
             console.error('Modal not initialized');
@@ -287,7 +328,20 @@ function setTooltips(){
         console.log('Found items:', items.length);
         items.forEach(item => {
             console.log('Adding click handler to item:', item.id);
-            item.addEventListener("click", itemModal);
+            // Remove any existing handlers first
+            const oldHandler = item.onclick;
+            item.onclick = null;
+            item.removeEventListener("click", itemModal);
+            
+            // Add new click handler with bound context
+            const boundHandler = itemModal.bind(item);
+            item.onclick = boundHandler;
+            
+            console.log('Click handler state:', {
+                itemId: item.id,
+                hadOldHandler: !!oldHandler,
+                hasNewHandler: !!item.onclick
+            });
         });
     } catch (error) {
         console.error('Error in setTooltips:', error);
