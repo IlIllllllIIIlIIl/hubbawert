@@ -305,6 +305,7 @@ $price = ((!isset($_POST['price']) || !is_numeric($_POST['price'])) ? -1 : intva
 if(empty($imageHash)){
 // Get selected categories
 $categories = isset($_POST['categories']) ? implode(',', $_POST['categories']) : '';
+}
 
 if(empty($imageHash)){
     $update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=?, category=? WHERE item_name=?');
