@@ -727,6 +727,7 @@ const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
 const isEditor = '.$isEditor.';
 const isAdmin = '.$isAdmin.';
+const categoriesHtml = '.json_encode($categoriesHtml).';
 let rarity = '.$rarity.';
 let category = '.$category.';
 let search = document.getElementById("search").value;
