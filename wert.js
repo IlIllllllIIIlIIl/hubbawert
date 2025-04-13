@@ -1,8 +1,10 @@
 // Setup category selection
 function setupCategorySelection(item) {
-    console.log('Setting up category selection for item:', {
+    console.log('%c Setting up category selection', 'background: #334455; color: #fff; padding: 2px 5px;');
+    console.log('Item details:', {
         id: item.id,
-        currentCategories: item.dataset.categories
+        currentCategories: item.dataset.categories,
+        element: item
     });
 
     const categoryDiv = document.querySelector('#details .modal-body > div:nth-child(1)');
@@ -167,12 +169,14 @@ function dateFormat(timestamp) {
 let lastModal = 0;
 async function itemModal(event) {
     try {
-        console.log('itemModal called with:', {
-            id: this.id,
-            target: event.target,
-            dataset: this.dataset,
-            itemElement: this
-        });
+        console.log('%c Item Modal Opening', 'background: #334455; color: #fff; padding: 2px 5px; font-weight: bold;');
+        console.group('Item Details');
+        console.log('ID:', this.id);
+        console.log('Target:', event.target);
+        console.log('Dataset:', this.dataset);
+        console.log('Categories:', this.dataset.categories);
+        console.log('Element:', this);
+        console.groupEnd();
         
         const detailsModal = document.querySelector('#details');
         const iModal = detailsModal?.querySelector('.modal-body');
@@ -263,9 +267,12 @@ async function itemModal(event) {
                     makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
                     
                     try {
-                        console.log('Setting up category selection');
+                        console.log('%c Category Setup', 'background: #334455; color: #fff; padding: 2px 5px; font-weight: bold;');
+                        console.group('Category Details');
+                        console.log('Current Categories:', this.dataset.categories);
                         setupCategorySelection(this);
-                        console.log('Category selection setup complete');
+                        console.log('✓ Category selection setup complete');
+                        console.groupEnd();
                         
                         // Add event listener for category changes
                         const categorySelect = document.querySelector('#details select[name="categories[]"]');
@@ -285,8 +292,15 @@ async function itemModal(event) {
                 }
             });
             const deleteButton = document.querySelector('#details .modal-body .delete');
-            console.log('Delete button found:', !!deleteButton);
+            console.log('Found delete button:', !!deleteButton);
+            
+            if (!deleteButton) {
+                console.error('Delete button not found in modal');
+                return;
+            }
+            
             deleteButton.addEventListener("click", event => {
+                console.log('Delete button clicked');
                 event.preventDefault();
                 if (confirm('Möchtest du diese Rarität wirklich löschen?')) {
                     const form = document.createElement('form');
@@ -298,9 +312,12 @@ async function itemModal(event) {
             });
         }
 
-        console.log('Fetching item details for ID:', this.id);
+        console.log('%c Fetching Item Data', 'background: #334455; color: #fff; padding: 2px 5px; font-weight: bold;');
+        console.group('API Request');
+        console.log('Requesting ID:', this.id);
         const response = await fetch("?i=" + this.id);
-        console.log('Response status:', response.status);
+        console.log('Response Status:', response.status);
+        console.log('Response OK:', response.ok);
         if (!response.ok) {
             throw new Error(`Item detail request failed: ${response.status} ${response.statusText}`);
         }
@@ -392,20 +409,28 @@ if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
         insertModalForm.addEventListener('submit', function(e) {
+            console.log('%c Form submission attempt', 'background: #334455; color: #fff; padding: 2px 5px;');
+            
             if (!this.checkValidity()) {
+                console.warn('Form validation failed');
                 e.preventDefault();
                 e.stopPropagation();
             }
             
             // Log form data before submission
             const formData = new FormData(this);
-            console.log('Submitting form with data:', {
+            console.log('Form data:', {
                 categories: formData.getAll('categories[]'),
                 oldName: formData.get('oldName'),
-                currentCategories: formData.get('current_categories')
+                currentCategories: formData.get('current_categories'),
+                price: formData.get('price'),
+                itemName: formData.get('itemName'),
+                itemDesc: formData.get('itemDesc'),
+                file: formData.get('file')?.name
             });
             
             this.classList.add('was-validated');
+            console.log('Form validated, ready to submit');
         });
     }
 }

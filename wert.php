@@ -15,8 +15,10 @@ $select->execute();
 $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
 if(isset($_GET['i'])){
-    error_log('Fetching details for item: ' . $_GET['i']);
-	header('Cache-Control: public, max-age=5, stale-if-error=28800');
+    error_log('[WERT] ====== Starting item fetch ======');
+    error_log('[WERT] Fetching details for item: ' . $_GET['i']);
+    error_log('[WERT] User context: ' . (isset($u_details['id']) ? $u_details['id'] : 'not logged in'));
+ header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
 	'views' => '?',
 	'longdesc' => 'Ladefehler, Item nicht gefunden',
@@ -31,8 +33,9 @@ if(isset($_GET['i'])){
 	    WHERE r.item_name=?');
 	$select->execute([$_GET['i']]);
 	$details = $select->fetchAll(PDO::FETCH_ASSOC);
-	error_log('Query result: ' . json_encode($details));
+	error_log('[WERT] Raw query result: ' . json_encode($details));
 	if(!empty($details)){
+	    error_log('[WERT] Categories found: ' . $details[0]['categories']);
 		$response['info'] = $details[0];
 		// update view count if logged in user
 		if(isset($u_details['id'])){
@@ -55,7 +58,8 @@ if(isset($_GET['i'])){
 	}else{
 		http_response_code(404);
 	}
-	error_log('Sending response: ' . json_encode($response));
+	error_log('[WERT] Preparing response with categories: ' . (isset($response['info']['categories']) ? implode(',', $response['info']['categories']) : 'none'));
+	error_log('[WERT] ====== Ending item fetch ======');
 	exit(json_encode($response));
 }
 $pagetitle = 'Wert';
@@ -434,24 +438,33 @@ if($isEditor){
 				$error .= 'Bild ist vermütlich nicht gültig.<br>';
 			}
 			if($isEdit){
+				error_log('[WERT] ====== Starting item update ======');
+				error_log('[WERT] Updating item: ' . $_POST['oldName']);
+				error_log('[WERT] New categories: ' . (isset($_POST['categories']) ? implode(',', $_POST['categories']) : 'none'));
+				
 				$select = $core->m->prepare('SELECT id,price,image FROM furniture_rare_details WHERE item_name=?');
 				$select->execute([$_POST['oldName']]);
 				$itemData = $select->fetchAll(PDO::FETCH_ASSOC)[0];
+				error_log('[WERT] Found item data: ' . json_encode($itemData));
 				$_POST['price'] = str_replace([',','.'], '', $_POST['price']);
 				$price = ((!isset($_POST['price']) || !is_numeric($_POST['price'])) ? -1 : intval($_POST['price']));
 				if(empty($imageHash)){
 					$update = $core->m->prepare('UPDATE furniture_rare_details SET item_name=?, longdesc=?, price=? WHERE item_name=?');
 					if($update->execute([$_POST['itemName'], $_POST['itemDesc'], $price, $_POST['oldName']])){
 					    // Update categories
+					    error_log('[WERT] Removing old category mappings for item ID: ' . $itemData['id']);
 					    $delete = $core->m->prepare('DELETE FROM furniture_rare_category_mappings WHERE furniture_id=?');
 					    $delete->execute([$itemData['id']]);
+					    error_log('[WERT] Old categories removed');
 					    
 					    if(isset($_POST['categories']) && is_array($_POST['categories'])){
 					        $insertCategory = $core->m->prepare('INSERT INTO furniture_rare_category_mappings (furniture_id, category_id) VALUES (?,?)');
 					        foreach($_POST['categories'] as $categoryId) {
 					            if(is_numeric($categoryId)) {
+					                error_log('[WERT] Adding category mapping: ' . $categoryId . ' for item ID: ' . $itemData['id']);
 					                $insertCategory->execute([$itemData['id'], intval($categoryId)]);
 					            }
+					        error_log('[WERT] Category update complete');
 					        }
 					    }
 					}
