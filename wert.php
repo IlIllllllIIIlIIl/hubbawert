@@ -488,7 +488,7 @@ if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
 	
 	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.image,r.views,(SELECT GROUP_CONCAT(CAST(m.category_id AS CHAR)) FROM furniture_rare_category_mappings m WHERE m.furniture_id = r.id) as categories,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
 	$select->execute();
-	$items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
+	$items = $select->fetchAll(PDO::FETCH_ASSOC);
 	file_put_contents($cachePath, json_encode($items));
 }else{
 	$items = json_decode(file_get_contents($cachePath), true);
@@ -572,7 +572,7 @@ $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row
 $itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}" data-categories="{categories}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
 $itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}', '{categories}'];
 
-foreach ($items as $itemId => $item) {
+foreach ($items as $item) {
     if(!isset($item['public_name'])){
         echo "error not found: {$itemId}\n";
         continue;
@@ -611,7 +611,7 @@ foreach ($items as $itemId => $item) {
         $i++;
     }
 
-    array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId);
+    array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $item['id']);
     array_push($itemArray, $itemData);
 }
 $pagecontent .= '</div></div>';
