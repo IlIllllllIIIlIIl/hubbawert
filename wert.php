@@ -292,12 +292,14 @@ $pagecontent .= '<div class="container">
 		<a role="button" class="btn btn-dark" data-r="5">Sehr selten</a>
 	</div>
 </div>';
+
 // admin section
 $isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
 $isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
-if($isEditor){
 $maxSizeBytes = 5242880; // 5MB max file size
 $filedir = $core->path.'/_dat/serve/img/wert/furni';
+
+if($isEditor){
 	$error = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	if(isset($_POST['action'])) {
@@ -337,19 +339,6 @@ $filedir = $core->path.'/_dat/serve/img/wert/furni';
 	            exit;
 	        } else {
 	            $error .= 'Fehler beim Löschen der Kategorie<br>';
-	        }
-	    }
-	    else if($_POST['action'] === 'edit_category'){
-	        if(empty($_POST['category_name'])) {
-	            $error .= 'Kategorie Name ist erforderlich<br>';
-	        } else {
-	            $update = $core->m->prepare('UPDATE furniture_rare_categories SET name = ? WHERE id = ?');
-	            if($update->execute([$_POST['category_name'], $_POST['category_id']])){
-	                header('Location: '.$core->url.'wert');
-	                exit;
-	            } else {
-	                $error .= 'Fehler beim Bearbeiten der Kategorie<br>';
-	            }
 	        }
 	    }
 	}
@@ -515,67 +504,236 @@ $select->execute();
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoriesHtml .= '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
 }
+
 $insertModalTemplate = '';
 if ($isEditor) {
+    $maxSizeBytes = 2097152; // 2MB limit for uploads
     $insertModalTemplate = '<div class="modal-body p-0">
-    <div class="modal-body p-0">
-<div class="box item">
-<img id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
-</div>
-<div style="border:1px solid #2c2e3c;padding:12px">
-<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-<script>
-function loadPreviewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const output = document.getElementById("imagePreview");
-        output.src = e.target.result;
-        output.style.display = "block";
-    };
-    reader.readAsDataURL(event.target.files[0]);
-}
-</script>
-<input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
-</div>
-<div class="d-flex">
-<div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
-<div style="display:flex;align-items:center;margin-bottom:10px">
-<span style="margin-right:10px;white-space:nowrap">Item Name:</span>
-<input class="form-control" name="itemName" type="text" placeholder="z.B. dragonpillar*4" autocomplete="off" required style="width:150px;margin-left:auto">
-</div>
-<div style="display:flex;align-items:center;margin-bottom:10px">
-<span style="margin-right:10px;white-space:nowrap">Wert:</span>
-<input class="form-control" name="price" type="number" min="0" value="0" autocomplete="off" required style="width:150px;margin-left:auto">
-</div>
-<div style="display:flex;flex-direction:column">
-<span class="mb-2">Kategorien:</span>
-<div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
-<div class="d-flex flex-column" style="gap:8px">';
+        <div class="modal-body p-0">
+        <div class="box item">
+        <img id="imagePreview" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:200px;max-height:200px;object-fit:contain;display:none">
+        </div>
+        <div style="border:1px solid #2c2e3c;padding:12px">
+        <input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
+        <script>
+        function loadPreviewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const output = document.getElementById("imagePreview");
+                output.src = e.target.result;
+                output.style.display = "block";
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+        </script>
+        <input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
+        </div>
+        <div class="d-flex">
+        <div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
+        <div style="display:flex;align-items:center;margin-bottom:10px">
+        <span style="margin-right:10px;white-space:nowrap">Item Name:</span>
+        <input class="form-control" name="itemName" type="text" placeholder="z.B. dragonpillar*4" autocomplete="off" required style="width:150px;margin-left:auto">
+        </div>
+        <div style="display:flex;align-items:center;margin-bottom:10px">
+        <span style="margin-right:10px;white-space:nowrap">Wert:</span>
+        <input class="form-control" name="price" type="number" min="0" value="0" autocomplete="off" required style="width:150px;margin-left:auto">
+        </div>
+        <div style="display:flex;flex-direction:column">
+        <span class="mb-2">Kategorien:</span>
+        <div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
+        <div class="d-flex flex-column" style="gap:8px">';
 
-$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
-$select->execute();
-$categoryList = '';
-while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-    $categoryList .= '
-    <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
-        <input type="checkbox" name="categories[]" value="'.$cat['id'].'" class="form-check-input me-2" style="cursor:pointer">
-        <span>'.htmlspecialchars($cat['name']).'</span>
-    </label>';
+    $select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
+    $select->execute();
+    $categoryList = '';
+    while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
+        $categoryList .= '
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="categories[]" value="'.$cat['id'].'" class="form-check-input me-2" style="cursor:pointer">
+            <span>'.htmlspecialchars($cat['name']).'</span>
+        </label>';
+    }
+    $insertModalTemplate .= $categoryList.'</div></div>
+        </div>
+        </div>
+        <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
+        <span style="margin-bottom:10px">Beschreibung</span>
+        <textarea class="form-control" name="itemDesc" placeholder="Beschreibung" autocomplete="off" required style="flex:1;resize:none"></textarea>
+        </div>
+        </div>
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+        <button type="submit" class="btn btn-primary">Einfügen</button>
+        </div>';
 }
-$insertModalTemplate .= $categoryList.'</div></div>
-</div>
-</div>
-<div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
-<span style="margin-bottom:10px">Beschreibung</span>
-<textarea class="form-control" name="itemDesc" placeholder="Beschreibung" autocomplete="off" required style="flex:1;resize:none"></textarea>
-</div>
-</div>
-</div>
-<div class="modal-footer">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-<button type="submit" class="btn btn-primary">Einfügen</button>
-</div>';
+
 $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
+$itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}" data-categories="{categories}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
+$itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}', '{categories}'];
+
+foreach ($items as $itemId => $item) {
+    if(!isset($item['public_name'])){
+        echo "error not found: {$itemId}\n";
+        continue;
+    }
+
+    $amount = $item['umlauf'];
+
+    $level = match(true) {
+        $amount > 50 => 1,
+        $amount > 30 => 2,
+        $amount > 15 => 3,
+        $amount > 5 => 4,
+        $amount > 0 => 5,
+        default => 0
+    };
+
+    if(!isset($item['old_price']) || $item['old_price'] < 1){
+        $item['old_price'] = 0;
+    }
+
+    $itemData = [
+        $item['item_name'],
+        $level,
+        $amount,
+        $item['old_price'] < 1 ? '' : ' class="'.($item['price'] >= $item['old_price'] ? 'up' : 'down').'" title="vorher '.number_format($item['old_price']).'"', // priceTag
+        ($item['price'] > 0 ? number_format($item['price']) : 'Unbekannt'),
+        filter_var($item['image'], FILTER_SANITIZE_URL),
+        htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name'])),
+        isset($item['categories']) ? $item['categories'] : ''
+    ];
+
+    // Check if we should show this item based on category
+    $itemCategories = isset($item['categories']) ? explode(',', $item['categories'] ?? '') : [];
+    if($i < $maxItemsToShow && ($category == 0 || in_array((string)$category, $itemCategories))){
+        $pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
+        $i++;
+    }
+
+    array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId);
+    array_push($itemArray, $itemData);
+}
+$pagecontent .= '</div></div>';
+
+// category modal
+$pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+			<h5 class="modal-title">Kategorien</h5>
+			<div class="d-flex align-items-center gap-2">'.
+			($isEditor ? '<button type="button" class="btn btn-success btn-sm px-2" data-bs-toggle="collapse" data-bs-target=".category-toggle">➕</button>' : '').
+			'<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+			</div>
+			</div>
+			<div class="modal-body">'.
+			($isEditor ? '<div class="collapsecategory-toggle">
+			    <form method="POST" class="mb-3">
+			        <input type="hidden" name="action" value="add_category">
+			        <div class="mb-3">
+			            <label class="form-label">Kategorie Name</label>
+			            <input type="text" name="category_name" class="form-control" required>
+			        </div>
+			        <div class="d-flex justify-content-between">
+			            <button type="button" class="btn btn-secondary btn-sm px-2" data-bs-toggle="collapse" data-bs-target=".category-toggle">❌</button>
+			            <button type="submit" class="btn btn-success btn-sm px-2">💾</button>
+			        </div>
+			    </form>
+			</div>' : '').
+			'
+				<div class="cats collapse category-toggle show">
+				<div class="row">';
+					$select = $core->m->prepare('SELECT frc.id, frc.name, (
+					    SELECT frd.image
+					    FROM furniture_rare_details frd
+					    WHERE frd.category = frc.id
+					    ORDER BY RAND()
+					    LIMIT 1
+					) as image
+					FROM furniture_rare_categories frc
+					ORDER BY frc.name ASC');
+					$select->execute();
+					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) 
+						$pagecontent .= '<div class="col-md-6">
+						<div class="d-flex cat-wrapper'.($isEditor ? ' has-edit' : '').' mb-2">
+						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a>'.
+						    ($isEditor ? '<button type="button" class="btn btn-dark btn-sm edit-btn px-2" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
+						'</div>'.
+						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
+						    <form method="POST" class="mb-3">
+						        <input type="hidden" name="action" value="edit_category">
+						        <input type="hidden" name="category_id" value="'.$cat['id'].'">
+						        <div class="mb-3">
+						            <label class="form-label">Kategorie Name</label>
+						            <input type="text" name="category_name" class="form-control" value="'.htmlspecialchars($cat['name']).'" required>
+						        </div>
+						        <div class="d-flex justify-content-between align-items-center">
+						            <button type="button" class="btn btn-danger btn-sm px-2" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { this.form.action.value=\'delete_category\'; this.form.submit(); }">🗑️</button>
+						            <div>
+						                <button type="button" class="btn btn-secondary btn-sm px-2" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'">❌</button>
+						                <button type="submit" class="btn btn-success btn-sm px-2">💾</button>
+						            </div>
+						        </div>
+						    </form>
+						</div>' : '').
+						'</div>';
+					}
+$pagecontent .= '</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>';
+// item modal
+$pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
+	<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content box">
+			<div class="modal-body row">
+				<div class="col-md-12 item"></div>
+				<div class="col-md-6 row"></div>
+				<div class="col-md-6 text-center"></div>
+				<div class="col-md-12 text-center"></div>
+				<div class="w-100"></div>
+				<div class="col-md-12 text-center"></div>
+			</div>
+		</div>
+	</div>
+</div>';
+
+
+// Append insert modal after details modal
+$pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<form class="modal-content box needs-validation" enctype="multipart/form-data" method="POST" novalidate>
+'.$insertModalTemplate.'
+</form>
+</div>
+</div>';
+$jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
+<script src="_dat/serve/js/chart.umd.js"></script>
+<script>
+const maxSizeBytes = '.$maxSizeBytes.';
+const items = '.json_encode($itemArray).';
+const maxItemsToShow = '.$maxItemsToShow.';
+const itemTemplate = '.json_encode($itemTemplate).';
+const itemModalTemplate = '.json_encode($itemModalTemplate).';
+const insertModalTemplate = '.json_encode($insertModalTemplate).';
+const itemReplace = '.json_encode($itemReplace).';
+const avatarImager = \''.$core->avatarImager.'\';
+const isEditor = '.$isEditor.';
+const isAdmin = '.$isAdmin.';
+const categoriesHtml = '.json_encode($categoriesHtml).';
+let rarity = '.$rarity.';
+let category = '.$category.';
+let search = document.getElementById("search").value;
+'.file_get_contents(__DIR__.'/wert.js').'
+</script>';        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+        <button type="submit" class="btn btn-primary">Einfügen</button>
+        </div>';
+    }
+    
+    $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
 $itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}" data-categories="{categories}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
 $itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}', '{categories}'];
 foreach ($items as $itemId => $item) {
