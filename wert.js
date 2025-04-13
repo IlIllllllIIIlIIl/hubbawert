@@ -168,7 +168,7 @@ console.error('item detail request failed');
 }
 const json = await response.json();
 iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
-'<div class="col">' + this.querySelector('img.rarity').getAttribute('title') + 'x</div>' +
+'<div class="col">' + this.querySelector('img').dataset.bsOriginalTitle + 'x</div>' +
 '<div class="w-100"></div>' +
 '<div class="col">Aufrufe</div>' +
 '<div class="col">' + json.info.views + '</div>' +
