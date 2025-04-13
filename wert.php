@@ -596,7 +596,7 @@ foreach ($items as $item) {
     $itemData = [
         $item['item_name'],
         $level,
-        $amount,
+        $item['umlauf'],
         $item['old_price'] < 1 ? '' : ' class="'.($item['price'] >= $item['old_price'] ? 'up' : 'down').'" title="vorher '.number_format($item['old_price']).'"', // priceTag
         ($item['price'] > 0 ? number_format($item['price']) : 'Unbekannt'),
         filter_var($item['image'], FILTER_SANITIZE_URL),
