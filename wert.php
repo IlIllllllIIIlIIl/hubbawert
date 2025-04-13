@@ -717,8 +717,6 @@ $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
 <script src="_dat/serve/js/chart.umd.js"></script>
 <script>
-console.log("[Debug] Modal setup starting...");
-console.log("[Debug] Document ready, setting up item click handlers...");
 const maxSizeBytes = '.$maxSizeBytes.';
 const items = '.json_encode($itemArray).';
 const maxItemsToShow = '.$maxItemsToShow.';
@@ -733,8 +731,5 @@ const categoriesHtml = '.json_encode($categoriesHtml).';
 let rarity = '.$rarity.';
 let category = '.$category.';
 let search = document.getElementById("search").value;
-console.log("[Debug] Before loading wert.js");
 '.file_get_contents(__DIR__.'/wert.js').'
-console.log("[Debug] After loading wert.js");
-console.log("[Debug] Check if tooltips were initialized:", document.querySelectorAll(".rare .item").length, "items found");
 </script>';
