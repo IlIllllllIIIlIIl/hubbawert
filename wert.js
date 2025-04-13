@@ -134,7 +134,9 @@ function dateFormat(timestamp) {
 // Modal handling
 let lastModal = 0;
 async function itemModal() {
+    console.log('itemModal called', this.id);
     const iModal = document.querySelector('#details .modal-body');
+    console.log('Modal element found:', !!iModal);
 
     if (lastModal != this.id) {
         iModal.replaceChildren();
@@ -177,11 +179,16 @@ async function itemModal() {
         });
     }
 
+    console.log('Fetching item details for ID:', this.id);
     const response = await fetch("?i=" + this.id);
     if (!response.ok) {
-        console.error('item detail request failed');
+        console.error('Item detail request failed:', response.status, response.statusText);
+        return;
     }
+    console.log('Response received, parsing JSON');
     const json = await response.json();
+    console.log('Item details:', json);
+    console.log('Setting modal content for item details');
     iModal.children[1].innerHTML = `
     <div class="col">Umlauf</div>
     <div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>

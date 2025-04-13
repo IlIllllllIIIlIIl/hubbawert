@@ -15,6 +15,7 @@ $select->execute();
 $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
 if(isset($_GET['i'])){
+    error_log('Fetching details for item: ' . $_GET['i']);
 	header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
 	'views' => '?',
@@ -30,6 +31,7 @@ if(isset($_GET['i'])){
 	    WHERE r.item_name=?');
 	$select->execute([$_GET['i']]);
 	$details = $select->fetchAll(PDO::FETCH_ASSOC);
+	error_log('Query result: ' . json_encode($details));
 	if(!empty($details)){
 		$response['info'] = $details[0];
 		// update view count if logged in user
@@ -53,6 +55,7 @@ if(isset($_GET['i'])){
 	}else{
 		http_response_code(404);
 	}
+	error_log('Sending response: ' . json_encode($response));
 	exit(json_encode($response));
 }
 $pagetitle = 'Wert';
