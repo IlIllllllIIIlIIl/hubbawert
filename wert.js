@@ -47,16 +47,41 @@ function setupCategorySelection(item) {
 
 // Initialize tooltips and click handlers
 function setTooltips() {
-    console.log('Setting up tooltips and click handlers');
+    console.log('%c Initializing Items', 'background: #334455; color: #fff; padding: 2px 5px; font-weight: bold;');
+    
+    // Set up tooltips
+    console.log('%c WERT LOGS START', 'background: #ff5722; color: #fff; padding: 5px; font-size: 14px; font-weight: bold;');
+    
     document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-    document.querySelectorAll(".rare .item").forEach(item => {
-        console.log('Adding click handler to item:', {
+    
+    // Add click handlers to items
+    const items = document.querySelectorAll(".rare .item");
+    console.log(`Found ${items.length} items to initialize`);
+    
+    items.forEach(item => {
+        console.log('Setting up item:', {
             id: item.id,
-            classes: item.className,
-            dataset: item.dataset
+            categories: item.dataset.categories,
+            className: item.className
         });
-        item.addEventListener("click", itemModal);
+        
+        // Add click handler with logging
+        item.addEventListener("click", function(event) {
+            console.log('%c Item Clicked', 'background: #ff5722; color: #fff; padding: 2px 5px; font-weight: bold;');
+            console.group('%c ITEM CLICKED', 'background: #4CAF50; color: #fff; padding: 5px; font-size: 14px; font-weight: bold;');
+            console.log('🆔 Item ID:', this.id);
+            console.log('📁 Categories:', this.dataset.categories);
+            console.log('💰 Price:', this.querySelector(':nth-child(2)')?.innerText || 'N/A');
+            console.log('📝 Name:', this.querySelector(':last-child')?.innerText || 'N/A');
+            console.log('🎯 Click target:', event.target);
+            console.log('⚡ Event type:', event.type);
+            console.groupEnd();
+            
+            // Call original modal handler
+            itemModal.call(this, event);
+        });
     });
+    console.log('Item initialization complete');
 }
 
 // Scroll handling
@@ -168,6 +193,13 @@ function dateFormat(timestamp) {
 // Modal handling
 let lastModal = 0;
 async function itemModal(event) {
+    if (!event) {
+        console.error('❌ No event object provided to itemModal');
+        return;
+    }
+    
+    console.log('%c MODAL OPENING', 'background: #2196F3; color: #fff; padding: 5px; font-size: 14px; font-weight: bold;');
+    
     try {
         console.log('%c Item Modal Opening', 'background: #334455; color: #fff; padding: 2px 5px; font-weight: bold;');
         console.group('Item Details');
