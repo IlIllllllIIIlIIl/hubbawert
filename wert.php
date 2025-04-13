@@ -43,12 +43,9 @@ if(isset($_GET['i'])){
 			}
 		}
 		// get owners
-		// Get owners and total count
 		$select = $core->m->prepare('SELECT p.username,p.figure,COUNT(i.id) AS c FROM items i LEFT JOIN players p ON(p.id=i.user_id) WHERE (i.base_item=? OR (i.gift_base_item=? AND i.base_item != i.gift_base_item)) AND p.rank < 8 GROUP BY p.id ORDER BY p.last_online DESC');
 		$select->execute([$response['info']['id'],$response['info']['id']]);
-		$owners = $select->fetchAll(PDO::FETCH_ASSOC);
-		$response['owners'] = $owners;
-		$response['info']['umlauf'] = array_sum(array_column($owners, 'c'));
+		$response['owners'] = $select->fetchAll(PDO::FETCH_ASSOC);
 		// get price history
 		$select = $core->m->prepare('SELECT c.old_price, c.timestamp, p.username FROM furniture_rare_changes c LEFT JOIN players p ON p.id = c.player_id WHERE c.furni_id=?');
 		$select->execute([$response['info']['rare_id']]);
@@ -491,7 +488,7 @@ if(!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
 	
 	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.image,r.views,(SELECT GROUP_CONCAT(CAST(m.category_id AS CHAR)) FROM furniture_rare_category_mappings m WHERE m.furniture_id = r.id) as categories,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
 	$select->execute();
-	$items = $select->fetchAll(PDO::FETCH_ASSOC);
+	$items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
 	file_put_contents($cachePath, json_encode($items));
 }else{
 	$items = json_decode(file_get_contents($cachePath), true);
