@@ -699,38 +699,6 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 		</div>
 	</div>
 </div>';
-
-
-// Append insert modal after details modal
-$pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
-<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-<form class="modal-content box needs-validation" enctype="multipart/form-data" method="POST" novalidate>
-'.$insertModalTemplate.'
-</form>
-</div>
-</div>';
-$jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
-<script src="_dat/serve/js/chart.umd.js"></script>
-<script>
-const maxSizeBytes = '.$maxSizeBytes.';
-const items = '.json_encode($itemArray).';
-const maxItemsToShow = '.$maxItemsToShow.';
-const itemTemplate = '.json_encode($itemTemplate).';
-const itemModalTemplate = '.json_encode($itemModalTemplate).';
-const insertModalTemplate = '.json_encode($insertModalTemplate).';
-const itemReplace = '.json_encode($itemReplace).';
-const avatarImager = \''.$core->avatarImager.'\';
-const isEditor = '.$isEditor.';
-const isAdmin = '.$isAdmin.';
-const categoriesHtml = '.json_encode($categoriesHtml).';
-let rarity = '.$rarity.';
-let category = '.$category.';
-let search = document.getElementById("search").value;
-'.file_get_contents(__DIR__.'/wert.js').'
-</script>';        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-        <button type="submit" class="btn btn-primary">Einfügen</button>
-        </div>';
-    }
     
     $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
 $itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}" data-categories="{categories}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
