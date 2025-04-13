@@ -104,8 +104,10 @@ lastModal = this.id;
 
 iModal.innerHTML = itemModalTemplate;
 iModal.children[0].innerHTML = this.innerHTML;
+
 if(isEditor){
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
+
 document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
 if(event.target.value.includes('Bearbeiten')){
 event.preventDefault();
@@ -127,7 +129,7 @@ categoryDiv.innerHTML = '<div style="display:flex;flex-direction:column">' +
     '<span class="mb-2">Kategorien:</span>' +
     '<div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">' +
     '<div class="d-flex flex-column" style="gap:8px">' +
-    document.querySelector('#insertModal .d-flex.flex-column').innerHTML +
+    (document.querySelector('#insertModal .d-flex.flex-column')?.innerHTML || '') +
     '</div></div></div>';
 
 form.appendChild(categoryDiv);
@@ -147,6 +149,7 @@ makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName'
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
 }
 });
+
 document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
 if(confirm('Möchtest du diese Rarität wirklich löschen?')){
 event.preventDefault();
@@ -164,18 +167,17 @@ if(!response.ok){
 console.error('item detail request failed');
 }
 const json = await response.json();
-iModal.children[1].innerHTML = `
-<div class="col">Umlauf</div>
-<div class="col">${this.querySelector('img').dataset.bsOriginalTitle}x</div>
-<div class="w-100"></div>
-<div class="col">Aufrufe</div>
-<div class="col">${json.info.views}</div>
-<div class="w-100"></div>
-<div class="col">Kategorie</div>
-<div class="col">--</div>
-<div class="w-100"></div>
-<div class="col"></div>
-<div class="col">${this.id}</div>`;
+iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
+'<div class="col">' + this.querySelector('img').dataset.bsOriginalTitle + 'x</div>' +
+'<div class="w-100"></div>' +
+'<div class="col">Aufrufe</div>' +
+'<div class="col">' + json.info.views + '</div>' +
+'<div class="w-100"></div>' +
+'<div class="col">Kategorie</div>' +
+'<div class="col">--</div>' +
+'<div class="w-100"></div>' +
+'<div class="col"></div>' +
+'<div class="col">' + this.id + '</div>';
 iModal.children[2].innerText = json.info.longdesc;
 
 if(isAdmin) {
@@ -244,20 +246,10 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Initialize insert modal form validation and image preview
+// Initialize insert modal form validation only if user has editor rights
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
-        // Form validation
-        insertModalForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
-
-        // Form validation only
         insertModalForm.addEventListener('submit', function(e) {
             if (!this.checkValidity()) {
                 e.preventDefault();
@@ -266,8 +258,7 @@ if (isEditor) {
             this.classList.add('was-validated');
         });
     }
+    
+    // Initialize Bootstrap modal once
+    new bootstrap.Modal('#insertModal');
 }
-
-
-// Initialize Bootstrap modal once
-const insertModal = new bootstrap.Modal('#insertModal');
