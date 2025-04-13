@@ -113,9 +113,12 @@ event.target.value = '💾 Speichern';
 event.target.style.color = '#3ab4e3';
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 
-// Get category HTML from insertModalTemplate
-const categorySection = insertModalTemplate.match(/<div style="display:flex;flex-direction:column">[\s\S]*?<\/div><\/div>/)[0];
-const categoriesHtml = `<div style="border:1px solid #2c2e3c;padding:12px;margin:10px 0">${categorySection}</div>`;
+// Create a temporary div to parse the insertModalTemplate
+const tempDiv = document.createElement('div');
+tempDiv.innerHTML = insertModalTemplate;
+// Get the categories section
+const categorySection = tempDiv.querySelector('div[style*="flex-direction:column"]');
+const categoriesHtml = `<div style="border:1px solid #2c2e3c;padding:12px;margin:10px 0">${categorySection.outerHTML}</div>`;
 
 document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">
 ${document.querySelector('#details .modal-body').innerHTML}
@@ -257,5 +260,5 @@ if (isEditor) {
 }
 
 
-// Initialize Bootstrap modal once 
+// Initialize Bootstrap modal once
 const insertModal = new bootstrap.Modal('#insertModal');
