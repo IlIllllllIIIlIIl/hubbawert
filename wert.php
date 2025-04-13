@@ -611,7 +611,7 @@ foreach ($items as $item) {
         $i++;
     }
 
-    array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $item['id']);
+    array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $item['item_name']);
     array_push($itemArray, $itemData);
 }
 $pagecontent .= '</div></div>';
