@@ -112,9 +112,24 @@ event.preventDefault();
 event.target.value = '💾 Speichern';
 event.target.style.color = '#3ab4e3';
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
-document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
+
+// Get category HTML from insertModalTemplate
+const categorySection = insertModalTemplate.match(/<div style="display:flex;flex-direction:column">[\s\S]*?<\/div><\/div>/)[0];
+const categoriesHtml = `<div style="border:1px solid #2c2e3c;padding:12px;margin:10px 0">${categorySection}</div>`;
+
+document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">
+${document.querySelector('#details .modal-body').innerHTML}
+${categoriesHtml}
 <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
 </form>`;
+
+// Check categories that are currently assigned to this item
+const currentCategories = items.find(item => item[0] === this.id)?.[7]?.split(',') || [];
+currentCategories.forEach(catId => {
+    const checkbox = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
+    if (checkbox) checkbox.checked = true;
+});
+
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
@@ -242,5 +257,5 @@ if (isEditor) {
 }
 
 
-// Initialize Bootstrap modal once
+// Initialize Bootstrap modal once 
 const insertModal = new bootstrap.Modal('#insertModal');
