@@ -701,7 +701,7 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 </div>';
     
     $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
-$itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}" data-categories="{categories}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
+$itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}" data-categories="{categories}"><img class="rarity l{level}" title="{amount}" data-bs-original-title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
 $itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}', '{categories}'];
 foreach ($items as $itemId => $item) {
     if(!isset($item['public_name'])){
