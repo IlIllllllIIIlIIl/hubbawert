@@ -678,7 +678,6 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 						    </form>
 						</div>' : '').
 						'</div>';
-					}
 $pagecontent .= '</div>
 				</div>
 			</div>
