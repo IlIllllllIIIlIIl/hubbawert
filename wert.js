@@ -113,21 +113,23 @@ event.target.value = '💾 Speichern';
 event.target.style.color = '#3ab4e3';
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 
-// Create a temporary div to parse the insertModalTemplate
-const tempDiv = document.createElement('div');
-tempDiv.innerHTML = insertModalTemplate;
-// Get the categories section
-const categorySection = tempDiv.querySelector('div[style*="flex-direction:column"]');
-const categoriesHtml = `<div style="border:1px solid #2c2e3c;padding:12px;margin:10px 0">${categorySection.outerHTML}</div>`;
+const categoriesSection = `<div style="border:1px solid #2c2e3c;padding:12px;margin:10px 0">
+<div style="display:flex;flex-direction:column">
+<span class="mb-2">Kategorien:</span>
+<div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
+<div class="d-flex flex-column" style="gap:8px">` + 
+document.querySelector('#insertModal .d-flex.flex-column').innerHTML + 
+`</div></div></div></div>`;
 
-document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">
-${document.querySelector('#details .modal-body').innerHTML}
-${categoriesHtml}
-<input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-</form>`;
-
-// Check categories that are currently assigned to this item
 const currentCategories = items.find(item => item[0] === this.id)?.[7]?.split(',') || [];
+
+document.querySelector('#details .modal-content').innerHTML = '<form class="modal-body row" enctype="multipart/form-data" method="POST">' + 
+document.querySelector('#details .modal-body').innerHTML +
+categoriesSection +
+'<input type="hidden" name="oldName" value="' + document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">' +
+'</form>';
+
+// Pre-check current categories
 currentCategories.forEach(catId => {
     const checkbox = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
     if (checkbox) checkbox.checked = true;
@@ -143,7 +145,7 @@ if(confirm('Möchtest du diese Rarität wirklich löschen?')){
 event.preventDefault();
 const form = document.createElement('form');
 form.method = 'POST';
-form.innerHTML = `<input type="hidden" name="delete" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">`;
+form.innerHTML = '<input type="hidden" name="delete" value="' + document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">';
 document.body.appendChild(form);
 form.submit();
 }
@@ -173,11 +175,11 @@ if(isAdmin) {
     let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
     json.changes.sort((a, b) => b.timestamp - a.timestamp);
     json.changes.forEach(log => {
-        logsHtml += `<tr>
-            <td>${log.username}</td>
-            <td>${log.old_price.toLocaleString()}</td>
-            <td>${dateFormat(log.timestamp)}</td>
-        </tr>`;
+        logsHtml += '<tr>' +
+            '<td>' + log.username + '</td>' +
+            '<td>' + log.old_price.toLocaleString() + '</td>' +
+            '<td>' + dateFormat(log.timestamp) + '</td>' +
+        '</tr>';
     });
     logsHtml += '</tbody></table></div>';
     iModal.children[4].innerHTML = logsHtml;
