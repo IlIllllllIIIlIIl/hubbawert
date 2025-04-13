@@ -113,23 +113,30 @@ event.target.value = '💾 Speichern';
 event.target.style.color = '#3ab4e3';
 iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 
-const categoriesSection = `<div style="border:1px solid #2c2e3c;padding:12px;margin:10px 0">
-<div style="display:flex;flex-direction:column">
-<span class="mb-2">Kategorien:</span>
-<div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">
-<div class="d-flex flex-column" style="gap:8px">` + 
-document.querySelector('#insertModal .d-flex.flex-column').innerHTML + 
-`</div></div></div></div>`;
-
 const currentCategories = items.find(item => item[0] === this.id)?.[7]?.split(',') || [];
 
-document.querySelector('#details .modal-content').innerHTML = '<form class="modal-body row" enctype="multipart/form-data" method="POST">' + 
-document.querySelector('#details .modal-body').innerHTML +
-categoriesSection +
-'<input type="hidden" name="oldName" value="' + document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">' +
-'</form>';
+const form = document.createElement('form');
+form.className = 'modal-body row';
+form.enctype = 'multipart/form-data';
+form.method = 'POST';
+form.innerHTML = document.querySelector('#details .modal-body').innerHTML;
 
-// Pre-check current categories
+const categoryDiv = document.createElement('div');
+categoryDiv.style.cssText = 'border:1px solid #2c2e3c;padding:12px;margin:10px 0';
+categoryDiv.innerHTML = '<div style="display:flex;flex-direction:column">' +
+    '<span class="mb-2">Kategorien:</span>' +
+    '<div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">' +
+    '<div class="d-flex flex-column" style="gap:8px">' +
+    document.querySelector('#insertModal .d-flex.flex-column').innerHTML +
+    '</div></div></div>';
+
+form.appendChild(categoryDiv);
+form.insertAdjacentHTML('beforeend', '<input type="hidden" name="oldName" value="' + 
+    document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">');
+
+document.querySelector('#details .modal-content').innerHTML = '';
+document.querySelector('#details .modal-content').appendChild(form);
+
 currentCategories.forEach(catId => {
     const checkbox = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
     if (checkbox) checkbox.checked = true;
