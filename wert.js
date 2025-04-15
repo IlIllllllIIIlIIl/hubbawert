@@ -239,7 +239,36 @@ function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el, {
+  popperConfig: {
+    placement: 'top',
+    modifiers: [
+      {
+        name: 'computeStyles',
+        options: {
+          adaptive: false,
+          gpuAcceleration: false
+        }
+      },
+      {
+        name: 'offset',
+        enabled: false
+      },
+      {
+        name: 'flip',
+        enabled: false
+      },
+      {
+        name: 'preventOverflow',
+        enabled: true,
+        options: {
+          boundary: 'viewport',
+          padding: 0
+        }
+      }
+    ]
+  }
+}));
 document.querySelectorAll(".rare .item").forEach(item => {
 item.addEventListener("click", itemModal);
 });
