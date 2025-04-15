@@ -58,15 +58,6 @@ if(isset($_GET['i'])){
 $pagetitle = 'Wert';
 $cachePath = $core->path.'/_inc/.cache/wert/index.cache';
 $cssappendix .= '<style>
-.tooltip {
-  --bs-popover-body-padding-y: 0;
-  --bs-popover-body-padding-x: 0;
-  margin: 0 !important;
-}
-.tooltip-inner {
-  padding: 3px 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.2);
-}
 .box{
 	margin:5px 0 !important;
 	box-shadow: none !important;
