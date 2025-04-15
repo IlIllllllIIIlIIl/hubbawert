@@ -61,7 +61,10 @@ $cssappendix .= '<style>
 .tooltip {
   --bs-tooltip-bg: var(--bs-dark);
   --bs-tooltip-color: var(--bs-white);
-  filter: drop-shadow(0 0 3px rgba(0,0,0,.3));
+  padding: 0;
+}
+.tooltip .tooltip-inner {
+  box-shadow: 0 0 3px rgba(0,0,0,0.5);
 }
 .box{
 	margin:5px 0 !important;
