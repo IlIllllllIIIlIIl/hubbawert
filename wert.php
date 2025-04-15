@@ -700,51 +700,6 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 	</div>
 </div>';
     
-    $itemModalTemplate = '<div class="col-md-12 item"></div><div class="col-md-6 row"></div><div class="col-md-6 text-center align-items-center"></div><div class="col-md-12 text-center"></div><div class="col-md-12 text-center"></div>';
-$itemTemplate = '<div class="col-md-4"><div class="box item" id="{id}" data-categories="{categories}"><img class="rarity l{level}" title="{amount}"><span{tag}>{price}</span><img src="_dat/serve/img/wert/furni/{image}" loading="lazy"><span>{name}</span></div></div>';
-$itemReplace = ['{id}', '{level}', '{amount}', '{tag}', '{price}', '{image}', '{name}', '{categories}'];
-foreach ($items as $itemId => $item) {
-    if(!isset($item['public_name'])){
-        echo "error not found: {$itemId}\n";
-        continue;
-    }
-
-    $amount = $item['umlauf'];
-
-    $level = match(true) {
-        $amount > 50 => 1,
-        $amount > 30 => 2,
-        $amount > 15 => 3,
-        $amount > 5 => 4,
-        $amount > 0 => 5,
-        default => 0
-    };
-
-    if(!isset($item['old_price']) || $item['old_price'] < 1){
-        $item['old_price'] = 0;
-    }
-
-    $itemData = [
-        $item['item_name'],
-        $level,
-        $amount,
-        $item['old_price'] < 1 ? '' : ' class="'.($item['price'] >= $item['old_price'] ? 'up' : 'down').'" title="vorher '.number_format($item['old_price']).'"', // priceTag
-        ($item['price'] > 0 ? number_format($item['price']) : 'Unbekannt'),
-        filter_var($item['image'], FILTER_SANITIZE_URL),
-        htmlspecialchars(str_replace('Habbo', $core->shortname, $item['public_name'])),
-        isset($item['categories']) ? $item['categories'] : ''
-    ];
-
-    // Check if we should show this item based on category
-    $itemCategories = isset($item['categories']) ? explode(',', $item['categories'] ?? '') : [];
-    if($i < $maxItemsToShow && ($category == 0 || in_array((string)$category, $itemCategories))){
-        $pagecontent .= str_replace($itemReplace, $itemData, $itemTemplate);
-        $i++;
-    }
-
-    array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId);
-    array_push($itemArray, $itemData);
-}
 $pagecontent .= '</div></div>';
 
 // category modal
