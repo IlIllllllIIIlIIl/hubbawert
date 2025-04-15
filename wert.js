@@ -200,12 +200,7 @@ if(isAdmin) {
         img.title = owner.username + ' ' + owner.c + 'x';
         img.loading = "lazy";
         iModal.children[4].appendChild(img);
-        new bootstrap.Tooltip(img, {
-            placement: 'top',
-            container: 'body',
-            boundary: 'viewport',
-            offset: [0, 0]
-        });
+        new bootstrap.Tooltip(img);
     });
 }
 
@@ -244,12 +239,7 @@ function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el, {
-    placement: 'top',
-    container: 'body',
-    boundary: 'viewport',
-    offset: [0, 0]
-}));
+document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
 document.querySelectorAll(".rare .item").forEach(item => {
 item.addEventListener("click", itemModal);
 });
