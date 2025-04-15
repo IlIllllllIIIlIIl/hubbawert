@@ -66,10 +66,6 @@ $cssappendix .= '<style>
   box-shadow: 0 2px 4px rgba(0,0,0,.2);
   position: relative;
 }
-}
-}
-}
-}
 .box{
 	margin:5px 0 !important;
 	box-shadow: none !important;
