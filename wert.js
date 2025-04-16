@@ -259,6 +259,9 @@ if (isEditor) {
         });
     }
     
-    // Initialize Bootstrap modal once
+    // Initialize Bootstrap modals once
     new bootstrap.Modal('#insertModal');
+    if (isAdmin) {
+        new bootstrap.Modal('#staffModal');
+    }
 }
