@@ -581,10 +581,11 @@ $employeeModalTemplate = '
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 <div class="modal-body">
-    <form id="newEmployeeForm" class="mb-3">
+    <form id="newEmployeeForm" class="mb-3" method="POST">
+        <input type="hidden" name="action" value="addEmployee">
         <label class="form-label">Neuer Mitarbeiter</label>
         <div class="input-group">
-            <input type="text" class="form-control" id="newEmployeeName" placeholder="Benutzername">
+            <input type="text" class="form-control" name="username" id="newEmployeeName" placeholder="Benutzername" required>
             <button class="btn btn-primary" type="submit">Hinzufügen</button>
         </div>
     </form>
@@ -600,13 +601,20 @@ foreach($employees as $emp) {
     <div class="list-group-item d-flex justify-content-between align-items-center">
        <span>'.htmlspecialchars($emp['username']).'</span>
        <div>
-           <button class="btn btn-sm btn-'.($emp['edit_rights'] === 'admin' ? 'primary' : 'success').'"
-                    onclick="toggleEditRights(\''.htmlspecialchars($emp['username']).'\')">
-                '.($emp['edit_rights'] === 'admin' ? '🔑 Admin' : '✏️ Scout').'
-            </button>
-            <button class="btn btn-sm btn-danger ms-2" onclick="removeEmployee(\''.htmlspecialchars($emp['username']).'\')">
-                🗑️ Entfernen
-            </button>
+           <form method="POST" class="d-inline">
+               <input type="hidden" name="action" value="toggleEditRights">
+               <input type="hidden" name="username" value="'.htmlspecialchars($emp['username']).'">
+               <button type="submit" class="btn btn-sm btn-'.($emp['edit_rights'] === 'admin' ? 'primary' : 'success').'">
+                   '.($emp['edit_rights'] === 'admin' ? '🔑 Admin' : '✏️ Scout').'
+               </button>
+           </form>
+           <form method="POST" class="d-inline ms-2">
+               <input type="hidden" name="action" value="removeEmployee">
+               <input type="hidden" name="username" value="'.htmlspecialchars($emp['username']).'">
+               <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Möchten Sie '.htmlspecialchars($emp['username']).' wirklich entfernen?\')">
+                   🗑️ Entfernen
+               </button>
+           </form>
         </div>
     </div>';
 }
