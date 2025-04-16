@@ -303,6 +303,32 @@ if($isEditor){
 	$error = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	if(isset($_POST['action'])) {
+	    if($_POST['action'] === 'remove_staff' && $isAdmin){
+	        if(empty($_POST['staff_username'])) {
+	            $error .= 'Benutzername ist erforderlich<br>';
+	        } else {
+	            $delete = $core->m->prepare('DELETE FROM furniture_rare_staff WHERE username = ?');
+	            if($delete->execute([$_POST['staff_username']])){
+	                header('Location: '.$core->url.'wert');
+	                exit;
+	            } else {
+	                $error .= 'Fehler beim Entfernen des Staff-Mitglieds<br>';
+	            }
+	        }
+	    }
+	    else if($_POST['action'] === 'add_staff' && $isAdmin){
+	        if(empty($_POST['staff_username'])) {
+	            $error .= 'Benutzername ist erforderlich<br>';
+	        } else {
+	            $insert = $core->m->prepare('INSERT INTO furniture_rare_staff (username, edit_rights) VALUES (?, ?)');
+	            if($insert->execute([$_POST['staff_username'], $_POST['staff_rights']])){
+	                header('Location: '.$core->url.'wert');
+	                exit;
+	            } else {
+	                $error .= 'Fehler beim Hinzufügen des Staff-Mitglieds<br>';
+	            }
+	        }
+	    }
 	    if($_POST['action'] === 'add_category'){
 	        if(empty($_POST['category_name'])) {
 	            $error .= 'Kategorie Name ist erforderlich<br>';
@@ -470,10 +496,11 @@ if($isEditor){
 		}
 	}
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-	<div class="col-12">
-	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
-	🎁 Neue Rarität einfügen
-	</button>
+	<div class="d-flex gap-2">
+		<button class="btn btn-primary flex-grow-1" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
+		🎁 Neue Rarität einfügen
+		</button>
+		'.($isAdmin ? '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staffModal">👥 Staff</button>' : '').'
 	</div>
 	</div>';
 }
@@ -796,6 +823,67 @@ $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 </form>
 </div>
 </div>';
+// Staff modal for admins
+if($isAdmin) {
+    $staffMembers = $core->m->prepare('SELECT p.id, p.username, s.edit_rights FROM furniture_rare_staff s LEFT JOIN players p ON(p.username = s.username) ORDER BY s.edit_rights DESC, p.username ASC');
+    $staffMembers->execute();
+    $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">👥 Staff Verwaltung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-dark">
+                        <thead>
+                            <tr>
+                                <th>Benutzer</th>
+                                <th>Rechte</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>';
+                        while ($staff = $staffMembers->fetch(PDO::FETCH_ASSOC)) {
+                            $pagecontent .= '<tr>
+                                <td>'.htmlspecialchars($staff['username']).'</td>
+                                <td>'.($staff['edit_rights'] === 'admin' ? '🔑 Admin' : '✏️ Editor').'</td>
+                                <td>
+                                    <form method="POST" style="display:inline">
+                                        <input type="hidden" name="action" value="remove_staff">
+                                        <input type="hidden" name="staff_username" value="'.htmlspecialchars($staff['username']).'">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Möchtest du diesen Staff wirklich entfernen?\')">
+                                            🗑️
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>';
+                        }
+                        $pagecontent .= '</tbody>
+                    </table>
+                </div>
+                <form method="POST" class="mt-3">
+                    <input type="hidden" name="action" value="add_staff">
+                    <div class="mb-3">
+                        <label class="form-label">Neuer Staff</label>
+                        <input type="text" name="staff_username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rechte</label>
+                        <select name="staff_rights" class="form-control" required>
+                            <option value="editor">✏️ Editor</option>
+                            <option value="admin">🔑 Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>';
+}
+
 $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
 <script src="_dat/serve/js/chart.umd.js"></script>
 <script>
