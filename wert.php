@@ -872,27 +872,49 @@ if($isAdmin) {
                 <label class="form-label">Neuer Staff</label>
                 <input type="text" name="staff_username" class="form-control" required>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Rechte</label>
-                <select name="staff_rights" class="form-control" required>
-                    <option value="editor">✏️ Editor</option>
-                    <option value="admin">🔑 Admin</option>
-                </select>
+            <div class="modal-header">
+                <h5 class="modal-title">👥 Staff Verwaltung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="d-flex justify-content-between">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Abbrechen</button>
-                <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Rechte</label>
+                    <select name="staff_rights" class="form-control" required>
+                        <option value="editor">✏️ Editor</option>
+                        <option value="admin">🔑 Admin</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
+                </div>
             </div>
         </form>
     </div>';
     
-    // Append staff modal like insert modal
+    // Append staff modal like category modal
     $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content box">
-            <form class="needs-validation" method="POST" novalidate>
-                '.$staffModalTemplate.'
-            </form>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">👥 Staff Verwaltung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Rechte</label>
+                        <select name="staff_rights" class="form-control" required>
+                            <option value="editor">✏️ Editor</option>
+                            <option value="admin">🔑 Admin</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>';
