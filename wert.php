@@ -14,34 +14,41 @@ $select = $core->m->prepare('SELECT p.id, s.edit_rights FROM furniture_rare_staf
 $select->execute();
 $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
-// Handle employee management actions
-if(isset($_GET['action']) && $isAdmin) {
-    header('Content-Type: application/json');
-    
-    switch($_GET['action']) {
-        case 'listEmployees':
-            $select = $core->m->prepare('SELECT username, edit_rights FROM furniture_rare_staff ORDER BY username');
-            $select->execute();
-            exit(json_encode($select->fetchAll(PDO::FETCH_ASSOC)));
-            
+// Handle employee management POST actions
+if(isset($_POST['action']) && $isAdmin) {
+    switch($_POST['action']) {
         case 'addEmployee':
-            if(!isset($_POST['username'])) exit(json_encode(['error' => 'Missing username']));
-            $insert = $core->m->prepare('INSERT INTO furniture_rare_staff (username, edit_rights) VALUES (?, 0)');
-            $success = $insert->execute([$_POST['username']]);
-            exit(json_encode(['success' => $success]));
+            if(!empty($_POST['username'])) {
+                $insert = $core->m->prepare('INSERT INTO furniture_rare_staff (username, edit_rights) VALUES (?, "scout")');
+                $insert->execute([$_POST['username']]);
+            }
+            break;
             
         case 'removeEmployee':
-            if(!isset($_POST['username'])) exit(json_encode(['error' => 'Missing username']));
-            $delete = $core->m->prepare('DELETE FROM furniture_rare_staff WHERE username = ?');
-            $success = $delete->execute([$_POST['username']]);
-            exit(json_encode(['success' => $success]));
+            if(!empty($_POST['username'])) {
+                $delete = $core->m->prepare('DELETE FROM furniture_rare_staff WHERE username = ?');
+                $delete->execute([$_POST['username']]);
+            }
+            break;
             
         case 'toggleEditRights':
-            if(!isset($_POST['username'])) exit(json_encode(['error' => 'Missing username']));
-            $update = $core->m->prepare('UPDATE furniture_rare_staff SET edit_rights = NOT edit_rights WHERE username = ?');
-            $success = $update->execute([$_POST['username']]);
-            exit(json_encode(['success' => $success]));
+            if(!empty($_POST['username'])) {
+                // Get current rights
+                $select = $core->m->prepare('SELECT edit_rights FROM furniture_rare_staff WHERE username = ?');
+                $select->execute([$_POST['username']]);
+                $current = $select->fetchColumn();
+                
+                // Toggle between scout and admin
+                $new_rights = $current === 'admin' ? 'scout' : 'admin';
+                
+                $update = $core->m->prepare('UPDATE furniture_rare_staff SET edit_rights = ? WHERE username = ?');
+                $update->execute([$new_rights, $_POST['username']]);
+            }
+            break;
     }
+    // Redirect back to prevent form resubmission
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit();
 }
 
 if(isset($_GET['i'])){
@@ -574,16 +581,37 @@ $employeeModalTemplate = '
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 <div class="modal-body">
-    <div class="mb-3">
+    <form id="newEmployeeForm" class="mb-3">
         <label class="form-label">Neuer Mitarbeiter</label>
         <div class="input-group">
             <input type="text" class="form-control" id="newEmployeeName" placeholder="Benutzername">
-            <button class="btn btn-primary" type="button" onclick="addEmployee()">Hinzufügen</button>
+            <button class="btn btn-primary" type="submit">Hinzufügen</button>
         </div>
-    </div>
-    <div class="list-group" id="employeeList">
-        <!-- Employee list will be populated by JavaScript -->
-    </div>
+    </form>
+    <div class="list-group" id="employeeList">';
+    
+// Get current employee list
+$select = $core->m->prepare('SELECT username, edit_rights FROM furniture_rare_staff ORDER BY username');
+$select->execute();
+$employees = $select->fetchAll(PDO::FETCH_ASSOC);
+
+foreach($employees as $emp) {
+    $employeeModalTemplate .= '
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+       <span>'.htmlspecialchars($emp['username']).'</span>
+       <div>
+           <button class="btn btn-sm btn-'.($emp['edit_rights'] === 'admin' ? 'primary' : 'success').'"
+                    onclick="toggleEditRights(\''.htmlspecialchars($emp['username']).'\')">
+                '.($emp['edit_rights'] === 'admin' ? '🔑 Admin' : '✏️ Scout').'
+            </button>
+            <button class="btn btn-sm btn-danger ms-2" onclick="removeEmployee(\''.htmlspecialchars($emp['username']).'\')">
+                🗑️ Entfernen
+            </button>
+        </div>
+    </div>';
+}
+
+$employeeModalTemplate .= '</div>
 </div>';
 
 if ($isEditor) {
