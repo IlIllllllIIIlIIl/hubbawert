@@ -887,11 +887,11 @@ if($isAdmin) {
     </div>';
     
     // Append staff modal after insert modal
-    $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
+    $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <form class="modal-content box needs-validation" method="POST" novalidate>
         '.$staffModalTemplate.'
-        </div>
+        </form>
     </div>
 </div>';
 }

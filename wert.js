@@ -259,14 +259,26 @@ if (isEditor) {
         });
     }
     
-    // Initialize Bootstrap modals once
-    const insertModal = new bootstrap.Modal('#insertModal');
     if (isAdmin) {
-        const staffModal = document.querySelector('#staffModal');
-        const bsStaffModal = new bootstrap.Modal(staffModal);
+        // Add form validation
+        const staffModalForm = document.querySelector('#staffModal form');
+        if (staffModalForm) {
+            staffModalForm.addEventListener('submit', function(e) {
+                if (!this.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                this.classList.add('was-validated');
+            });
+        }
+
+        // Add click handler to show modal
         document.querySelector('[data-bs-target="#staffModal"]').addEventListener('click', () => {
-            staffModal.querySelector('.modal-content').innerHTML = staffModalTemplate;
-            bsStaffModal.show();
+            staffModal.show();
         });
     }
+
+    // Initialize Bootstrap modals once
+    const insertModal = new bootstrap.Modal('#insertModal');
+    const staffModal = new bootstrap.Modal('#staffModal');
 }
