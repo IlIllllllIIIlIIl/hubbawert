@@ -893,15 +893,15 @@ if($isAdmin) {
     </div>';
     
     // Append staff modal like category modal
-    $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    $pagecontent .= '<div class="modal" id="staffModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">👥 Staff Verwaltung</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" class="needs-validation" novalidate>
+                <form method="POST">
                     <div class="mb-3">
                         <label class="form-label">Rechte</label>
                         <select name="staff_rights" class="form-control" required>
