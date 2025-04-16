@@ -245,3 +245,102 @@ item.addEventListener("click", itemModal);
 });
 }
 setTooltips();
+
+// Employee Management Functions
+async function loadEmployeeList() {
+    const employeeList = document.getElementById('employeeList');
+    if (!employeeList) return;
+
+    try {
+        const response = await fetch('?action=listEmployees');
+        if (!response.ok) throw new Error('Failed to load employees');
+        const employees = await response.json();
+        
+        employeeList.innerHTML = employees.map(emp => `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <span>${emp.username}</span>
+                <div>
+                    <button class="btn btn-sm btn-${emp.edit_rights ? 'success' : 'secondary'}"
+                            onclick="toggleEditRights('${emp.username}')">
+                        ${emp.edit_rights ? '✏️ Editor' : '👁️ Viewer'}
+                    </button>
+                    <button class="btn btn-sm btn-danger ms-2" onclick="removeEmployee('${emp.username}')">
+                        🗑️ Entfernen
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading employees:', error);
+        employeeList.innerHTML = '<div class="alert alert-danger">Fehler beim Laden der Mitarbeiter</div>';
+    }
+}
+
+async function addEmployee() {
+    const input = document.getElementById('newEmployeeName');
+    const username = input.value.trim();
+    
+    if (!username) {
+        alert('Bitte geben Sie einen Benutzernamen ein');
+        return;
+    }
+
+    try {
+        const response = await fetch('?action=addEmployee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `username=${encodeURIComponent(username)}`
+        });
+
+        if (!response.ok) throw new Error('Failed to add employee');
+        
+        input.value = '';
+        await loadEmployeeList();
+    } catch (error) {
+        console.error('Error adding employee:', error);
+        alert('Fehler beim Hinzufügen des Mitarbeiters');
+    }
+}
+
+async function removeEmployee(username) {
+    if (!confirm(`Möchten Sie ${username} wirklich entfernen?`)) return;
+
+    try {
+        const response = await fetch('?action=removeEmployee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `username=${encodeURIComponent(username)}`
+        });
+
+        if (!response.ok) throw new Error('Failed to remove employee');
+        await loadEmployeeList();
+    } catch (error) {
+        console.error('Error removing employee:', error);
+        alert('Fehler beim Entfernen des Mitarbeiters');
+    }
+}
+
+async function toggleEditRights(username) {
+    try {
+        const response = await fetch('?action=toggleEditRights', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `username=${encodeURIComponent(username)}`
+        });
+
+        if (!response.ok) throw new Error('Failed to toggle edit rights');
+        await loadEmployeeList();
+    } catch (error) {
+        console.error('Error toggling edit rights:', error);
+        alert('Fehler beim Ändern der Berechtigungen');
+    }
+}
+
+// Initialize employee list when modal is shown
+document.getElementById('employeeModal')?.addEventListener('show.bs.modal', loadEmployeeList);
