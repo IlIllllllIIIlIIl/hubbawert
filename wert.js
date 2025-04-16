@@ -246,8 +246,10 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Initialize insert modal form validation only if user has editor rights
+// Initialize modal form validation only if user has editor rights
 if (isEditor) {
+    // Initialize insert modal
+    const insertModal = new bootstrap.Modal('#insertModal');
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
         insertModalForm.addEventListener('submit', function(e) {
@@ -260,6 +262,9 @@ if (isEditor) {
     }
     
     if (isAdmin) {
+        // Initialize staff modal
+        const staffModal = new bootstrap.Modal('#staffModal');
+        
         // Add form validation
         const staffModalForm = document.querySelector('#staffModal form');
         if (staffModalForm) {
@@ -272,13 +277,9 @@ if (isEditor) {
             });
         }
 
-        // Add click handler to show modal
+        // Add click handler
         document.querySelector('[data-bs-target="#staffModal"]').addEventListener('click', () => {
             staffModal.show();
         });
     }
-
-    // Initialize Bootstrap modals once
-    const insertModal = new bootstrap.Modal('#insertModal');
-    const staffModal = new bootstrap.Modal('#staffModal');
 }
