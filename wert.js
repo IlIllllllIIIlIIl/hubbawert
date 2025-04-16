@@ -265,8 +265,8 @@ if (isEditor) {
         const staffModal = document.querySelector('#staffModal');
         const bsStaffModal = new bootstrap.Modal(staffModal);
         document.querySelector('[data-bs-target="#staffModal"]').addEventListener('click', () => {
+            staffModal.querySelector('.modal-content').innerHTML = staffModalTemplate;
             bsStaffModal.show();
-            staffModal.show();
         });
     }
 }
