@@ -500,7 +500,9 @@ if($isEditor){
 		<button class="btn btn-primary flex-grow-1" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
 		🎁 Neue Rarität einfügen
 		</button>
-		'.($isAdmin ? '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staffModal">👥 Staff</button>' : '').'
+		'.($isAdmin ? '<button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staffModal">
+		👥 Mitarbeiter verwalten
+		</button>' : '').'
 	</div>
 	</div>';
 }
@@ -534,7 +536,59 @@ while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
 
 // Initialize modal templates
 $insertModalTemplate = '';
+// Staff management modal for admins
 $staffModalTemplate = '';
+if ($isAdmin) {
+    $select = $core->m->prepare('SELECT s.username, s.edit_rights FROM furniture_rare_staff s ORDER BY s.username ASC');
+    $select->execute();
+    $staffList = '';
+    while ($staff = $select->fetch(PDO::FETCH_ASSOC)) {
+        $staffList .= '<tr>
+            <td>'.htmlspecialchars($staff['username']).'</td>
+            <td>'.htmlspecialchars($staff['edit_rights']).'</td>
+            <td>
+                <form method="POST" style="margin:0">
+                    <input type="hidden" name="action" value="remove_staff">
+                    <input type="hidden" name="staff_username" value="'.htmlspecialchars($staff['username']).'">
+                    <button type="submit" class="btn btn-danger btn-sm">Entfernen</button>
+                </form>
+            </td>
+        </tr>';
+    }
+    
+    $staffModalTemplate = '<div class="modal-body">
+        <h5>Aktuelle Mitarbeiter</h5>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Benutzername</th>
+                    <th>Rechte</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                '.$staffList.'
+            </tbody>
+        </table>
+        
+        <h5 class="mt-4">Neuen Mitarbeiter hinzufügen</h5>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_staff">
+            <div class="mb-3">
+                <label class="form-label">Benutzername</label>
+                <input type="text" class="form-control" name="staff_username" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Rechte</label>
+                <select class="form-control" name="staff_rights" required>
+                    <option value="editor">Editor</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Hinzufügen</button>
+        </form>
+    </div>';
+}
 
 if ($isEditor) {
     $maxSizeBytes = 2097152; // 2MB limit for uploads
@@ -826,6 +880,7 @@ $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 </form>
 </div>
 </div>';
+
 if($isAdmin) {
     // Generate staff list for modal
     $staffMembers = $core->m->prepare('SELECT p.id, p.username, s.edit_rights FROM furniture_rare_staff s LEFT JOIN players p ON(p.username = s.username) ORDER BY s.edit_rights DESC, p.username ASC');
@@ -848,76 +903,49 @@ if($isAdmin) {
         </tr>';
     }
 
-    // Create staff modal template
-    $staffModalTemplate = '<div class="modal-header">
-        <h5 class="modal-title">👥 Staff Verwaltung</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-    </div>
-    <div class="modal-body">
-        <div class="table-responsive">
-            <table class="table table-dark">
-                <thead>
-                    <tr>
-                        <th>Benutzer</th>
-                        <th>Rechte</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>'.$staffList.'</tbody>
-            </table>
+    // Add staff management modal
+    $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content box">
+                <div class="modal-header">
+                    <h5 class="modal-title">👥 Mitarbeiter verwalten</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5>Aktuelle Mitarbeiter</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Benutzername</th>
+                                    <th>Rechte</th>
+                                    <th>Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>'.$staffList.'</tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">Neuen Mitarbeiter hinzufügen</h5>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="add_staff">
+                        <div class="mb-3">
+                            <label class="form-label">Benutzername</label>
+                            <input type="text" class="form-control" name="staff_username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rechte</label>
+                            <select class="form-control" name="staff_rights" required>
+                                <option value="editor">✏️ Editor</option>
+                                <option value="admin">🔑 Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Hinzufügen</button>
+                    </form>
+                </div>
+            </div>
         </div>
-        <form method="POST" class="mt-3">
-            <input type="hidden" name="action" value="add_staff">
-            <div class="mb-3">
-                <label class="form-label">Neuer Staff</label>
-                <input type="text" name="staff_username" class="form-control" required>
-            </div>
-            <div class="modal-header">
-                <h5 class="modal-title">👥 Staff Verwaltung</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Rechte</label>
-                    <select name="staff_rights" class="form-control" required>
-                        <option value="editor">✏️ Editor</option>
-                        <option value="admin">🔑 Admin</option>
-                    </select>
-                </div>
-                <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Abbrechen</button>
-                    <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
-                </div>
-            </div>
-        </form>
     </div>';
-    
-    // Append staff modal like category modal
-    $pagecontent .= '<div class="modal" id="staffModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">👥 Staff Verwaltung</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Rechte</label>
-                        <select name="staff_rights" class="form-control" required>
-                            <option value="editor">✏️ Editor</option>
-                            <option value="admin">🔑 Admin</option>
-                        </select>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Abbrechen</button>
-                        <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>';
 }
 
 $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
@@ -929,7 +957,6 @@ const maxItemsToShow = '.$maxItemsToShow.';
 const itemTemplate = '.json_encode($itemTemplate).';
 const itemModalTemplate = '.json_encode($itemModalTemplate).';
 const insertModalTemplate = '.json_encode($insertModalTemplate).';
-const staffModalTemplate = '.json_encode($staffModalTemplate).';
 const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
 const isEditor = '.$isEditor.';
