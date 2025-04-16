@@ -827,8 +827,8 @@ $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 if($isAdmin) {
     $staffMembers = $core->m->prepare('SELECT p.id, p.username, s.edit_rights FROM furniture_rare_staff s LEFT JOIN players p ON(p.username = s.username) ORDER BY s.edit_rights DESC, p.username ASC');
     $staffMembers->execute();
-    $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    $pagecontent .= '<div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">👥 Staff Verwaltung</h5>
@@ -876,7 +876,10 @@ if($isAdmin) {
                             <option value="admin">🔑 Admin</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-success btn-sm">💾 Hinzufügen</button>
+                    </div>
                 </form>
             </div>
         </div>

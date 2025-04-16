@@ -260,8 +260,13 @@ if (isEditor) {
     }
     
     // Initialize Bootstrap modals once
-    new bootstrap.Modal('#insertModal');
+    const insertModal = new bootstrap.Modal('#insertModal');
     if (isAdmin) {
-        new bootstrap.Modal('#staffModal');
+        const staffModal = document.querySelector('#staffModal');
+        const bsStaffModal = new bootstrap.Modal(staffModal);
+        document.querySelector('[data-bs-target="#staffModal"]').addEventListener('click', () => {
+            bsStaffModal.show();
+            staffModal.show();
+        });
     }
 }
