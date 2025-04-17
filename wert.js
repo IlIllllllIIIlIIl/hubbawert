@@ -239,10 +239,10 @@ function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-document.querySelectorAll(".rare .item").forEach(item => {
-item.addEventListener("click", itemModal);
-});
+    document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+    document.querySelectorAll(".rare .item").forEach(item => {
+        item.addEventListener("click", itemModal);
+    });
 }
 setTooltips();
 
@@ -283,10 +283,10 @@ async function loadStaffTable() {
     }
 }
 
-// Initialize staff modal when shown
+// Initialize staff modal
 document.addEventListener('DOMContentLoaded', function() {
-    const staffModal = document.getElementById('staffModal');
-    if (staffModal) {
-        staffModal.addEventListener('show.bs.modal', loadStaffTable);
-    }
+    document.querySelector('[data-bs-target="#staffModal"]')?.addEventListener('click', () => {
+        new bootstrap.Modal('#staffModal').show();
+        loadStaffTable();
+    });
 });
