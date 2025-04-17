@@ -876,8 +876,8 @@ if($isAdmin) {
 }
 // Define staff modal template
 $staffModalTemplate = '
-<div class="modal fade" id="staffModal" tabindex="-1" data-bs-keyboard="false" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="staffModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="staffModalLabel">Mitarbeiterverwaltung</h5>

@@ -1,3 +1,6 @@
+/* eslint-disable */
+/* global Chart, bootstrap */
+
 window.onscroll = () => {
     const small = window.innerWidth < 768;
     if(!small){
@@ -90,7 +93,7 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-async function itemModal(){
+async function itemModal(e){
     const iModal = document.querySelector('#details .modal-body');
 
     if(lastModal != this.id){
@@ -256,14 +259,20 @@ async function loadStaffTable() {
     }
 }
 
+// Initialize tooltips and event handlers
+setTooltips();
+
 // Staff modal initialization
 document.getElementById('staffModal')?.addEventListener('show.bs.modal', loadStaffTable);
 
 // Add form validation
-document.getElementById('addStaffForm')?.addEventListener('submit', function(e) {
-    if (!this.checkValidity()) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    this.classList.add('was-validated');
-});
+const addStaffForm = document.getElementById('addStaffForm');
+if (addStaffForm) {
+    addStaffForm.addEventListener('submit', function(e) {
+        if (!this.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        this.classList.add('was-validated');
+    });
+}
