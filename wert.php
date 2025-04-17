@@ -16,6 +16,10 @@ $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
 
 // Staff management endpoint
+// Initialize admin check variables
+$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
+$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
+
 if(isset($_GET['action']) && $_GET['action'] === 'get_staff' && $isAdmin) {
     header('Content-Type: application/json');
     $select = $core->m->prepare('SELECT username, discord, edit_rights FROM furniture_rare_staff ORDER BY username');
@@ -313,8 +317,6 @@ if($isAdmin) {
 }
 
 // admin section
-$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
-$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
 $maxSizeBytes = 5242880; // 5MB max file size
 $filedir = $core->path.'/_dat/serve/img/wert/furni';
 
