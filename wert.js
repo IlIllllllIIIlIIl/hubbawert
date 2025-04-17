@@ -256,5 +256,14 @@ async function loadStaffTable() {
     }
 }
 
-// Initialize staff modal
+// Staff modal initialization
 document.getElementById('staffModal')?.addEventListener('show.bs.modal', loadStaffTable);
+
+// Add form validation
+document.getElementById('addStaffForm')?.addEventListener('submit', function(e) {
+    if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    this.classList.add('was-validated');
+});
