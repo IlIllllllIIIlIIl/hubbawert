@@ -1,17 +1,17 @@
 window.onscroll = () => {
-const small = window.innerWidth < 768;
-if(!small){
-if(window.pageYOffset > 250){
-document.querySelector(".sticky-top").style.borderBottomLeftRadius = "14px";
-document.querySelector(".sticky-top").style.borderBottomRightRadius = "14px";
-}else{
-document.querySelector(".sticky-top").style.borderBottomLeftRadius = "0px";
-document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
-}
-}
+    const small = window.innerWidth < 768;
+    if(!small){
+        if(window.pageYOffset > 250){
+            document.querySelector(".sticky-top").style.borderBottomLeftRadius = "14px";
+            document.querySelector(".sticky-top").style.borderBottomRightRadius = "14px";
+        }else{
+            document.querySelector(".sticky-top").style.borderBottomLeftRadius = "0px";
+            document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
+        }
+    }
 };
 let searchWait;
-document.getElementById("search").addEventListener("keyup", function(event){
+document.getElementById("search").addEventListener("keyup", function(){
 if (search != this.value) {
 search = this.value;
 clearTimeout(searchWait);
@@ -90,7 +90,7 @@ element = element.firstChild;
 element.replaceWith(input);
 }
 let lastModal = 0;
-async function itemModal(e){
+async function itemModal(){
 const iModal = document.querySelector('#details .modal-body');
 
 if(lastModal != this.id){
@@ -246,4 +246,47 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Employee management is handled through direct form submissions
+// Staff Modal Functions
+async function loadStaffTable() {
+    const tableBody = document.getElementById('staffTableBody');
+    if (!tableBody) return;
+
+    try {
+        const response = await fetch('?action=get_staff');
+        if (!response.ok) throw new Error('Failed to fetch staff data');
+        
+        const data = await response.json();
+        tableBody.innerHTML = '';
+        
+        data.staff.forEach(staff => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${staff.username}</td>
+                <td>${staff.discord || '-'}</td>
+                <td>${staff.edit_rights}</td>
+                <td>
+                    <form method="POST" style="display: inline-block">
+                        <input type="hidden" name="action" value="remove_staff">
+                        <input type="hidden" name="staff_username" value="${staff.username}">
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Möchtest du dieses Staff-Mitglied wirklich entfernen?')">
+                            🗑️ Entfernen
+                        </button>
+                    </form>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error loading staff data:', error);
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Fehler beim Laden der Mitarbeiterdaten</td></tr>';
+    }
+}
+
+// Initialize staff modal when shown
+document.addEventListener('DOMContentLoaded', function() {
+    const staffModal = document.getElementById('staffModal');
+    if (staffModal) {
+        staffModal.addEventListener('show.bs.modal', loadStaffTable);
+    }
+});
