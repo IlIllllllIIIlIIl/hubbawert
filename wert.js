@@ -268,5 +268,5 @@ if (isEditor) {
     }
     
     // Initialize Bootstrap modal once
-    new bootstrap.Modal('#insertModal').show();
+    new bootstrap.Modal('#insertModal');
 }
