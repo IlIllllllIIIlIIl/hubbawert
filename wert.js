@@ -246,28 +246,10 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Scout Modal Handler
-document.querySelector('.scout-toggle')?.addEventListener('click', function() {
-    const scoutModal = document.querySelector('#scoutModal');
-    if (scoutModal) {
-        new bootstrap.Modal(scoutModal).show();
-    }
-});
-
-// Initialize insert modal form validation and image preview
+// Initialize insert modal form validation only if user has editor rights
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
-        // Form validation 
-        insertModalForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
-
-        // Form validation only
         insertModalForm.addEventListener('submit', function(e) {
             if (!this.checkValidity()) {
                 e.preventDefault();
@@ -276,7 +258,7 @@ if (isEditor) {
             this.classList.add('was-validated');
         });
     }
+    
+    // Initialize Bootstrap modal once
+    new bootstrap.Modal('#insertModal');
 }
-
-// Initialize Bootstrap modal once
-const insertModal = new bootstrap.Modal('#insertModal');
