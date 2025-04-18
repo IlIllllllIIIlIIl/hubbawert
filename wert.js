@@ -260,4 +260,6 @@ if (isEditor) {
         });
     }
     
+    // Initialize Bootstrap modal once
+    new bootstrap.Modal('#insertModal');
 }
