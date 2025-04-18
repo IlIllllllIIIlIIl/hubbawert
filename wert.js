@@ -265,8 +265,8 @@ if (isEditor) {
             }
             this.classList.add('was-validated');
         });
-        
-        // Initialize Bootstrap modal once
-        new bootstrap.Modal('#insertModal');
     }
+    
+    // Initialize Bootstrap modal once
+    new bootstrap.Modal('#insertModal');
 }
