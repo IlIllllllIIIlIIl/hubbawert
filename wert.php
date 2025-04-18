@@ -754,7 +754,7 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
     
 $pagecontent .= '</div></div>';
 
-// Add scout modal
+// scout modal
 $pagecontent .= '<div class="modal fade" id="scoutModal" tabindex="-1">
 <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 <form class="modal-content box needs-validation" method="POST" novalidate>
@@ -768,7 +768,7 @@ $pagecontent .= '<div class="modal fade" id="scoutModal" tabindex="-1">
 </div>';
 
 
-// Append insert modal after details modal
+// insert modal
 $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 <form class="modal-content box needs-validation" enctype="multipart/form-data" method="POST" novalidate>
