@@ -275,11 +275,14 @@ $pagecontent .= '<div class="container">
 	<div class="col-md-6">
 		<input class="form-control" id="search" name="search" type="text" placeholder="🔍 Möbel Suche ..." autocomplete="off">
 	</div>
-	<div class="col-md-3 btn-group">
-		<button type="button" class="form-control btn btn-dark" data-bs-toggle="modal" data-bs-target="#categories"'.($category?'style="padding-left:34px"':'').'>
-			📚 Kategorie
-		</button>
-		'.($category?'<a href="'.$core->url.'wert" class="btn btn-dark" style="padding-top:6px">❌</a>':'').'
+	<div class="col-md-3">
+		<div class="btn-group w-100">
+			<button type="button" class="form-control btn btn-dark" data-bs-toggle="modal" data-bs-target="#categories"'.($category?'style="padding-left:34px"':'').'>
+				📚 Kategorie
+			</button>
+			'.($isEditor ? '<button type="button" class="btn btn-dark scout-toggle" data-bs-toggle="modal" data-bs-target="#scoutModal">👥</button>' : '').'
+			'.($category?'<a href="'.$core->url.'wert" class="btn btn-dark" style="padding-top:6px">❌</a>':'').'
+		</div>
 	</div>
 </div>
 <div class="row box">
@@ -470,17 +473,13 @@ if($isEditor){
 		}
 	}
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-	<div class="col-md-6">
-	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
-	🎁 Neue Rarität einfügen
-	</button>
-	</div>
-	<div class="col-md-6">
-	<button class="btn btn-info w-100 scout-toggle" type="button" data-bs-toggle="modal" data-bs-target="#scoutModal">
-	👥 Scout verwalten
-	</button>
-	</div>
-	</div>';
+<div class="col-12">
+<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
+🎁 Neue Rarität einfügen
+</button>
+</div>
+</div>';
+
 }
 
 $pagecontent .= '<div class="row rare justify-content-between">';

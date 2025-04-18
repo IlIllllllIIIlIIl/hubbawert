@@ -254,10 +254,20 @@ document.querySelector('.scout-toggle')?.addEventListener('click', function() {
     }
 });
 
-// Initialize insert modal form validation only if user has editor rights
+// Initialize insert modal form validation and image preview
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
+        // Form validation 
+        insertModalForm.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+
+        // Form validation only
         insertModalForm.addEventListener('submit', function(e) {
             if (!this.checkValidity()) {
                 e.preventDefault();
@@ -266,7 +276,7 @@ if (isEditor) {
             this.classList.add('was-validated');
         });
     }
-    
-    // Initialize Bootstrap modal once
-    new bootstrap.Modal('#insertModal');
 }
+
+// Initialize Bootstrap modal once
+const insertModal = new bootstrap.Modal('#insertModal');
