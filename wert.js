@@ -246,6 +246,13 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
+// Scout Modal Handler
+document.querySelector('.scout-toggle')?.addEventListener('click', function() {
+    const scoutModal = document.querySelector('#scoutModal');
+    if (scoutModal) {
+        new bootstrap.Modal(scoutModal).show();
+    }
+});
 
 // Initialize insert modal form validation only if user has editor rights
 if (isEditor) {
@@ -260,6 +267,12 @@ if (isEditor) {
         });
     }
     
-    // Initialize Bootstrap modal once
-    new bootstrap.Modal('#insertModal');
+    // Initialize and handle insert modal
+    const insertModalEl = document.querySelector('#insertModal');
+    if (insertModalEl) {
+        const insertModal = new bootstrap.Modal(insertModalEl);
+        document.querySelector('[data-bs-target="#insertModal"]')?.addEventListener('click', () => {
+            insertModal.show();
+        });
+    }
 }
