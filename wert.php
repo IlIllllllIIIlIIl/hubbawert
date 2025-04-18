@@ -257,6 +257,12 @@ bis 30 gelb
 bis 50 hellgrün
 ab 50 grün
 */
+// admin section
+$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
+$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
+$maxSizeBytes = 5242880; // 5MB max file size
+$filedir = $core->path.'/_dat/serve/img/wert/furni';
+
 $rarity = isset($_GET['r']) ? intval($_GET['r']) : 0;
 $category = isset($_GET['c']) ? intval($_GET['c']) : 0;
 $pagecontent .= '<div class="container">
@@ -275,11 +281,14 @@ $pagecontent .= '<div class="container">
 	<div class="col-md-6">
 		<input class="form-control" id="search" name="search" type="text" placeholder="🔍 Möbel Suche ..." autocomplete="off">
 	</div>
-	<div class="col-md-3 btn-group">
-		<button type="button" class="form-control btn btn-dark" data-bs-toggle="modal" data-bs-target="#categories"'.($category?'style="padding-left:34px"':'').'>
-			📚 Kategorie
-		</button>
-		'.($category?'<a href="'.$core->url.'wert" class="btn btn-dark" style="padding-top:6px">❌</a>':'').'
+	<div class="col-md-3">
+		<div class="btn-group w-100">
+			<button type="button" class="form-control btn btn-dark" data-bs-toggle="modal" data-bs-target="#categories"'.($category?'style="padding-left:34px"':'').'>
+				📚 Kategorie
+			</button>
+			'.($isEditor ? '<button type="button" class="btn btn-dark scout-toggle" data-bs-toggle="modal" data-bs-target="#scoutModal">👥</button>' : '').'
+			'.($category?'<a href="'.$core->url.'wert" class="btn btn-dark" style="padding-top:6px">❌</a>':'').'
+		</div>
 	</div>
 </div>
 <div class="row box">
@@ -293,11 +302,6 @@ $pagecontent .= '<div class="container">
 	</div>
 </div>';
 
-// admin section
-$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
-$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
-$maxSizeBytes = 5242880; // 5MB max file size
-$filedir = $core->path.'/_dat/serve/img/wert/furni';
 
 if($isEditor){
 	$error = '';
@@ -470,12 +474,13 @@ if($isEditor){
 		}
 	}
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-	<div class="col-12">
-	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
-	🎁 Neue Rarität einfügen
-	</button>
-	</div>
-	</div>';
+<div class="col-12">
+<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
+🎁 Neue Rarität einfügen
+</button>
+</div>
+</div>';
+
 }
 
 $pagecontent .= '<div class="row rare justify-content-between">';
@@ -504,6 +509,53 @@ $select->execute();
 while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoriesHtml .= '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
 }
+
+$scoutModalTemplate = '<div class="modal-body p-0">
+    <div class="modal-body p-0">
+    <div class="d-flex">
+    <div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
+    <div style="display:flex;align-items:center;margin-bottom:10px">
+    <span style="margin-right:10px;white-space:nowrap">Mitarbeiter Name:</span>
+    <input class="form-control" name="employeeName" type="text" placeholder="Name des Mitarbeiters" autocomplete="off" required>
+    </div>
+    <div style="display:flex;align-items:center;margin-bottom:10px">
+    <span style="margin-right:10px;white-space:nowrap">Position:</span>
+    <select class="form-control" name="position" required>
+        <option value="">Position wählen...</option>
+        <option value="admin">Administrator</option>
+        <option value="moderator">Moderator</option>
+        <option value="scout">Scout</option>
+        <option value="guide">Guide</option>
+    </select>
+    </div>
+    <div style="display:flex;align-items:center;margin-bottom:10px">
+    <span style="margin-right:10px;white-space:nowrap">Berechtigungen:</span>
+    <div class="d-flex flex-column" style="gap:8px">
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="permissions[]" value="edit" class="form-check-input me-2">
+            <span>Bearbeiten</span>
+        </label>
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="permissions[]" value="delete" class="form-check-input me-2">
+            <span>Löschen</span>
+        </label>
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="permissions[]" value="approve" class="form-check-input me-2">
+            <span>Genehmigen</span>
+        </label>
+    </div>
+    </div>
+    </div>
+    <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
+    <span style="margin-bottom:10px">Notizen</span>
+    <textarea class="form-control" name="notes" placeholder="Zusätzliche Informationen" style="flex:1;resize:none"></textarea>
+    </div>
+    </div>
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+    <button type="submit" class="btn btn-primary">Speichern</button>
+    </div>';
 
 $insertModalTemplate = '';
 if ($isEditor) {
@@ -702,93 +754,21 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
     
 $pagecontent .= '</div></div>';
 
-// category modal
-$pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
-<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-		<div class="modal-content">
-			<div class="modal-header">
-			<h5 class="modal-title">Kategorien</h5>
-			<div class="d-flex align-items-center gap-2">'.
-			($isEditor ? '<button type="button" class="btn btn-success btn-sm px-2" data-bs-toggle="collapse" data-bs-target=".category-toggle">➕</button>' : '').
-			'<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-			</div>
-			</div>
-			<div class="modal-body">'.
-			($isEditor ? '<div class="collapse category-toggle">
-			    <form method="POST" class="mb-3">
-			        <input type="hidden" name="action" value="add_category">
-			        <div class="mb-3">
-			            <label class="form-label">Kategorie Name</label>
-			            <input type="text" name="category_name" class="form-control" required>
-			        </div>
-			        <div class="d-flex justify-content-between">
-			            <button type="button" class="btn btn-secondary btn-sm px-2" data-bs-toggle="collapse" data-bs-target=".category-toggle">❌</button>
-			            <button type="submit" class="btn btn-success btn-sm px-2">💾</button>
-			        </div>
-			    </form>
-			</div>' : '').
-			'
-				<div class="cats collapse category-toggle show">
-				<div class="row">';
-					$select = $core->m->prepare('SELECT frc.id, frc.name, (
-					    SELECT frd.image
-					    FROM furniture_rare_details frd
-					    WHERE frd.category = frc.id
-					    ORDER BY RAND()
-					    LIMIT 1
-					) as image
-					FROM furniture_rare_categories frc
-					ORDER BY frc.name ASC');
-					$select->execute();
-					while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-						$pagecontent .= '<div class="col-md-6">
-						<div class="d-flex cat-wrapper'.($isEditor ? ' has-edit' : '').' mb-2">
-						    <a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" width="16" height="16" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a>'.
-						    ($isEditor ? '<button type="button" class="btn btn-dark btn-sm edit-btn px-2" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
-						'</div>'.
-						($isEditor ? '<div class="collapse" id="editCategory'.$cat['id'].'">
-						    <form method="POST" class="mb-3">
-						        <input type="hidden" name="action" value="edit_category">
-						        <input type="hidden" name="category_id" value="'.$cat['id'].'">
-						        <div class="mb-3">
-						            <label class="form-label">Kategorie Name</label>
-						            <input type="text" name="category_name" class="form-control" value="'.htmlspecialchars($cat['name']).'" required>
-						        </div>
-						        <div class="d-flex justify-content-between align-items-center">
-						            <button type="button" class="btn btn-danger btn-sm px-2" onclick="if(confirm(\'Möchtest du diese Kategorie wirklich löschen?\')) { this.form.action.value=\'delete_category\'; this.form.submit(); }">🗑️</button>
-						            <div>
-						                <button type="button" class="btn btn-secondary btn-sm px-2" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'">❌</button>
-						                <button type="submit" class="btn btn-success btn-sm px-2">💾</button>
-						            </div>
-						        </div>
-						    </form>
-						</div>' : '').
-						'</div>';
-					}
-$pagecontent .= '</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>';
-// item modal
-$pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
-	<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-		<div class="modal-content box">
-			<div class="modal-body row">
-				<div class="col-md-12 item"></div>
-				<div class="col-md-6 row"></div>
-				<div class="col-md-6 text-center"></div>
-				<div class="col-md-12 text-center"></div>
-				<div class="w-100"></div>
-				<div class="col-md-12 text-center"></div>
-			</div>
-		</div>
-	</div>
+// scout modal
+$pagecontent .= '<div class="modal fade" id="scoutModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<form class="modal-content box needs-validation" method="POST" novalidate>
+    <div class="modal-header">
+        <h5 class="modal-title">Scout verwalten</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+    </div>
+    '.$scoutModalTemplate.'
+</form>
+</div>
 </div>';
 
 
-// Append insert modal after details modal
+// insert modal
 $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 <form class="modal-content box needs-validation" enctype="multipart/form-data" method="POST" novalidate>
@@ -804,6 +784,7 @@ const items = '.json_encode($itemArray).';
 const maxItemsToShow = '.$maxItemsToShow.';
 const itemTemplate = '.json_encode($itemTemplate).';
 const itemModalTemplate = '.json_encode($itemModalTemplate).';
+const scoutModalTemplate = '.json_encode($scoutModalTemplate).';
 const insertModalTemplate = '.json_encode($insertModalTemplate).';
 const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';

@@ -246,6 +246,14 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
+// Scout Modal Handler
+document.querySelector('.scout-toggle')?.addEventListener('click', function() {
+    const scoutModal = document.querySelector('#scoutModal');
+    if (scoutModal) {
+        new bootstrap.Modal(scoutModal).show();
+    }
+});
+
 // Initialize insert modal form validation only if user has editor rights
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
