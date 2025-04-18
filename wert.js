@@ -1,20 +1,17 @@
-/* eslint-disable */
-/* global Chart, bootstrap */
-
 window.onscroll = () => {
-    const small = window.innerWidth < 768;
-    if(!small){
-        if(window.pageYOffset > 250){
-            document.querySelector(".sticky-top").style.borderBottomLeftRadius = "14px";
-            document.querySelector(".sticky-top").style.borderBottomRightRadius = "14px";
-        }else{
-            document.querySelector(".sticky-top").style.borderBottomLeftRadius = "0px";
-            document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
-        }
-    }
+const small = window.innerWidth < 768;
+if(!small){
+if(window.pageYOffset > 250){
+document.querySelector(".sticky-top").style.borderBottomLeftRadius = "14px";
+document.querySelector(".sticky-top").style.borderBottomRightRadius = "14px";
+}else{
+document.querySelector(".sticky-top").style.borderBottomLeftRadius = "0px";
+document.querySelector(".sticky-top").style.borderBottomRightRadius = "0px";
+}
+}
 };
 let searchWait;
-document.getElementById("search").addEventListener("keyup", function(){
+document.getElementById("search").addEventListener("keyup", function(event){
 if (search != this.value) {
 search = this.value;
 clearTimeout(searchWait);
@@ -94,185 +91,182 @@ element.replaceWith(input);
 }
 let lastModal = 0;
 async function itemModal(e){
-    const iModal = document.querySelector('#details .modal-body');
+const iModal = document.querySelector('#details .modal-body');
 
-    if(lastModal != this.id){
-        iModal.replaceChildren();
-    }
-    new bootstrap.Modal('#details').show();
-    if(lastModal == this.id){
-        return false;
-    }
-    lastModal = this.id;
+if(lastModal != this.id){
+iModal.replaceChildren();
+}
+new bootstrap.Modal('#details').show();
+if(lastModal == this.id){
+return false;
+}
+lastModal = this.id;
 
-    iModal.innerHTML = itemModalTemplate;
-    iModal.children[0].innerHTML = this.innerHTML;
+iModal.innerHTML = itemModalTemplate;
+iModal.children[0].innerHTML = this.innerHTML;
 
-    if(isEditor){
-        iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
+if(isEditor){
+iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
 
-        document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
-            if(event.target.value.includes('Bearbeiten')){
-                event.preventDefault();
-                event.target.value = '💾 Speichern';
-                event.target.style.color = '#3ab4e3';
-                iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
-                document.querySelector('#details .modal-content').innerHTML = `<form class="modal-body row" enctype="multipart/form-data" method="POST">${document.querySelector('#details .modal-body').innerHTML}
-                <input type="hidden" name="oldName" value="${document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText}">
-                </form>`;
-                makeEditable('#details .item > :nth-child(2)', 'price');
-                makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
-                makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
-            }
-        });
+document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
+if(event.target.value.includes('Bearbeiten')){
+event.preventDefault();
+event.target.value = '💾 Speichern';
+event.target.style.color = '#3ab4e3';
+iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 
-        document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
-            if(confirm('Möchtest du diese Rarität wirklich löschen?')){
-                event.preventDefault();
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = '<input type="hidden" name="delete" value="' + document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">';
-                document.body.appendChild(form);
-                form.submit();
-            }
-        });
-    }
+const currentCategories = items.find(item => item[0] === this.id)?.[7]?.split(',') || [];
 
-    const response = await fetch("?i="+this.id);
-    if(!response.ok){
-        console.error('item detail request failed');
-    }
-    const json = await response.json();
-    iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
-        '<div class="col">' + this.querySelector('img').dataset.bsOriginalTitle + 'x</div>' +
-        '<div class="w-100"></div>' +
-        '<div class="col">Aufrufe</div>' +
-        '<div class="col">' + json.info.views + '</div>' +
-        '<div class="w-100"></div>' +
-        '<div class="col">Kategorie</div>' +
-        '<div class="col">--</div>' +
-        '<div class="w-100"></div>' +
-        '<div class="col"></div>' +
-        '<div class="col">' + this.id + '</div>';
-    iModal.children[2].innerText = json.info.longdesc;
+const form = document.createElement('form');
+form.className = 'modal-body row';
+form.enctype = 'multipart/form-data';
+form.method = 'POST';
+form.innerHTML = document.querySelector('#details .modal-body').innerHTML;
 
-    if(isAdmin) {
-        let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
-        json.changes.sort((a, b) => b.timestamp - a.timestamp);
-        json.changes.forEach(log => {
-            logsHtml += '<tr>' +
-                '<td>' + log.username + '</td>' +
-                '<td>' + log.old_price.toLocaleString() + '</td>' +
-                '<td>' + dateFormat(log.timestamp) + '</td>' +
-            '</tr>';
-        });
-        logsHtml += '</tbody></table></div>';
-        iModal.children[4].innerHTML = logsHtml;
-    } else {
-        iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
-        json.owners.forEach(owner => {
-            let img = document.createElement('img');
-            img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
-            img.title = owner.username + ' ' + owner.c + 'x';
-            img.loading = "lazy";
-            iModal.children[4].appendChild(img);
-            new bootstrap.Tooltip(img);
-        });
-    }
+const categoryDiv = document.createElement('div');
+categoryDiv.style.cssText = 'border:1px solid #2c2e3c;padding:12px;margin:10px 0';
+categoryDiv.innerHTML = '<div style="display:flex;flex-direction:column">' +
+    '<span class="mb-2">Kategorien:</span>' +
+    '<div style="max-height:150px;overflow-y:auto;padding:10px;border:1px solid #2c2e3c;border-radius:4px">' +
+    '<div class="d-flex flex-column" style="gap:8px">' +
+    (document.querySelector('#insertModal .d-flex.flex-column')?.innerHTML || '') +
+    '</div></div></div>';
 
-    if(json.changes.length > 1){
-        iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
-        let labels = [json.info.timestamp_release == 0 ? 'Release' : dateFormat(json.info.timestamp_release)], points = [];
-        let previousTimestamp = -1;
-        json.changes.forEach(change => {
-            points.push(change.old_price);
-            if(previousTimestamp > -1){
-                labels.push(dateFormat(change.timestamp));
-            }
-            previousTimestamp = change.timestamp;
-        });
-        points.push(json.info.price);
-        labels.push(dateFormat(previousTimestamp));
-        new Chart("chart", {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: points,
-                    borderColor: "#db9f21",
-                    fill: false
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } }
-            }
-        });
-    }else{
-        iModal.children[3].remove();
-    }
+form.appendChild(categoryDiv);
+form.insertAdjacentHTML('beforeend', '<input type="hidden" name="oldName" value="' + 
+    document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">');
+
+document.querySelector('#details .modal-content').innerHTML = '';
+document.querySelector('#details .modal-content').appendChild(form);
+
+currentCategories.forEach(catId => {
+    const checkbox = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
+    if (checkbox) checkbox.checked = true;
+});
+
+makeEditable('#details .item > :nth-child(2)', 'price');
+makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
+makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
+}
+});
+
+document.querySelector('#details .modal-body .delete').addEventListener("click", event => {
+if(confirm('Möchtest du diese Rarität wirklich löschen?')){
+event.preventDefault();
+const form = document.createElement('form');
+form.method = 'POST';
+form.innerHTML = '<input type="hidden" name="delete" value="' + document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">';
+document.body.appendChild(form);
+form.submit();
+}
+});
+}
+
+const response = await fetch("?i="+this.id);
+if(!response.ok){
+console.error('item detail request failed');
+}
+const json = await response.json();
+iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
+'<div class="col">' + this.querySelector('img').dataset.bsOriginalTitle + 'x</div>' +
+'<div class="w-100"></div>' +
+'<div class="col">Aufrufe</div>' +
+'<div class="col">' + json.info.views + '</div>' +
+'<div class="w-100"></div>' +
+'<div class="col">Kategorie</div>' +
+'<div class="col">--</div>' +
+'<div class="w-100"></div>' +
+'<div class="col"></div>' +
+'<div class="col">' + this.id + '</div>';
+iModal.children[2].innerText = json.info.longdesc;
+
+if(isAdmin) {
+    let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
+    json.changes.sort((a, b) => b.timestamp - a.timestamp);
+    json.changes.forEach(log => {
+        logsHtml += '<tr>' +
+            '<td>' + log.username + '</td>' +
+            '<td>' + log.old_price.toLocaleString() + '</td>' +
+            '<td>' + dateFormat(log.timestamp) + '</td>' +
+        '</tr>';
+    });
+    logsHtml += '</tbody></table></div>';
+    iModal.children[4].innerHTML = logsHtml;
+} else {
+    iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
+    json.owners.forEach(owner => {
+        let img = document.createElement('img');
+        img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
+        img.title = owner.username + ' ' + owner.c + 'x';
+        img.loading = "lazy";
+        iModal.children[4].appendChild(img);
+        new bootstrap.Tooltip(img);
+    });
+}
+
+if(json.changes.length > 1){
+iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
+let labels = [json.info.timestamp_release == 0 ? 'Release' : dateFormat(json.info.timestamp_release)], points = [];
+let previousTimestamp = -1;
+json.changes.forEach(change => {
+points.push(change.old_price);
+if(previousTimestamp > -1){
+labels.push(dateFormat(change.timestamp));
+}
+previousTimestamp = change.timestamp;
+});
+points.push(json.info.price);
+labels.push(dateFormat(previousTimestamp));
+new Chart("chart", {
+type: "line",
+data: {
+labels: labels,
+datasets: [{
+data: points,
+borderColor: "#db9f21",
+fill: false
+}]
+},
+options: {
+plugins: { legend: { display: false } }
+}
+});
+}else{
+iModal.children[3].remove();
+}
 }
 function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-    document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-    document.querySelectorAll(".rare .item").forEach(item => {
-        item.addEventListener("click", itemModal);
-    });
+document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+document.querySelectorAll(".rare .item").forEach(item => {
+item.addEventListener("click", itemModal);
+});
 }
 setTooltips();
 
-// Staff Modal Functions
-async function loadStaffTable() {
-    const tableBody = document.getElementById('staffTableBody');
-    if (!tableBody) return;
-
-    try {
-        const response = await fetch('?action=get_staff');
-        if (!response.ok) throw new Error('Failed to fetch staff data');
-        
-        const data = await response.json();
-        tableBody.innerHTML = '';
-        
-        data.staff.forEach(staff => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${staff.username}</td>
-                <td>${staff.discord || '-'}</td>
-                <td>${staff.edit_rights}</td>
-                <td>
-                    <form method="POST" style="display: inline-block">
-                        <input type="hidden" name="action" value="remove_staff">
-                        <input type="hidden" name="staff_username" value="${staff.username}">
-                        <button type="submit" class="btn btn-danger btn-sm"
-                                onclick="return confirm('Möchtest du dieses Staff-Mitglied wirklich entfernen?')">
-                            🗑️ Entfernen
-                        </button>
-                    </form>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (error) {
-        console.error('Error loading staff data:', error);
-        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Fehler beim Laden der Mitarbeiterdaten</td></tr>';
+// Scout Modal Handler
+document.querySelector('.scout-toggle')?.addEventListener('click', function() {
+    const scoutModal = document.querySelector('#scoutModal');
+    if (scoutModal) {
+        new bootstrap.Modal(scoutModal).show();
     }
-}
+});
 
-// Initialize tooltips and event handlers
-setTooltips();
-
-// Staff modal initialization
-document.getElementById('staffModal')?.addEventListener('show.bs.modal', loadStaffTable);
-
-// Add form validation
-const addStaffForm = document.getElementById('addStaffForm');
-if (addStaffForm) {
-    addStaffForm.addEventListener('submit', function(e) {
-        if (!this.checkValidity()) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        this.classList.add('was-validated');
-    });
+// Initialize insert modal form validation only if user has editor rights
+if (isEditor) {
+    const insertModalForm = document.querySelector('#insertModal form');
+    if (insertModalForm) {
+        insertModalForm.addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+    }
+    
+    // Initialize Bootstrap modal once
+    new bootstrap.Modal('#insertModal');
 }

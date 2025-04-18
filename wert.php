@@ -14,19 +14,7 @@ $select = $core->m->prepare('SELECT p.id, s.edit_rights FROM furniture_rare_staf
 $select->execute();
 $staffData = $select->fetchAll(PDO::FETCH_ASSOC);
 $allowedPeople = array_column($staffData, 'edit_rights', 'id');
-
-// Staff management endpoint
-// Initialize admin check variables
-$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
-$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
-
-if(isset($_GET['action']) && $_GET['action'] === 'get_staff' && $isAdmin) {
-    header('Content-Type: application/json');
-    $select = $core->m->prepare('SELECT username, discord, edit_rights FROM furniture_rare_staff ORDER BY username');
-    $select->execute();
-    $staff = $select->fetchAll(PDO::FETCH_ASSOC);
-    exit(json_encode(['staff' => $staff]));
-} else if(isset($_GET['i'])){
+if(isset($_GET['i'])){
 	header('Cache-Control: public, max-age=5, stale-if-error=28800');
 	$response = ['info' => [
 	'views' => '?',
@@ -305,18 +293,9 @@ $pagecontent .= '<div class="container">
 	</div>
 </div>';
 
-// Add Staff Management Button for admins
-if($isAdmin) {
-    $pagecontent .= '<div class="row box">
-        <div class="col">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staffModal">
-                👥 Mitarbeiterverwaltung
-            </button>
-        </div>
-    </div>';
-}
-
 // admin section
+$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
+$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
 $maxSizeBytes = 5242880; // 5MB max file size
 $filedir = $core->path.'/_dat/serve/img/wert/furni';
 
@@ -324,32 +303,6 @@ if($isEditor){
 	$error = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST'){
 	if(isset($_POST['action'])) {
-	    if($_POST['action'] === 'remove_staff' && $isAdmin){
-	        if(empty($_POST['staff_username'])) {
-	            $error .= 'Benutzername ist erforderlich<br>';
-	        } else {
-	            $delete = $core->m->prepare('DELETE FROM furniture_rare_staff WHERE username = ?');
-	            if($delete->execute([$_POST['staff_username']])){
-	                header('Location: '.$core->url.'wert');
-	                exit;
-	            } else {
-	                $error .= 'Fehler beim Entfernen des Staff-Mitglieds<br>';
-	            }
-	        }
-	    }
-	    else if($_POST['action'] === 'add_staff' && $isAdmin){
-	        if(empty($_POST['staff_username'])) {
-	            $error .= 'Benutzername ist erforderlich<br>';
-	        } else {
-	            $insert = $core->m->prepare('INSERT INTO furniture_rare_staff (username, discord, edit_rights) VALUES (?, ?, ?)');
-	            if($insert->execute([$_POST['staff_username'], $_POST['staff_discord'], $_POST['staff_rights']])){
-	                header('Location: '.$core->url.'wert');
-	                exit;
-	            } else {
-	                $error .= 'Fehler beim Hinzufügen des Staff-Mitglieds<br>';
-	            }
-	        }
-	    }
 	    if($_POST['action'] === 'add_category'){
 	        if(empty($_POST['category_name'])) {
 	            $error .= 'Kategorie Name ist erforderlich<br>';
@@ -467,11 +420,6 @@ if($isEditor){
 				$error .= 'Bild ist vermütlich nicht gültig.<br>';
 			}
 			if($isEdit){
-				            // Output staff modal if admin
-				            if($isAdmin) {
-				                $pagecontent .= $staffModalTemplate;
-				            }
-				            
 				$select = $core->m->prepare('SELECT id,price,image FROM furniture_rare_details WHERE item_name=?');
 				$select->execute([$_POST['oldName']]);
 				$itemData = $select->fetchAll(PDO::FETCH_ASSOC)[0];
@@ -522,10 +470,15 @@ if($isEditor){
 		}
 	}
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
-	<div class="d-flex gap-2">
-		<button class="btn btn-primary flex-grow-1" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
-		🎁 Neue Rarität einfügen
-		</button>
+	<div class="col-md-6">
+	<button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
+	🎁 Neue Rarität einfügen
+	</button>
+	</div>
+	<div class="col-md-6">
+	<button class="btn btn-info w-100 scout-toggle" type="button" data-bs-toggle="modal" data-bs-target="#scoutModal">
+	👥 Scout verwalten
+	</button>
 	</div>
 	</div>';
 }
@@ -557,10 +510,54 @@ while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
     $categoriesHtml .= '<option value="'.$cat['id'].'">'.htmlspecialchars($cat['name']).'</option>';
 }
 
-// Initialize modal templates
-$insertModalTemplate = '';
-$staffModalTemplate = '';
+$scoutModalTemplate = '<div class="modal-body p-0">
+    <div class="modal-body p-0">
+    <div class="d-flex">
+    <div class="w-50" style="border:1px solid #2c2e3c;padding:12px">
+    <div style="display:flex;align-items:center;margin-bottom:10px">
+    <span style="margin-right:10px;white-space:nowrap">Mitarbeiter Name:</span>
+    <input class="form-control" name="employeeName" type="text" placeholder="Name des Mitarbeiters" autocomplete="off" required>
+    </div>
+    <div style="display:flex;align-items:center;margin-bottom:10px">
+    <span style="margin-right:10px;white-space:nowrap">Position:</span>
+    <select class="form-control" name="position" required>
+        <option value="">Position wählen...</option>
+        <option value="admin">Administrator</option>
+        <option value="moderator">Moderator</option>
+        <option value="scout">Scout</option>
+        <option value="guide">Guide</option>
+    </select>
+    </div>
+    <div style="display:flex;align-items:center;margin-bottom:10px">
+    <span style="margin-right:10px;white-space:nowrap">Berechtigungen:</span>
+    <div class="d-flex flex-column" style="gap:8px">
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="permissions[]" value="edit" class="form-check-input me-2">
+            <span>Bearbeiten</span>
+        </label>
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="permissions[]" value="delete" class="form-check-input me-2">
+            <span>Löschen</span>
+        </label>
+        <label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+            <input type="checkbox" name="permissions[]" value="approve" class="form-check-input me-2">
+            <span>Genehmigen</span>
+        </label>
+    </div>
+    </div>
+    </div>
+    <div class="w-50" style="border:1px solid #2c2e3c;padding:12px;display:flex;flex-direction:column">
+    <span style="margin-bottom:10px">Notizen</span>
+    <textarea class="form-control" name="notes" placeholder="Zusätzliche Informationen" style="flex:1;resize:none"></textarea>
+    </div>
+    </div>
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+    <button type="submit" class="btn btn-primary">Speichern</button>
+    </div>';
 
+$insertModalTemplate = '';
 if ($isEditor) {
     $maxSizeBytes = 2097152; // 2MB limit for uploads
     $insertModalTemplate = '<div class="modal-body p-0">
@@ -842,6 +839,19 @@ $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 	</div>
 </div>';
 
+// Add scout modal
+$pagecontent .= '<div class="modal fade" id="scoutModal" tabindex="-1">
+<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+<form class="modal-content box needs-validation" method="POST" novalidate>
+    <div class="modal-header">
+        <h5 class="modal-title">Scout verwalten</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+    </div>
+    '.$scoutModalTemplate.'
+</form>
+</div>
+</div>';
+
 
 // Append insert modal after details modal
 $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
@@ -851,78 +861,6 @@ $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 </form>
 </div>
 </div>';
-if($isAdmin) {
-    // Generate staff list for modal
-    $staffMembers = $core->m->prepare('SELECT p.id, p.username, s.edit_rights FROM furniture_rare_staff s LEFT JOIN players p ON(p.username = s.username) ORDER BY s.edit_rights DESC, p.username ASC');
-    $staffMembers->execute();
-    
-    $staffList = '';
-    while ($staff = $staffMembers->fetch(PDO::FETCH_ASSOC)) {
-        $staffList .= '<tr>
-            <td>'.htmlspecialchars($staff['username']).'</td>
-            <td>'.($staff['edit_rights'] === 'admin' ? '🔑 Admin' : '✏️ Editor').'</td>
-            <td>
-                <form method="POST" style="display:inline">
-                    <input type="hidden" name="action" value="remove_staff">
-                    <input type="hidden" name="staff_username" value="'.htmlspecialchars($staff['username']).'">
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Möchtest du diesen Staff wirklich entfernen?\')">
-                        🗑️
-                    </button>
-                </form>
-            </td>
-        </tr>';
-    }
-
-}
-// Define staff modal template
-$staffModalTemplate = '
-<div class="modal fade" id="staffModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staffModalLabel">Mitarbeiterverwaltung</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table class="table table-dark">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Discord</th>
-                                <th>Rechte</th>
-                                <th>Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="staffTableBody">
-                        </tbody>
-                    </table>
-                </div>
-                <form id="addStaffForm" method="POST" class="mt-4">
-                    <input type="hidden" name="action" value="add_staff">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" name="staff_username" placeholder="Username" required>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" name="staff_discord" placeholder="Discord" required>
-                        </div>
-                        <div class="col-md-4">
-                            <select class="form-control" name="staff_rights" required>
-                                <option value="admin">Admin</option>
-                                <option value="scout">Scout</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">Mitarbeiter hinzufügen</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>';
-
 $jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
 <script src="_dat/serve/js/chart.umd.js"></script>
 <script>
@@ -931,8 +869,8 @@ const items = '.json_encode($itemArray).';
 const maxItemsToShow = '.$maxItemsToShow.';
 const itemTemplate = '.json_encode($itemTemplate).';
 const itemModalTemplate = '.json_encode($itemModalTemplate).';
+const scoutModalTemplate = '.json_encode($scoutModalTemplate).';
 const insertModalTemplate = '.json_encode($insertModalTemplate).';
-const staffModalTemplate = '.json_encode($staffModalTemplate).';
 const itemReplace = '.json_encode($itemReplace).';
 const avatarImager = \''.$core->avatarImager.'\';
 const isEditor = '.$isEditor.';
