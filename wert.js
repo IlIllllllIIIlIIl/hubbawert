@@ -267,6 +267,11 @@ if (isEditor) {
         });
     }
     
-    // Initialize Bootstrap modal once
-    new bootstrap.Modal('#insertModal');
+    // Add click handler for insert modal
+    document.querySelector('[data-bs-target="#insertModal"]')?.addEventListener('click', function() {
+        const insertModal = document.querySelector('#insertModal');
+        if (insertModal) {
+            new bootstrap.Modal(insertModal).show();
+        }
+    });
 }
