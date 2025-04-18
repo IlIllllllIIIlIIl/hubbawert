@@ -257,6 +257,12 @@ bis 30 gelb
 bis 50 hellgrün
 ab 50 grün
 */
+// admin section
+$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
+$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
+$maxSizeBytes = 5242880; // 5MB max file size
+$filedir = $core->path.'/_dat/serve/img/wert/furni';
+
 $rarity = isset($_GET['r']) ? intval($_GET['r']) : 0;
 $category = isset($_GET['c']) ? intval($_GET['c']) : 0;
 $pagecontent .= '<div class="container">
@@ -296,11 +302,6 @@ $pagecontent .= '<div class="container">
 	</div>
 </div>';
 
-// admin section
-$isEditor = isset($u_details['id']) && isset($allowedPeople[$u_details['id']]) ? 1 : 0;
-$isAdmin = $isEditor && $allowedPeople[$u_details['id']] === 'admin' ? 1 : 0;
-$maxSizeBytes = 5242880; // 5MB max file size
-$filedir = $core->path.'/_dat/serve/img/wert/furni';
 
 if($isEditor){
 	$error = '';
