@@ -136,8 +136,17 @@ form.appendChild(categoryDiv);
 form.insertAdjacentHTML('beforeend', '<input type="hidden" name="oldName" value="' + 
     document.querySelector('#details .modal-body > div:nth-child(2) > :last-child').innerText + '">');
 
+// Save the owners section before DOM update
+const ownersSection = iModal.children[4].cloneNode(true);
+
 document.querySelector('#details .modal-content').innerHTML = '';
 document.querySelector('#details .modal-content').appendChild(form);
+
+// Restore owners section and reinitialize tooltips
+form.appendChild(ownersSection);
+ownersSection.querySelectorAll('img.owner').forEach(img => {
+    new bootstrap.Tooltip(img);
+});
 
 currentCategories.forEach(catId => {
     const checkbox = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
@@ -199,6 +208,7 @@ if(isAdmin) {
         img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
         img.title = owner.username + ' ' + owner.c + 'x';
         img.loading = "lazy";
+        img.className = 'owner';
         iModal.children[4].appendChild(img);
         new bootstrap.Tooltip(img);
     });
