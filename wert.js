@@ -254,25 +254,30 @@ document.querySelector('.scout-toggle')?.addEventListener('click', function() {
     }
 });
 
-// Initialize insert modal form validation only if user has editor rights
-if (isEditor) {
-    const insertModalForm = document.querySelector('#insertModal form');
-    if (insertModalForm) {
-        insertModalForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            this.classList.add('was-validated');
-        });
+// Add an explicit handler for any insert modal triggers
+document.querySelectorAll('[data-bs-target="#insertModal"]').forEach(trigger => {
+    trigger.addEventListener('click', function() {
+        const insertModal = document.querySelector('#insertModal');
+        if (insertModal) {
+            const modalInstance = new bootstrap.Modal(insertModal);
+            modalInstance.show();
+        }
+    });
+});
+
+// Initialize both modals properly
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize insert modal form validation only if user has editor rights
+    if (isEditor) {
+        const insertModalForm = document.querySelector('#insertModal form');
+        if (insertModalForm) {
+            insertModalForm.addEventListener('submit', function(e) {
+                if (!this.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                this.classList.add('was-validated');
+            });
+        }
     }
-    
-    // Initialize and handle insert modal
-    const insertModalEl = document.querySelector('#insertModal');
-    if (insertModalEl) {
-        const insertModal = new bootstrap.Modal(insertModalEl);
-        document.querySelector('[data-bs-target="#insertModal"]')?.addEventListener('click', () => {
-            insertModal.show();
-        });
-    }
-}
+});
