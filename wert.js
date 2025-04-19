@@ -246,30 +246,16 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Scout Modal Handler
-document.querySelector('.scout-toggle')?.addEventListener('click', function() {
-    const scoutModal = document.querySelector('#scoutModal');
-    if (scoutModal) {
-        new bootstrap.Modal(scoutModal).show();
-    }
-});
+// Initialize insert modal and its form validation if user has editor rights
+let insertModalInstance = null;
+if (isEditor) {
+    const insertModalEl = document.querySelector('#insertModal');
+    if (insertModalEl) {
+        // Initialize Bootstrap modal once and store the instance
+        insertModalInstance = new bootstrap.Modal(insertModalEl);
 
-// Add an explicit handler for any insert modal triggers
-document.querySelectorAll('[data-bs-target="#insertModal"]').forEach(trigger => {
-    trigger.addEventListener('click', function() {
-        const insertModal = document.querySelector('#insertModal');
-        if (insertModal) {
-            const modalInstance = new bootstrap.Modal(insertModal);
-            modalInstance.show();
-        }
-    });
-});
-
-// Initialize both modals properly
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize insert modal form validation only if user has editor rights
-    if (isEditor) {
-        const insertModalForm = document.querySelector('#insertModal form');
+        // Setup form validation listener
+        const insertModalForm = insertModalEl.querySelector('form');
         if (insertModalForm) {
             insertModalForm.addEventListener('submit', function(e) {
                 if (!this.checkValidity()) {
@@ -279,5 +265,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.add('was-validated');
             });
         }
+    } else {
+        console.error('#insertModal element not found');
     }
-});
+}
+
+// Initialize scout modal and its handler
+let scoutModalInstance = null;
+const scoutModalEl = document.querySelector('#scoutModal');
+const scoutToggleBtn = document.querySelector('.scout-toggle');
+
+if (scoutModalEl) {
+    // Initialize Bootstrap modal once and store the instance
+    scoutModalInstance = new bootstrap.Modal(scoutModalEl);
+
+    // Add click listener to the toggle button
+    if (scoutToggleBtn) {
+        scoutToggleBtn.addEventListener('click', function() {
+            scoutModalInstance.show(); // Show the stored instance
+        });
+    } else {
+        console.error('.scout-toggle button not found');
+    }
+} else if (scoutToggleBtn) {
+    // Log error if toggle exists but modal doesn't
+    console.error('#scoutModal element not found');
+}
