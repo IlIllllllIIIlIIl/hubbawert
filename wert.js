@@ -144,11 +144,6 @@ currentCategories.forEach(catId => {
     if (checkbox) checkbox.checked = true;
 });
 
-// Re-initialize tooltips for owner images after DOM update
-document.querySelectorAll('#details .modal-body img.owner').forEach(img => {
-    new bootstrap.Tooltip(img);
-});
-
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
@@ -198,16 +193,22 @@ if(isAdmin) {
     logsHtml += '</tbody></table></div>';
     iModal.children[4].innerHTML = logsHtml;
 } else {
-    iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
+    const ownerContainer = document.createElement('div');
+    ownerContainer.innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
+    ownerContainer.className = 'owner-container';
+    
     json.owners.forEach(owner => {
         let img = document.createElement('img');
         img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
         img.title = owner.username + ' ' + owner.c + 'x';
         img.loading = "lazy";
         img.className = 'owner';
-        iModal.children[4].appendChild(img);
+        ownerContainer.appendChild(img);
         new bootstrap.Tooltip(img);
     });
+    
+    iModal.children[4].innerHTML = '';
+    iModal.children[4].appendChild(ownerContainer);
 }
 
 if(json.changes.length > 1){
