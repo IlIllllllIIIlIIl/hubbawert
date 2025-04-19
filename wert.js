@@ -139,6 +139,11 @@ form.insertAdjacentHTML('beforeend', '<input type="hidden" name="oldName" value=
 document.querySelector('#details .modal-content').innerHTML = '';
 document.querySelector('#details .modal-content').appendChild(form);
 
+// Reinitialize tooltips after DOM update
+document.querySelectorAll('#details .modal-content img.owner').forEach(img => {
+    new bootstrap.Tooltip(img);
+});
+
 currentCategories.forEach(catId => {
     const checkbox = document.querySelector(`input[name="categories[]"][value="${catId}"]`);
     if (checkbox) checkbox.checked = true;
@@ -193,22 +198,16 @@ if(isAdmin) {
     logsHtml += '</tbody></table></div>';
     iModal.children[4].innerHTML = logsHtml;
 } else {
-    const ownerContainer = document.createElement('div');
-    ownerContainer.innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
-    ownerContainer.className = 'owner-container';
-    
+    iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">'+json.owners.length+'</h4><h5>(sortiert nach zuletzt online)</h5>';
     json.owners.forEach(owner => {
         let img = document.createElement('img');
         img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
         img.title = owner.username + ' ' + owner.c + 'x';
         img.loading = "lazy";
         img.className = 'owner';
-        ownerContainer.appendChild(img);
+        iModal.children[4].appendChild(img);
         new bootstrap.Tooltip(img);
     });
-    
-    iModal.children[4].innerHTML = '';
-    iModal.children[4].appendChild(ownerContainer);
 }
 
 if(json.changes.length > 1){
