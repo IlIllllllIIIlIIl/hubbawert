@@ -475,7 +475,7 @@ if($isEditor){
 	}
 	$pagecontent .= '<div class="row box" style="border:1px solid #376d9d">
 <div class="col-12">
-<button class="btn btn-primary w-100 insert-toggle" type="button">
+<button class="btn btn-primary w-100 insert-toggle" type="button" data-bs-toggle="modal" data-bs-target="#insertModal">
 🎁 Neue Rarität einfügen
 </button>
 </div>
