@@ -254,6 +254,14 @@ document.querySelector('.scout-toggle')?.addEventListener('click', function() {
     }
 });
 
+// Insert Modal Handler
+document.querySelector('.insert-toggle')?.addEventListener('click', function() {
+    const insertModal = document.querySelector('#insertModal');
+    if (insertModal) {
+        new bootstrap.Modal(insertModal).show();
+    }
+});
+
 // Initialize insert modal form validation only if user has editor rights
 if (isEditor) {
     const insertModalForm = document.querySelector('#insertModal form');
@@ -266,7 +274,4 @@ if (isEditor) {
             this.classList.add('was-validated');
         });
     }
-    
-    // Initialize Bootstrap modal once
-    new bootstrap.Modal('#insertModal');
 }
