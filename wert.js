@@ -199,6 +199,7 @@ if(isAdmin) {
         img.src = avatarImager+'?figure='+owner.figure+'&head_direction=2';
         img.title = owner.username + ' ' + owner.c + 'x';
         img.loading = "lazy";
+        img.className = 'owner';
         iModal.children[4].appendChild(img);
         new bootstrap.Tooltip(img);
     });
