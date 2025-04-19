@@ -246,25 +246,8 @@ item.addEventListener("click", itemModal);
 }
 setTooltips();
 
-// Initialize modal handlers
+// Initialize insert modal form validation only if user has editor rights
 if (isEditor) {
-    // Scout Modal Handler
-    document.querySelector('.scout-toggle')?.addEventListener('click', function() {
-        const scoutModal = document.querySelector('#scoutModal');
-        if (scoutModal) {
-            new bootstrap.Modal(scoutModal).show();
-        }
-    });
-
-    // Insert Modal Handler
-    document.querySelector('.insert-toggle')?.addEventListener('click', function() {
-        const insertModal = document.querySelector('#insertModal');
-        if (insertModal) {
-            new bootstrap.Modal(insertModal).show();
-        }
-    });
-
-    // Initialize insert modal form validation
     const insertModalForm = document.querySelector('#insertModal form');
     if (insertModalForm) {
         insertModalForm.addEventListener('submit', function(e) {
@@ -275,4 +258,7 @@ if (isEditor) {
             this.classList.add('was-validated');
         });
     }
+    
+    // Initialize Bootstrap modal once
+    new bootstrap.Modal('#insertModal');
 }
