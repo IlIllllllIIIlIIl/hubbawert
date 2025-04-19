@@ -144,6 +144,11 @@ currentCategories.forEach(catId => {
     if (checkbox) checkbox.checked = true;
 });
 
+// Re-initialize tooltips for owner images after DOM update
+document.querySelectorAll('#details .modal-body img.owner').forEach(img => {
+    new bootstrap.Tooltip(img);
+});
+
 makeEditable('#details .item > :nth-child(2)', 'price');
 makeEditable('#details .modal-body > div:nth-child(2) > :last-child', 'itemName');
 makeEditable('#details .modal-body > div:nth-child(3)', 'itemDesc', true);
