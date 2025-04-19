@@ -206,7 +206,7 @@ opacity: 1
 #details .modal-body div:nth-child(3){
 	display:grid
 }
-#details .modal-body .owner{
+#details .modal-body div:last-child > img{
 	height: 54px;
 	object-fit: none;
 	width: 48px;
