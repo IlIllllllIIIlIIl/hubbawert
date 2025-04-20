@@ -73,9 +73,14 @@ $cssappendix .= '<style>
 	outline:1px solid transparent;
 	transition: outline 0.35s cubic-bezier(.23,1,.32,1)
 }
+.rare .item{
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
 .rare .item:hover, .rare .item:active{
-	cursor:pointer;
-	outline:1px solid #376d9d;
+    cursor: pointer;
+    outline: 1px solid #376d9d;
+    transform: scale(1.02);
 }
 @media (min-width:668px) {
 	.rare .col-md-4{
@@ -620,6 +625,10 @@ $pagecontent .= '</div></div>';
 $pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
 	<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 		<div class="modal-content box">
+			<div class="modal-header">
+				<h5 class="modal-title">Details</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
 			<div class="modal-body row">
 				<div class="col-md-12 item"></div>
 				<div class="col-md-6 row"></div>
@@ -703,22 +712,6 @@ $pagecontent .= '</div>
 		</div>
 	</div>
 </div>';
-// item modal
-$pagecontent .= '<div class="modal fade" id="details" tabindex="-1">
-	<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-		<div class="modal-content box">
-			<div class="modal-body row">
-				<div class="col-md-12 item"></div>
-				<div class="col-md-6 row"></div>
-				<div class="col-md-6 text-center"></div>
-				<div class="col-md-12 text-center"></div>
-				<div class="w-100"></div>
-				<div class="col-md-12 text-center"></div>
-			</div>
-		</div>
-	</div>
-</div>';
-
 
 // Append insert modal after details modal
 $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
@@ -728,8 +721,7 @@ $pagecontent .= '<div class="modal fade" id="insertModal" tabindex="-1">
 </form>
 </div>
 </div>';
-$jsappendix .= '<script src="_dat/serve/js/popper.min.js"></script>
-<script src="_dat/serve/js/chart.umd.js"></script>
+$jsappendix .= '<script src="_dat/serve/js/chart.umd.js"></script>
 <script>
 const maxSizeBytes = '.$maxSizeBytes.';
 const items = '.json_encode($itemArray).';

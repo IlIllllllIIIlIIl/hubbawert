@@ -104,8 +104,13 @@ element.style.opacity = '0.5';
 targetForm.appendChild(input);
 }
 let lastModal = 0;
-async function itemModal(e) {
+async function itemModal() {
+    console.log('Item clicked:', this.id);
     const iModal = document.querySelector('#details .modal-body');
+    if (!iModal) {
+        console.error('Modal body not found');
+        return false;
+    }
 
     if (lastModal != this.id) {
         iModal.replaceChildren();
@@ -304,11 +309,17 @@ function dateFormat(timestamp){
 return new Date(timestamp*1000).toLocaleDateString();
 }
 function setTooltips(){
-document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-document.querySelectorAll(".rare .item").forEach(item => {
-item.addEventListener("click", itemModal);
-});
+    document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
 }
+
+// Use event delegation for item clicks
+document.querySelector(".rare").addEventListener("click", event => {
+    const item = event.target.closest(".item");
+    if (item) {
+        itemModal.call(item);
+    }
+});
+
 setTooltips();
 
 // Initialize insert modal form validation only if user has editor rights
