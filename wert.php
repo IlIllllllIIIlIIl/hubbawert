@@ -646,8 +646,7 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 			</div>
 			</div>
 			<div class="modal-body">'.
-			($isEditor ? '<button type="button" class="btn btn-primary mb-3" data-bs-toggle="collapse" data-bs-target="#newCategoryForm">🎁 Neue Kategorie</button>
-			<div class="collapse" id="newCategoryForm">
+			($isEditor ? '<div class="collapse" id="newCategoryForm">
 			    <form method="POST" class="mb-3">
 			        <input type="hidden" name="action" value="add_category">
 			        <div class="mb-3">
