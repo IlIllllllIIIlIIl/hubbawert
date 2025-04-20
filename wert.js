@@ -200,8 +200,7 @@ if(isAdmin) {
         img.title = owner.username + ' ' + owner.c + 'x';
         img.loading = "lazy";
         iModal.children[4].appendChild(img);
-        // Tooltip erst nach dem Anhängen des Bildes initialisieren
-        setTimeout(() => new bootstrap.Tooltip(img), 0);
+        new bootstrap.Tooltip(img);
     });
 }
 
