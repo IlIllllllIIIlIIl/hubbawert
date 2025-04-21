@@ -644,8 +644,9 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 				<div class="row">';
 					$select = $core->m->prepare('SELECT frc.id, frc.name, (
 					    SELECT frd.image
-					    FROM furniture_rare_details frd
-					    WHERE frd.category = frc.id
+					    FROM furniture_rare_category_mappings frcm
+					    JOIN furniture_rare_details frd ON frd.id = frcm.furniture_id
+					    WHERE frcm.category_id = frc.id
 					    ORDER BY RAND()
 					    LIMIT 1
 					) as image
