@@ -627,15 +627,14 @@ $pagecontent .= '<div class="modal fade" id="categories" tabindex="-1">
 			</div>
 			</div>
 			<div class="modal-body">'.
-			($isEditor ? '<div class="collapsecategory-toggle">
+			($isEditor ? '<div>
 			    <form method="POST" class="mb-3">
 			        <input type="hidden" name="action" value="add_category">
 			        <div class="mb-3">
 			            <label class="form-label">Kategorie Name</label>
 			            <input type="text" name="category_name" class="form-control" required>
 			        </div>
-			        <div class="d-flex justify-content-between">
-			            <button type="button" class="btn btn-secondary btn-sm px-2" data-bs-toggle="collapse" data-bs-target=".category-toggle">❌</button>
+			        <div class="d-flex justify-content-end">
 			            <button type="submit" class="btn btn-success btn-sm px-2">💾</button>
 			        </div>
 			    </form>
