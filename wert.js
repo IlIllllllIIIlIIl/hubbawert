@@ -173,8 +173,6 @@ iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
 '<div class="col">Aufrufe</div>' +
 '<div class="col">' + json.info.views + '</div>' +
 '<div class="w-100"></div>' +
-'<div class="col">Kategorie</div>' +
-'<div class="col">--</div>' +
 '<div class="w-100"></div>' +
 '<div class="col"></div>' +
 '<div class="col">' + this.id + '</div>';
