@@ -186,7 +186,8 @@ img.rarity.l0 {
 }
 
 .cats a {
-	border: 1px solid var(--bs-border-color)
+	border: 1px solid var(--bs-border-color);
+	font-size: 14px
 }
 
 .cats a>img {
@@ -545,18 +546,18 @@ if ($isEditor) {
 		reader.readAsDataURL(event.target.files[0]);
 	}
 	</script>';
-	$insertModalTemplate = '
-		<div class="modal-body p-0">
-			<div class="box item">
-				<img id="imagePreview" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); max-width:200px; max-height:200px; object-fit:contain; display:none">
-			</div>
-			<div style="border:1px solid #2c2e3c; padding:12px">
-				<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
-				<input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
-			</div>
-			<div class="d-flex">
-				<div class="w-50" style="border:1px solid #2c2e3c; padding:12px">
-					<div style="display:flex; align-items:center; margin-bottom:10px">
+$insertModalTemplate = '
+	<div class="modal-body p-0">
+		<div class="box item">
+			<img id="imagePreview" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); max-width:200px; max-height:200px; object-fit:contain; display:none">
+		</div>
+		<div style="border:1px solid #2c2e3c; padding:12px">
+			<input type="hidden" name="MAX_FILE_SIZE" value="'.$maxSizeBytes.'">
+			<input class="form-control" type="file" name="file" accept="image/*" required onchange="loadPreviewImage(event)">
+		</div>
+		<div class="d-flex">
+			<div class="w-50" style="border:1px solid #2c2e3c; padding:12px">
+				<div style="display:flex; align-items:center; margin-bottom:10px">
 					<span style="margin-right:10px;white-space:nowrap">Item Name:</span>
 					<input class="form-control" style="width:150px; margin-left:auto" name="itemName" type="text" placeholder="z.B. dragonpillar*4" autocomplete="off" required>
 				</div>
@@ -567,16 +568,17 @@ if ($isEditor) {
 				<div style="display:flex; flex-direction:column">
 					<span class="mb-2">Kategorien:</span>
 					<div style="max-height:150px; overflow-y:auto; padding:10px; border:1px solid #2c2e3c; border-radius:4px">
-					<div class="d-flex flex-column" style="gap:8px">';
-						$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
-						$select->execute();
-						while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-							$insertModalTemplate .= '<label class="d-flex align-items-center" style="margin:0;cursor:pointer">
-								<input type="checkbox" name="categories[]" value="'.$cat['id'].'" class="form-check-input me-2" style="cursor:pointer">
-								<span>'.htmlspecialchars($cat['name']).'</span>
-							</label>';
-						}
+						<div class="d-flex flex-column" style="gap:8px">';
+							$select = $core->m->prepare('SELECT id, name FROM furniture_rare_categories ORDER BY name ASC');
+							$select->execute();
+							while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
+								$insertModalTemplate .= '<label class="d-flex align-items-center" style="margin:0;cursor:pointer">
+									<input type="checkbox" name="categories[]" value="'.$cat['id'].'" class="form-check-input me-2" style="cursor:pointer">
+									<span>'.htmlspecialchars($cat['name']).'</span>
+								</label>';
+							}
 	$insertModalTemplate .= '
+						</div>
 					</div>
 				</div>
 			</div>
@@ -589,7 +591,8 @@ if ($isEditor) {
 					<button type="submit" class="btn btn-primary">Einfügen</button>
 				</div>
 			</div>
-		</div>';
+		</div>
+	</div>';
 }
 
 $itemModalTemplate = '
@@ -691,10 +694,8 @@ $pagecontent .= '
 						ORDER BY cat.name ASC');
 						$select->execute();
 
-						$pagecontent .= '
-						<div class="col-md-6">';
 							while ($cat = $select->fetch(PDO::FETCH_ASSOC)) {
-								$pagecontent .= '
+								$pagecontent .= '<div class="col-md-6">
 									<div class="d-flex cat-wrapper'.($isEditor ? ' has-edit' : '').' mb-2">
 										<a href="'.$core->url.'wert?c='.$cat['id'].'" class="btn btn-dark btn-sm flex-grow-1" role="button">'.(isset($cat['image']) && !empty($cat['image'])?'<img src="'.$core->url.'_dat/serve/img/wert/furni/'.filter_var($cat['image'], FILTER_SANITIZE_URL).'" loading="lazy">&nbsp;':'').htmlspecialchars($cat['name']).'</a>'.
 										($isEditor ? '<button type="button" class="btn btn-dark btn-sm edit-btn px-2" data-bs-toggle="collapse" data-bs-target="#editCategory'.$cat['id'].'" title="Bearbeiten">✏️</button>' : '').
@@ -716,9 +717,9 @@ $pagecontent .= '
 												</div>
 											</div>
 										</form>
-									</div>' : '');
+									</div>' : '').'</div>';
 							}
-$pagecontent .= '		</div>
+$pagecontent .= '
 					</div>
 				</div>
 			</div>
