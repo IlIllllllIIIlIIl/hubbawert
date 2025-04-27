@@ -10,14 +10,17 @@ window.onscroll = () => {
 		}
 	}
 };
+
+let search = '';
 let searchWait;
-document.getElementById("search").addEventListener("keyup", function(event) {
+document.getElementById("search").addEventListener("keyup", function() {
 	if (search != this.value) {
 		search = this.value;
 		clearTimeout(searchWait);
 		searchWait = setTimeout(filterResults, 500);
 	}
 });
+
 document.getElementById("raritynav").addEventListener("click", event => {
 	event.preventDefault();
 	document.querySelector("#raritynav a[data-r='" + rarity + "']").classList.remove("active");
@@ -92,7 +95,7 @@ function makeEditable(selector, name, f = false) {
 	element.replaceWith(input);
 }
 let lastModal = 0;
-async function itemModal(e) {
+async function itemModal() {
 	const iModal = document.querySelector('#details .modal-body');
 
 	if (lastModal != this.id) {
@@ -246,8 +249,18 @@ function dateFormat(timestamp) {
 }
 
 function setTooltips() {
-	document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
+	document.querySelectorAll(".rarity").forEach(el => {
+		// Remove existing tooltip if it exists
+		if (el._tooltip) {
+			el._tooltip.dispose();
+		}
+		el._tooltip = new bootstrap.Tooltip(el);
+	});
+	
 	document.querySelectorAll(".rare .item").forEach(item => {
+		// Remove existing click listener if it exists
+		item.removeEventListener("click", itemModal);
+		// Add new click listener
 		item.addEventListener("click", itemModal);
 	});
 }
