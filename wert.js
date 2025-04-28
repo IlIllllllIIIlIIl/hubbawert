@@ -108,14 +108,14 @@ async function itemModal(e) {
 	iModal.children[0].innerHTML = this.innerHTML;
 
 	if (isEditor) {
-		iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
+		iModal.children[0].lastElementChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
 
 		document.querySelector('#details .modal-body .edit').addEventListener("click", event => {
 			if (event.target.value.includes('Bearbeiten')) {
 				event.preventDefault();
 				event.target.value = '💾 Speichern';
 				event.target.style.color = '#3ab4e3';
-				iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
+				iModal.children[0].lastElementChild.insertAdjacentHTML('beforebegin', '<input class="editFile" type="file" name="file" accept="image/*">');
 
 				const currentCategories = items.find(item => item[0] === this.id)?.[7]?.split(',') || [];
 
