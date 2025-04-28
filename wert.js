@@ -67,12 +67,16 @@ function filterResults(sortedItems = null) {
 		if (!(matchSearch || matchRarity || matchCategory || sortingHelper)) {
 			i++;
 			let itemToAdd = itemTemplate;
-			// Setze die ID als data-item-id
-			itemToAdd = itemToAdd.replace('<div class="item"', `<div class="item" data-item-id="${item[0]}"`);
 			for (let j = 0; j < itemReplace.length; j++) {
 				itemToAdd = itemToAdd.replace(itemReplace[j], item[j]);
 			}
 			container.insertAdjacentHTML("beforeend", itemToAdd);
+			// Set ID and add click handler after inserting HTML
+			const lastItem = container.lastElementChild;
+			if (lastItem) {
+				lastItem.id = item[0];
+				lastItem.addEventListener("click", itemModal);
+			}
 		}
 	});
 	if (window.pageYOffset > 240) {
@@ -96,16 +100,17 @@ function makeEditable(selector, name, f = false) {
 let lastModal = 0;
 async function itemModal(e) {
 	const iModal = document.querySelector('#details .modal-body');
-	const itemId = this.getAttribute('data-item-id');
+	const modalElement = document.querySelector('#details');
 
-	if (lastModal != itemId) {
+	if (lastModal != this.id) {
 		iModal.replaceChildren();
 	}
-	new bootstrap.Modal('#details').show();
-	if (lastModal == itemId) {
+	const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+	modal.show();
+	if (lastModal == this.id) {
 		return false;
 	}
-	lastModal = itemId;
+	lastModal = this.id;
 
 	iModal.innerHTML = itemModalTemplate;
 	iModal.children[0].innerHTML = this.innerHTML;
@@ -167,7 +172,7 @@ async function itemModal(e) {
 		});
 	}
 
-	const response = await fetch("?i=" + itemId);
+	const response = await fetch("?i=" + this.id);
 	if (!response.ok) {
 		console.error('item detail request failed');
 	}
@@ -250,13 +255,6 @@ function dateFormat(timestamp) {
 
 function setTooltips() {
 	document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
-	document.querySelectorAll(".rare .item").forEach(item => {
-		// Speichere die ursprüngliche ID als data-Attribut
-		if (item.id) {
-			item.setAttribute('data-item-id', item.id);
-		}
-		item.addEventListener("click", itemModal);
-	});
 }
 setTooltips();
 
