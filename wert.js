@@ -11,16 +11,11 @@ window.onscroll = () => {
 	}
 };
 let searchWait;
-let currentSearch = '';
-document.getElementById("search").addEventListener("keyup", function() {
-	if (currentSearch !== this.value) {
-		currentSearch = this.value;
-		search = this.value; // Update the global search variable
+document.getElementById("search").addEventListener("keyup", function(event) {
+	if (search != this.value) {
+		search = this.value;
 		clearTimeout(searchWait);
-		searchWait = setTimeout(() => {
-			filterResults();
-			setTooltips(); // Ensure tooltips are reinitialized after filtering
-		}, 500);
+		searchWait = setTimeout(filterResults, 500);
 	}
 });
 document.getElementById("raritynav").addEventListener("click", event => {
@@ -63,52 +58,21 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 function filterResults(sortedItems = null) {
 	let i = 0;
 	const container = document.querySelector(".rare");
-	if (!container) return;
-	
-	// Clear existing content
 	container.replaceChildren();
-	
-	// Get items to process, with fallbacks
-	const itemsToProcess = sortedItems || items || [];
-	
-	// Track visible items for debugging
-	const visibleItems = [];
-	
-	itemsToProcess.forEach(item => {
-		if (!item) return; // Skip invalid items
-		
-		// Check category match
-		const matchCategory = category > 0 && String(item[7]) !== String(category);
-		
-		// Check rarity match
-		const matchRarity = rarity > 0 && String(item[1]) !== String(rarity);
-		
-		// Check search match with proper string handling
-		const itemName = String(item[6] || '').toLowerCase();
-		const searchTerm = String(search || '').toLowerCase();
-		const matchSearch = (searchTerm === '' && i > maxItemsToShow && rarity == 0 && category == 0) ||
-						   (searchTerm !== '' && !itemName.includes(searchTerm));
-		
-		// Check sorting helper
-		const sortingHelper = (appliedSorting == 4 || appliedSorting == 5) && (!item[8] || item[8] < 1);
-		// Show item if it passes all filters
+	(sortedItems || items).forEach(item => {
+		const matchCategory = (category > 0 && item[7] != category);
+		const matchRarity = (rarity > 0 && item[1] != rarity);
+		const matchSearch = (search == "" && i > maxItemsToShow && rarity == 0 && category == 0) || (search !== "" && !item[6].toLowerCase().includes(search.toLowerCase()));
+		const sortingHelper = ((appliedSorting == 4 || appliedSorting == 5) && item[8] < 1); /* < 1 skip unknown prices in price sorting */
 		if (!(matchSearch || matchRarity || matchCategory || sortingHelper)) {
 			i++;
 			let itemToAdd = itemTemplate;
-			try {
-				for (let j = 0; j < itemReplace.length; j++) {
-					itemToAdd = itemToAdd.replace(itemReplace[j], item[j] || '');
-				}
-				container.insertAdjacentHTML("beforeend", itemToAdd);
-				visibleItems.push(item[6]); // Track visible item for debugging
-			} catch (err) {
-				console.warn('Failed to add item:', err);
+			for (let j = 0; j < itemReplace.length; j++) {
+				itemToAdd = itemToAdd.replace(itemReplace[j], item[j]);
 			}
+			container.insertAdjacentHTML("beforeend", itemToAdd);
 		}
 	});
-	
-	// Log visible items count for debugging
-	console.log(`Filtered items: ${visibleItems.length} visible`);
 	if (window.pageYOffset > 240) {
 		scrollTo(0, 230);
 	}
@@ -129,18 +93,16 @@ function makeEditable(selector, name, f = false) {
 }
 let lastModal = 0;
 async function itemModal(e) {
-	e.preventDefault();
-	const itemId = this.id;
 	const iModal = document.querySelector('#details .modal-body');
 
-	if (lastModal != itemId) {
+	if (lastModal != this.id) {
 		iModal.replaceChildren();
 	}
 	new bootstrap.Modal('#details').show();
-	if (lastModal == itemId) {
+	if (lastModal == this.id) {
 		return false;
 	}
-	lastModal = itemId;
+	lastModal = this.id;
 
 	iModal.innerHTML = itemModalTemplate;
 	iModal.children[0].innerHTML = this.innerHTML;
@@ -202,16 +164,12 @@ async function itemModal(e) {
 		});
 	}
 
-	try {
-		const response = await fetch("?i=" + itemId);
-		if (!response.ok) {
-			throw new Error(`Failed to fetch item details: ${response.status}`);
-		}
-		const json = await response.json();
-		if (!json || !json.info) {
-			throw new Error('Invalid response data');
-		}
-		iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
+	const response = await fetch("?i=" + this.id);
+	if (!response.ok) {
+		console.error('item detail request failed');
+	}
+	const json = await response.json();
+	iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
 		'<div class="col">' + this.querySelector('img').dataset.bsOriginalTitle + 'x</div>' +
 		'<div class="w-100"></div>' +
 		'<div class="col">Aufrufe</div>' +
@@ -242,11 +200,7 @@ async function itemModal(e) {
 			img.title = owner.username + ' ' + owner.c + 'x';
 			img.loading = "lazy";
 			iModal.children[4].appendChild(img);
-			try {
-				new bootstrap.Tooltip(img);
-			} catch (tooltipErr) {
-				console.warn('Failed to create tooltip:', tooltipErr);
-			}
+			new bootstrap.Tooltip(img);
 		});
 	}
 
@@ -264,8 +218,7 @@ async function itemModal(e) {
 		});
 		points.push(json.info.price);
 		labels.push(dateFormat(previousTimestamp));
-		try {
-			new Chart("chart", {
+		new Chart("chart", {
 			type: "line",
 			data: {
 				labels: labels,
@@ -283,16 +236,8 @@ async function itemModal(e) {
 				}
 			}
 		});
-		} catch (chartErr) {
-			console.warn('Failed to create chart:', chartErr);
-			iModal.children[3].remove();
-		}
 	} else {
 		iModal.children[3].remove();
-	}
-	} catch (error) {
-		console.error('Error in itemModal:', error);
-		iModal.innerHTML = '<div class="alert alert-danger">Failed to load item details. Please try again later.</div>';
 	}
 }
 
@@ -303,10 +248,7 @@ function dateFormat(timestamp) {
 function setTooltips() {
 	document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
 	document.querySelectorAll(".rare .item").forEach(item => {
-		// Remove existing listener if any to prevent duplicates
-		item.removeEventListener("click", itemModal);
-		// Add new listener with bound context
-		item.addEventListener("click", itemModal.bind(item));
+		item.addEventListener("click", itemModal);
 	});
 }
 setTooltips();
