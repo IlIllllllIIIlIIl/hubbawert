@@ -67,6 +67,8 @@ function filterResults(sortedItems = null) {
 		if (!(matchSearch || matchRarity || matchCategory || sortingHelper)) {
 			i++;
 			let itemToAdd = itemTemplate;
+			// Setze die ID als data-item-id
+			itemToAdd = itemToAdd.replace('<div class="item"', `<div class="item" data-item-id="${item[0]}"`);
 			for (let j = 0; j < itemReplace.length; j++) {
 				itemToAdd = itemToAdd.replace(itemReplace[j], item[j]);
 			}
@@ -93,20 +95,20 @@ function makeEditable(selector, name, f = false) {
 }
 let lastModal = 0;
 async function itemModal(e) {
-    const iModal = document.querySelector('#details .modal-body');
-    const currentId = this.id;
+	const iModal = document.querySelector('#details .modal-body');
+	const itemId = this.getAttribute('data-item-id');
 
-    if (lastModal != currentId) {
-        iModal.replaceChildren();
-    }
-    new bootstrap.Modal('#details').show();
-    if (lastModal == currentId) {
-        return false;
-    }
-    lastModal = currentId;
+	if (lastModal != itemId) {
+		iModal.replaceChildren();
+	}
+	new bootstrap.Modal('#details').show();
+	if (lastModal == itemId) {
+		return false;
+	}
+	lastModal = itemId;
 
-    iModal.innerHTML = itemModalTemplate;
-    iModal.children[0].innerHTML = this.innerHTML;
+	iModal.innerHTML = itemModalTemplate;
+	iModal.children[0].innerHTML = this.innerHTML;
 
 	if (isEditor) {
 		iModal.children[0].lastChild.insertAdjacentHTML('beforebegin', '<input class="edit" type="submit" value="✏️ Bearbeiten"><input class="delete" type="submit" value="🗑️ Löschen">');
@@ -165,96 +167,81 @@ async function itemModal(e) {
 		});
 	}
 
-	   try {
-	       const response = await fetch("?i=" + currentId);
-	       if (!response.ok) {
-	           throw new Error('Network response was not ok');
-	       }
-	       const json = await response.json();
-	       if (!json.info) {
-	           throw new Error('Invalid response data');
-	       }
+	const response = await fetch("?i=" + itemId);
+	if (!response.ok) {
+		console.error('item detail request failed');
+	}
+	const json = await response.json();
+	iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
+		'<div class="col">' + this.querySelector('img').dataset.bsOriginalTitle + 'x</div>' +
+		'<div class="w-100"></div>' +
+		'<div class="col">Aufrufe</div>' +
+		'<div class="col">' + json.info.views + '</div>' +
+		'<div class="w-100"></div>' +
+		'<div class="w-100"></div>' +
+		'<div class="col"></div>' +
+		'<div class="col">' + this.id + '</div>';
+	iModal.children[2].innerText = json.info.longdesc;
 
-	       // Display basic item information
-	       iModal.children[1].innerHTML = '<div class="col">Umlauf</div>' +
-	           '<div class="col">' + this.querySelector('img').dataset.bsOriginalTitle + 'x</div>' +
-	           '<div class="w-100"></div>' +
-	           '<div class="col">Aufrufe</div>' +
-	           '<div class="col">' + json.info.views + '</div>' +
-	           '<div class="w-100"></div>' +
-	           '<div class="w-100"></div>' +
-	           '<div class="col"></div>' +
-	           '<div class="col">' + currentId + '</div>';
-	       iModal.children[2].innerText = json.info.longdesc;
+	if (isAdmin) {
+		let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
+		json.changes.sort((a, b) => b.timestamp - a.timestamp);
+		json.changes.forEach(log => {
+			logsHtml += '<tr>' +
+				'<td>' + log.username + '</td>' +
+				'<td>' + log.old_price.toLocaleString() + '</td>' +
+				'<td>' + dateFormat(log.timestamp) + '</td>' +
+				'</tr>';
+		});
+		logsHtml += '</tbody></table></div>';
+		iModal.children[4].innerHTML = logsHtml;
+	} else {
+		iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">' + json.owners.length + '</h4><h5>(sortiert nach zuletzt online)</h5>';
+		json.owners.forEach(owner => {
+			let img = document.createElement('img');
+			img.src = avatarImager + '?figure=' + owner.figure + '&head_direction=2';
+			img.title = owner.username + ' ' + owner.c + 'x';
+			img.loading = "lazy";
+			iModal.children[4].appendChild(img);
+			new bootstrap.Tooltip(img);
+		});
+	}
 
-	       // Display admin logs or owner information
-	       if (isAdmin && Array.isArray(json.changes)) {
-	           let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
-	           json.changes.sort((a, b) => b.timestamp - a.timestamp);
-	           json.changes.forEach(log => {
-	               logsHtml += '<tr>' +
-	                   '<td>' + log.username + '</td>' +
-	                   '<td>' + log.old_price.toLocaleString() + '</td>' +
-	                   '<td>' + dateFormat(log.timestamp) + '</td>' +
-	                   '</tr>';
-	           });
-	           logsHtml += '</tbody></table></div>';
-	           iModal.children[4].innerHTML = logsHtml;
-	       } else if (Array.isArray(json.owners)) {
-	           iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">' + json.owners.length + '</h4><h5>(sortiert nach zuletzt online)</h5>';
-	           json.owners.forEach(owner => {
-	               let img = document.createElement('img');
-	               img.src = avatarImager + '?figure=' + owner.figure + '&head_direction=2';
-	               img.title = owner.username + ' ' + owner.c + 'x';
-	               img.loading = "lazy";
-	               iModal.children[4].appendChild(img);
-	               new bootstrap.Tooltip(img);
-	           });
-	       }
-
-	       // Display price history chart
-	       if (json.changes && json.changes.length > 1) {
-	           iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
-	           let labels = [json.info.timestamp_release == 0 ? 'Release' : dateFormat(json.info.timestamp_release)],
-	               points = [];
-	           let previousTimestamp = -1;
-	           json.changes.forEach(change => {
-	               points.push(change.old_price);
-	               if (previousTimestamp > -1) {
-	                   labels.push(dateFormat(change.timestamp));
-	               }
-	               previousTimestamp = change.timestamp;
-	           });
-	           points.push(json.info.price);
-	           labels.push(dateFormat(previousTimestamp));
-	           new Chart("chart", {
-	               type: "line",
-	               data: {
-	                   labels: labels,
-	                   datasets: [{
-	                       data: points,
-	                       borderColor: "#db9f21",
-	                       fill: false
-	                   }]
-	               },
-	               options: {
-	                   plugins: {
-	                       legend: {
-	                           display: false
-	                       }
-	                   }
-	               }
-	           });
-	       } else {
-	           iModal.children[3].remove();
-	       }
-	   } catch (error) {
-	       console.error('Error loading item details:', error);
-	       iModal.children[1].innerHTML = '<div class="col text-center">Fehler beim Laden der Details</div>';
-	       iModal.children[2].innerText = 'Fehler beim Laden der Beschreibung';
-	       iModal.children[3].remove();
-	       iModal.children[4].innerHTML = '<div class="text-center">Daten konnten nicht geladen werden</div>';
-	   }
+	if (json.changes.length > 1) {
+		iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
+		let labels = [json.info.timestamp_release == 0 ? 'Release' : dateFormat(json.info.timestamp_release)],
+			points = [];
+		let previousTimestamp = -1;
+		json.changes.forEach(change => {
+			points.push(change.old_price);
+			if (previousTimestamp > -1) {
+				labels.push(dateFormat(change.timestamp));
+			}
+			previousTimestamp = change.timestamp;
+		});
+		points.push(json.info.price);
+		labels.push(dateFormat(previousTimestamp));
+		new Chart("chart", {
+			type: "line",
+			data: {
+				labels: labels,
+				datasets: [{
+					data: points,
+					borderColor: "#db9f21",
+					fill: false
+				}]
+			},
+			options: {
+				plugins: {
+					legend: {
+						display: false
+					}
+				}
+			}
+		});
+	} else {
+		iModal.children[3].remove();
+	}
 }
 
 function dateFormat(timestamp) {
@@ -264,6 +251,10 @@ function dateFormat(timestamp) {
 function setTooltips() {
 	document.querySelectorAll(".rarity").forEach(el => new bootstrap.Tooltip(el));
 	document.querySelectorAll(".rare .item").forEach(item => {
+		// Speichere die ursprüngliche ID als data-Attribut
+		if (item.id) {
+			item.setAttribute('data-item-id', item.id);
+		}
 		item.addEventListener("click", itemModal);
 	});
 }
