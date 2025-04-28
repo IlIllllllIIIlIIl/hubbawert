@@ -95,10 +95,15 @@ let lastModal = 0;
 async function itemModal(e) {
 	const iModal = document.querySelector('#details .modal-body');
 
-	iModal.replaceChildren();
+	if (lastModal != this.id) {
+		iModal.replaceChildren();
+	}
 	new bootstrap.Modal('#details').show();
+	if (lastModal == this.id) {
+		return false;
+	}
 	lastModal = this.id;
-	
+
 	iModal.innerHTML = itemModalTemplate;
 	iModal.children[0].innerHTML = this.innerHTML;
 
