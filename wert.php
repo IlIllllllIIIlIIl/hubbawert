@@ -652,7 +652,7 @@ foreach ($items as $itemId => $item) {
 		$i++;
 	}
 
-	array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId, $item['timestamp_release']);
+	array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId, isset($item['timestamp_release']) ? $item['timestamp_release'] : 0);
 	array_push($itemArray, $itemData);
 }
 // 2 more divs to close last $itemTemplate
