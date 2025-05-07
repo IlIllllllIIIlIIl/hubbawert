@@ -35,7 +35,7 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 			(a, b) => {
 				switch (event.target.value) {
 					case "1":
-						return a[10] < b[10] ? 1 : -1;
+						return b[5] - a[5];
 					case "2":
 						return a[10] < b[10] ? 1 : -1;
 					case "3":
