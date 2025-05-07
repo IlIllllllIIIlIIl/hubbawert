@@ -300,8 +300,8 @@ $pagecontent .= '<div class="container">
 <div class="row box sticky-top" style="border-bottom-left-radius:0;border-bottom-right-radius:0">
 	<div class="col-md-3">
 		<select class="custom-select form-control" name="sort" autocomplete="off">
-			<option value="1">🟢 Neu hinzugefügt</option>
-			<option value="2" selected>📌 Preisänderungen</option>
+			<option value="1" selected>🟢 Neu hinzugefügt</option>
+			<option value="2">📌 Preisänderungen</option>
 			<option value="3">↑ Seltenheit aufsteigend</option>
 			<option value="4">↓ Seltenheit absteigend</option>
 			<option value="5">➚ Preis aufsteigend</option>
