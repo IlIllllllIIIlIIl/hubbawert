@@ -37,7 +37,7 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 					case "1":
 						return a[10] < b[10] ? 1 : -1;
 					case "2":
-						return a[9] < b[9] ? 1 : -1;
+						return (b[10] || 0) - (a[10] || 0);
 					case "3":
 						return a[2] < b[2] ? 1 : -1;
 					case "4":
