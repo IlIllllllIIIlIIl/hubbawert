@@ -47,6 +47,14 @@ if (isset($_GET['i'])){
 $pagetitle = 'Wert';
 $cachePath = $core->path.'/_inc/.cache/wert/index.cache';
 $cssappendix .= '<style>
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: #2c2e3d;
+}
+.table tr:last-child {
+  --bs-table-border-color: transparent;
+}
+
 .box {
 	margin: 5px 0 !important;
 	box-shadow: none !important;
@@ -232,7 +240,7 @@ img.rarity.l0 {
 	display: grid
 }
 
-#details .modal-body div:last-child>img {
+#details .modal-body div#owners > img {
 	height: 54px;
 	object-fit: none;
 	width: 48px;
@@ -521,7 +529,7 @@ if (!file_exists($cachePath) || time() - filemtime($cachePath) > 1800){
 	$result = $rankPeople->fetchAll(PDO::FETCH_COLUMN);
 	$rankPeople = 'AND user_id !='.implode(' AND user_id !=', $result); // this is the most performance efficient way to skip rank people in umlauf count, it requires a tripleindex on base_item, gift_base_item and user_id
 
-	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.image,r.views,(SELECT GROUP_CONCAT(CAST(m.category_id AS CHAR)) FROM furniture_rare_category_mappings m WHERE m.furniture_id = r.id) as categories,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price,r.timestamp_release FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
+	$select = $core->m->prepare('SELECT r.id,f.public_name,r.longdesc,r.price,r.buyprice,r.image,r.views,(SELECT GROUP_CONCAT(CAST(m.category_id AS CHAR)) FROM furniture_rare_category_mappings m WHERE m.furniture_id = r.id) as categories,(SELECT ( (SELECT COUNT(id) FROM items WHERE base_item=f.id '.$rankPeople.') + (SELECT COUNT(id) FROM items WHERE gift_base_item=f.id AND base_item != gift_base_item '.$rankPeople.') ) ) as umlauf,r.item_name,c.timestamp,c.old_price FROM furniture_rare_details r LEFT JOIN furniture f ON(f.item_name = r.item_name) LEFT JOIN furniture_rare_changes c ON(r.id=c.furni_id AND c.id=(SELECT id FROM furniture_rare_changes AS ci WHERE ci.furni_id=r.id ORDER BY `timestamp` DESC LIMIT 1)) ORDER BY r.id DESC');
 	$select->execute();
 	$items = array_map('current', $select->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC));
 	file_put_contents($cachePath, json_encode($items));
@@ -600,7 +608,7 @@ $itemModalTemplate = '
 <div class="col-md-6 row"></div>
 <div class="col-md-6 text-center align-items-center"></div>
 <div class="col-md-12 text-center"></div>
-<div class="col-md-12 text-center"></div>';
+<div class="col-md-12 text-center" id="owners"></div>';
 
 $itemTemplate = '
 <div class="col-md-4">
@@ -652,7 +660,7 @@ foreach ($items as $itemId => $item) {
 		$i++;
 	}
 
-	array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId, isset($item['timestamp_release']) ? $item['timestamp_release'] : 0);
+	array_push($itemData, isset($item['categories']) ? $item['categories'] : '', $item['price'], $item['timestamp'], $itemId);
 	array_push($itemArray, $itemData);
 }
 // 2 more divs to close last $itemTemplate

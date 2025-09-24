@@ -35,9 +35,9 @@ document.querySelector(".custom-select").addEventListener("change", event => {
 			(a, b) => {
 				switch (event.target.value) {
 					case "1":
-						return a[11] < b[11] ? 1 : -1;
-					case "2":
 						return a[10] < b[10] ? 1 : -1;
+					case "2":
+						return a[9] < b[9] ? 1 : -1;
 					case "3":
 						return a[2] < b[2] ? 1 : -1;
 					case "4":
@@ -176,33 +176,35 @@ async function itemModal(e) {
 		'<div class="col">' + json.info.views + '</div>' +
 		'<div class="w-100"></div>' +
 		'<div class="w-100"></div>' +
-		'<div class="col"></div>' +
 		'<div class="col">' + this.id + '</div>';
 	iModal.children[2].innerText = json.info.longdesc;
 
 	if (isAdmin) {
-		let logsHtml = '<div class="text-center"><h3>Letzte 20 Preisänderungen</h3><table class="table table-dark"><thead><tr><th>Benutzer</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
-		json.changes.sort((a, b) => b.timestamp - a.timestamp);
-		json.changes.forEach(log => {
-			logsHtml += '<tr>' +
-				'<td>' + log.username + '</td>' +
-				'<td>' + log.old_price.toLocaleString() + '</td>' +
-				'<td>' + dateFormat(log.timestamp) + '</td>' +
-				'</tr>';
-		});
-		logsHtml += '</tbody></table></div>';
-		iModal.children[4].innerHTML = logsHtml;
-	} else {
-		iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">' + json.owners.length + '</h4><h5>(sortiert nach zuletzt online)</h5>';
-		json.owners.forEach(owner => {
-			let img = document.createElement('img');
-			img.src = avatarImager + '?figure=' + owner.figure + '&head_direction=2';
-			img.title = owner.username + ' ' + owner.c + 'x';
-			img.loading = "lazy";
-			iModal.children[4].appendChild(img);
-			new bootstrap.Tooltip(img);
-		});
+		if(json.changes.length > 0){
+			let logsHtml = '<div class="col-md-12 text-center"><table class="table table-dark"><thead><tr><th>Scout</th><th>Alter Preis</th><th>Datum</th></tr></thead><tbody>';
+			json.changes.sort((a, b) => b.timestamp - a.timestamp);
+			json.changes.forEach(log => {
+				logsHtml += '<tr>' +
+					'<td>' + log.username + '</td>' +
+					'<td>' + log.old_price.toLocaleString() + '</td>' +
+					'<td>' + dateFormat(log.timestamp) + '</td>' +
+					'</tr>';
+			});
+			logsHtml += '</tbody></table></div>';
+			iModal.insertAdjacentHTML('beforeend', logsHtml);
+		}
 	}
+
+	const ownersContainer = iModal.querySelector('#owners');
+	iModal.children[4].innerHTML = '<h3 style="margin:0">Möbel Besitzer</h3><h4 style="margin:0">' + json.owners.length + '</h4><h5>(sortiert nach zuletzt online)</h5>';
+	json.owners.forEach(owner => {
+		let img = document.createElement('img');
+		img.src = avatarImager + '?figure=' + owner.figure + '&head_direction=2';
+		img.title = owner.username + ' ' + owner.c + 'x';
+		img.loading = "lazy";
+		ownersContainer.appendChild(img);
+		new bootstrap.Tooltip(img);
+	});
 
 	if (json.changes.length > 1) {
 		iModal.children[3].innerHTML = '<h3>Preisentwicklung</h3><canvas id="chart"></canvas>';
@@ -242,7 +244,11 @@ async function itemModal(e) {
 }
 
 function dateFormat(timestamp) {
-	return new Date(timestamp * 1000).toLocaleDateString();
+	return new Date(timestamp * 1000).toLocaleDateString("de-DE", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit"
+	});
 }
 
 function setTooltips() {
